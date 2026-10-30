@@ -7,7 +7,7 @@ set -euo pipefail
 export NO_PROXY=127.0.0.1,localhost no_proxy=127.0.0.1,localhost
 R=${LOCAL_RPC:-http://127.0.0.1:8545}
 case "$R" in http://127.0.0.1*|http://localhost*) ;; *) echo "refusing: LOCAL_RPC must be a local anvil" >&2; exit 1;; esac
-T=0x866396d4aee9467b67194431bdbDdE8E8044d8AE
+T=0x49E6fb3812fdfD67eDfE17259f03CcbE59f39BCE
 cd "$(dirname "$0")/../.."
 D=$(python3 -c "import json;print(json.load(open('deploy/bsc-mainnet-plan.json'))['txs'][0]['data'])")
 U=$(python3 -c "import json;print(json.load(open('deploy/bsc-mainnet-plan.json'))['txs'][1]['data'])")

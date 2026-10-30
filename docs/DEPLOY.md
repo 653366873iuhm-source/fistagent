@@ -7,14 +7,14 @@ Both transactions are sent from the treasury Agentic Wallet. **The treasury/admi
 | Item | Value |
 |---|---|
 | Network | BNB Smart Chain mainnet (chainId 56) |
-| From / treasury / admin (immutable) | 0x866396d4aee9467b67194431bdbDdE8E8044d8AE (`iuhm.ai`, same as BNAGENT) — to be confirmed |
+| From / treasury / admin (immutable) | 0x49E6fb3812fdfD67eDfE17259f03CcbE59f39BCE (`allin168.ai`, confirmed by user 2026-10-30 21:50 CST) |
 | Social-task signer (immutable) | 0x66ECa9C28e4e4807e37C078b917e527DC85aC199 (BNAGENT's dedicated signer, reused — see below) |
 | CREATE2 deployer proxy | 0x4e59b44847b379578588920cA78FbF26c0B4956C |
 | Salt | keccak256("FISTAGENT.mint.v1") = 0x0378f38f5ecaf6740316bdaac9858b588a1aca829923b8a0c57cae8af5415cc6 |
 | initCodeHash | 0x2ca494a8b160fb19f23e9227b56012ee10c01fbf9462ae8fc0e46877f7d1549e |
-| **FistagentMint** (planned) | **0x2c2787710Ec2B3D6b37b8936b8753982654aB4B3** |
-| **FistagentToken** (CREATE from mint, nonce 1) | **0xe252Cd16af4D41D7C01120e1d76c61683068fd15** |
-| **PancakeSwap FISTAGENT/USDT pair** (created empty by the token constructor) | **0xdc6aCFe3dB5FB73f24E0de6E950a3743f67a277D** |
+| **FistagentMint** (planned) | **0xdDD8af1D1C9513D6eB5F4C017516360B26955c26** |
+| **FistagentToken** (CREATE from mint, nonce 1) | **0x7acDcE948Dc6F9185D96b8D1af80284C9a3c71c3** |
+| **PancakeSwap FISTAGENT/USDT pair** (created empty by the token constructor) | **0xf375Def1f8f60Bf52A2a8D4309498B1FCE45C01B** |
 | Init code / runtime size | 27,268 bytes (limit 49,152) / mint runtime 18,449 bytes (limit 24,576) |
 | Gas, tx 1 | `eth_estimateGas` on BSC mainnet 2026-10-30 ~18:20 CST from the treasury: **8,710,108**; used on a local anvil fork: 8,571,713. At 0.05 gwei ≈ 0.00044 BNB |
 
@@ -28,7 +28,7 @@ All three addresses had no code on BSC mainnet at 2026-10-30 ~18:20 CST.
 
 Execution, only after explicit user approval, per tx:
 ```
-baw contract-call preview --binanceChainId 56 --from 0x866396d4aee9467b67194431bdbDdE8E8044d8AE --to <to> --value 0 --inputData <data> --json
+baw contract-call preview --binanceChainId 56 --from 0x49E6fb3812fdfD67eDfE17259f03CcbE59f39BCE --to <to> --value 0 --inputData <data> --json
 baw contract-call execute --requestId <requestId> --json
 ```
 After tx 1: verify source on BscScan + Sourcify (solc 0.8.24, optimizer 200, evm cancun, bytecode_hash none, cbor_metadata false;

@@ -7,9 +7,9 @@ const ROOT = process.argv[2] || '/workspace/work/fistagent/site';
 const BASE = process.argv[3]; // optional: test a live URL instead of a local server
 const types = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.svg': 'image/svg+xml', '.png': 'image/png', '.txt': 'text/plain', '.md': 'text/markdown' };
 const srv = http.createServer((q, r) => { let f = path.join(ROOT, decodeURIComponent(q.url.split('?')[0])); if (f.endsWith('/')) f += 'index.html'; fs.readFile(f, (e, d) => { if (e) { r.writeHead(404); return r.end(); } r.writeHead(200, { 'content-type': types[path.extname(f)] || 'application/octet-stream' }); r.end(d); }); });
-const ADDR = '0x49E6fb3812fdfD67eDfE17259f03CcbE59f39BCE'; // test fixture: a wallet holding allin168.ai on BSC (not the treasury; treasury = 0x8663…d8AE iuhm.ai)
-const TREASURY = '0x866396d4aee9467b67194431bdbDdE8E8044d8AE'; // iuhm.ai Agentic Wallet
-const MINT = '0x2c2787710Ec2B3D6b37b8936b8753982654aB4B3';
+const ADDR = '0x49E6fb3812fdfD67eDfE17259f03CcbE59f39BCE'; // test fixture: a wallet holding allin168.ai on BSC (not the treasury; treasury = 0x49E6…9BCE iuhm.ai)
+const TREASURY = '0x49E6fb3812fdfD67eDfE17259f03CcbE59f39BCE'; // iuhm.ai Agentic Wallet
+const MINT = '0xdDD8af1D1C9513D6eB5F4C017516360B26955c26';
 const mock = (addr) => `(() => {
   const calls = []; window.__calls = calls; let chain = '0x1'; let added = false; const ls = {};
   const p = { isMetaMask: true, request: async ({ method, params }) => { calls.push(method);

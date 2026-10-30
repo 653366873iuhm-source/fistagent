@@ -8,9 +8,9 @@ const ROOT = process.argv[2] || path.join(__dirname, '../../site');
 const BASE = process.argv[3]; // optional: test a live URL instead of a local server
 const types = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.svg': 'image/svg+xml', '.png': 'image/png', '.txt': 'text/plain', '.md': 'text/markdown' };
 const srv = http.createServer((q, r) => { let f = path.join(ROOT, decodeURIComponent(q.url.split('?')[0])); if (f.endsWith('/')) f += 'index.html'; fs.readFile(f, (e, d) => { if (e) { r.writeHead(404); return r.end(); } r.writeHead(200, { 'content-type': types[path.extname(f)] || 'application/octet-stream' }); r.end(d); }); });
-const ADDR = '0x49E6fb3812fdfD67eDfE17259f03CcbE59f39BCE'; // test fixture: a wallet holding allin168.ai on BSC (not the treasury; treasury = 0x8663…d8AE iuhm.ai)
-const TREASURY = '0x866396d4aee9467b67194431bdbDdE8E8044d8AE'; // iuhm.ai Agentic Wallet
-const MINT = '0x2c2787710Ec2B3D6b37b8936b8753982654aB4B3';
+const ADDR = '0x49E6fb3812fdfD67eDfE17259f03CcbE59f39BCE'; // test fixture: a wallet holding allin168.ai on BSC (not the treasury; treasury = 0x49E6…9BCE iuhm.ai)
+const TREASURY = '0x49E6fb3812fdfD67eDfE17259f03CcbE59f39BCE'; // iuhm.ai Agentic Wallet
+const MINT = '0xdDD8af1D1C9513D6eB5F4C017516360B26955c26';
 const mock = (addr) => `(() => {
   const calls = []; window.__calls = calls; let chain = '0x1'; let added = false; const ls = {};
   const p = { isMetaMask: true, request: async ({ method, params }) => { calls.push(method);
@@ -67,7 +67,7 @@ const results = []; const ok = (name, cond, extra = '') => { results.push([cond 
     await pg.goto(base + '?lang=zh', { waitUntil: 'networkidle' });
     ok('no-wallet: page loads without console errors', errs.length === 0, errs.join(' | '));
     ok('no-wallet: mint button asks to connect (contracts deployed)', (await pg.textContent('#mintBtn')).includes('连接钱包后铸造'));
-    ok('no-wallet: safety notes show the mint + token addresses', (await pg.textContent('#notes')).includes(MINT) && (await pg.textContent('#notes')).includes('0xe252Cd16af4D41D7C01120e1d76c61683068fd15'));
+    ok('no-wallet: safety notes show the mint + token addresses', (await pg.textContent('#notes')).includes(MINT) && (await pg.textContent('#notes')).includes('0x7acDcE948Dc6F9185D96b8D1af80284C9a3c71c3'));
     await pg.waitForFunction(() => /\d/.test(document.getElementById('sMinted').textContent) && document.getElementById('sPaused').textContent !== '–', null, { timeout: 20000 }).catch(() => {});
     ok('no-wallet: live supply >= 1,100 / 100,000,000 and mint state', +(await pg.textContent('#sMinted')).trim().replace(/,/g, '') >= 1100 && /暂停|开放|售罄/.test(await pg.textContent('#sPaused')), (await pg.textContent('#sMinted')) + ' ' + (await pg.textContent('#sPaused')));
     await pg.click('#connectBtn');
@@ -299,7 +299,7 @@ const results = []; const ok = (name, cond, extra = '') => { results.push([cond 
     const tb = await pg.evaluate(() => ({ rows: [...document.querySelectorAll('#tierBody tr')].map(r => r.innerText.replace(/\s+/g, ' ').trim()), cur: [...document.querySelectorAll('#tierBody tr[aria-current="step"]')].map(r => r.innerText.replace(/\s+/g, ' ').trim()), sum: document.querySelector('.tiersum .en').textContent, details: !!document.querySelector('#prices details') }));
     ok('price table: every row listed (burned row + 5,131 tiers, 1U → 79.74U), current tier marked "· Current", no expand/collapse', tb.rows.length === 5132 && tb.rows[0] === '— 1 - 1,100 Burned at deploy (never sold)' && tb.rows[1].startsWith('1 1,101 - 10,000 = 1U') && tb.rows[2] === '2 10,001 - 11,000 = 1.1U' && tb.rows[21] === '21 29,001 - 30,000 = 2.28U' && tb.rows[92] === '92 100,001 - 110,000 = 3.7U' && tb.rows[353] === '353 4,420,001 - 4,440,000 = 8.07U' && tb.rows[5131] === '5131 99,980,001 - 100,000,000 = 79.74U' && tb.cur.length === 1 && tb.cur[0].endsWith('· Current') && tb.sum === '1U to 10,000 · then rises in steps · 5,131 tiers · Max 79.74U' && !tb.details, JSON.stringify(tb.rows.slice(0, 3)) + JSON.stringify(tb.cur));
     const notes = await pg.textContent('#notes .en:nth-of-type(1)').catch(() => '') + (await pg.$$eval('#notes p.en', l => l.map(p => p.textContent).join(' ')));
-    ok('safety notes: pay only to the mint contract, token contract never receives BNB/USDT, never transfer USDT directly (approve + mint / mintWithBnb), "Minted before?" token address, "AI agents: read llms.txt"', /Pay only to the mint contract 0x2c2787710Ec2B3D6b37b8936b8753982654aB4B3/.test(notes) && /is for adding the token to a wallet; never send BNB or USDT to it/.test(notes) && /Never transfer USDT directly to the mint contract; approve USDT and call mint\(shares, referrer, maxCost\), or send BNB with mintWithBnb/.test(notes) && /Minted before\? Your FISTAGENT is already in your wallet\. To see it, add this token address in your wallet/.test(notes) && /AI agents: read fistagent\.onrender\.com\/llms\.txt before minting/.test(notes), notes.slice(0, 200));
+    ok('safety notes: pay only to the mint contract, token contract never receives BNB/USDT, never transfer USDT directly (approve + mint / mintWithBnb), "Minted before?" token address, "AI agents: read llms.txt"', /Pay only to the mint contract 0xdDD8af1D1C9513D6eB5F4C017516360B26955c26/.test(notes) && /is for adding the token to a wallet; never send BNB or USDT to it/.test(notes) && /Never transfer USDT directly to the mint contract; approve USDT and call mint\(shares, referrer, maxCost\), or send BNB with mintWithBnb/.test(notes) && /Minted before\? Your FISTAGENT is already in your wallet\. To see it, add this token address in your wallet/.test(notes) && /AI agents: read fistagent\.onrender\.com\/llms\.txt before minting/.test(notes), notes.slice(0, 200));
     ok('no risk / investment-advice disclaimer, no Telegram', !/investment advice|highly volatile|投资建议/i.test(await pg.content()) && !/telegram|t\.me\//i.test(await pg.content()));
     // Mint Pass preview (not connected)
     await pg.click('#passBtn');
@@ -329,7 +329,7 @@ const results = []; const ok = (name, cond, extra = '') => { results.push([cond 
     await pg.waitForSelector('#passText', { timeout: 5000 }).catch(() => {});
     const txt = await pg.textContent('#passText').catch(() => '');
     const btns = await pg.$$eval('.pgrid button', l => l.map(b => b.textContent));
-    ok('connected Mint Pass: post text (cn default per page language) with Agent, Border, invite link, CA; Post on X / Copy text / Save image', /^My FISTAGENT Mint Pass\n\nAgent: allin168\.ai\nBorder: Bronze\n\nNo Binance \.ai Agent ID, no mint\.\nKeep minting: https:\/\/fistagent\.onrender\.com\/\?ref=allin168\.ai\n\nCA: 0xe252Cd16af4D41D7C01120e1d76c61683068fd15$/.test(txt) && btns.join() === 'Post on X,Copy text,Save image', JSON.stringify(txt) + btns);
+    ok('connected Mint Pass: post text (cn default per page language) with Agent, Border, invite link, CA; Post on X / Copy text / Save image', /^My FISTAGENT Mint Pass\n\nAgent: allin168\.ai\nBorder: Bronze\n\nNo Binance \.ai Agent ID, no mint\.\nKeep minting: https:\/\/fistagent\.onrender\.com\/\?ref=allin168\.ai\n\nCA: 0x7acDcE948Dc6F9185D96b8D1af80284C9a3c71c3$/.test(txt) && btns.join() === 'Post on X,Copy text,Save image', JSON.stringify(txt) + btns);
     await pg.click('[data-pl="cn"]');
     ok('Mint Pass post text in Chinese', /^FISTAGENT Mint Pass\n\nAgent：allin168\.ai\nBorder：青铜 Bronze/.test(await pg.textContent('#passText')));
     const dl0 = pg.waitForEvent('download', { timeout: 8000 }).catch(() => null); await pg.click('#passSave'); const dlf = await dl0;

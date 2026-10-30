@@ -75,11 +75,11 @@ const proof = (action, handle = "tester", pk = priv, a = ADDR) => { const time =
 try {
   let [c, j] = await get("/api/stats");
   ok("GET /api/stats: Jager shape (token, mintContract, pair, usdt, chainId 56, totalMinted, price, tokensPerShare, mintingOpen, paused, poolOpensAt, maxPerTransaction, bnb[1..10])",
-    c === 200 && j.token.symbol === "FISTAGENT" && j.token.address === "0xe252Cd16af4D41D7C01120e1d76c61683068fd15" && j.mintContract === "0x2c2787710Ec2B3D6b37b8936b8753982654aB4B3" && j.chainId === 56 && j.totalMinted >= 1100 && typeof j.priceUsdtPerShare === "number" && j.tokensPerShare > 0 && typeof j.mintingOpen === "boolean" && j.poolOpensAt === 10000 && j.maxPerTransaction === 10 && j.bnb.length === 10 && j.bnb[0].shares === 1 && /^\d/.test(j.bnb[0].quoteBnb) && Number(j.bnb[0].sendBnb) > Number(j.bnb[0].quoteBnb),
+    c === 200 && j.token.symbol === "FISTAGENT" && j.token.address === "0x7acDcE948Dc6F9185D96b8D1af80284C9a3c71c3" && j.mintContract === "0xdDD8af1D1C9513D6eB5F4C017516360B26955c26" && j.chainId === 56 && j.totalMinted >= 1100 && typeof j.priceUsdtPerShare === "number" && j.tokensPerShare > 0 && typeof j.mintingOpen === "boolean" && j.poolOpensAt === 10000 && j.maxPerTransaction === 10 && j.bnb.length === 10 && j.bnb[0].shares === 1 && /^\d/.test(j.bnb[0].quoteBnb) && Number(j.bnb[0].sendBnb) > Number(j.bnb[0].quoteBnb),
     JSON.stringify(j).slice(0, 300));
   ok("GET /api/stats: sendBnb = quote × 1.02, costUsdt follows the price table", j && Math.abs(Number(j.bnb[1].sendBnb) / Number(j.bnb[1].quoteBnb) - 1.02) < 1e-9 && (j.totalMinted >= 10000 || j.bnb[2].costUsdt === "3"));
-  [c, j] = await get("/api/verify?address=0x866396d4aee9467b67194431bdbDdE8E8044d8AE");
-  ok("GET /api/verify: Agent ID wallet -> {address, agentId: iuhm.ai, verified: true}", c === 200 && j.agentId === "iuhm.ai" && j.verified === true && j.address === "0x866396d4aee9467b67194431bdbDdE8E8044d8AE", JSON.stringify(j));
+  [c, j] = await get("/api/verify?address=0x49E6fb3812fdfD67eDfE17259f03CcbE59f39BCE");
+  ok("GET /api/verify: Agent ID wallet -> {address, agentId: iuhm.ai, verified: true}", c === 200 && j.agentId === "iuhm.ai" && j.verified === true && j.address === "0x49E6fb3812fdfD67eDfE17259f03CcbE59f39BCE", JSON.stringify(j));
   [c, j] = await get("/api/verify?address=0x0000000000000000000000000000000000000001");
   ok("GET /api/verify: no Agent ID -> agentId null, verified false", c === 200 && j.agentId === null && j.verified === false);
   [c, j] = await get("/api/verify?address=bad");

@@ -6,8 +6,8 @@ its tokens at 99% of the pool price). Before 10,000: 20% treasury / 80% parked �
 
 ## State: BUILT LOCALLY, NOT DEPLOYED, NOT PUBLISHED
 - No mainnet tx, nothing signed, no Render service, no GitHub repo/push, no X account.
-- Planned (CREATE2, salt keccak256("FISTAGENT.mint.v1"), treasury 0x8663…d8AE, social signer 0x66EC…C199):
-  mint 0x2c2787710Ec2B3D6b37b8936b8753982654aB4B3 · token 0xe252Cd16af4D41D7C01120e1d76c61683068fd15 · pair 0xdc6aCFe3dB5FB73f24E0de6E950a3743f67a277D.
+- Planned (CREATE2, salt keccak256("FISTAGENT.mint.v1"), treasury 0x49E6…9BCE, social signer 0x66EC…C199):
+  mint 0xdDD8af1D1C9513D6eB5F4C017516360B26955c26 · token 0x7acDcE948Dc6F9185D96b8D1af80284C9a3c71c3 · pair 0xf375Def1f8f60Bf52A2a8D4309498B1FCE45C01B.
 - Deploy gas (eth_estimateGas, mainnet, 2026-10-30): 8,710,108 (≈0.00044 BNB at 0.05 gwei). Plan: deploy/bsc-mainnet-plan.json, docs/DEPLOY.md.
 - Treasury/admin defaults to the BNAGENT treasury (iuhm.ai) — the user must confirm before deploy.
 

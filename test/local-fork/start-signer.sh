@@ -9,5 +9,5 @@ cd "$(dirname "$0")/../.."
 export NO_PROXY=127.0.0.1,localhost no_proxy=127.0.0.1,localhost
 PORT=10777 RPC=${LOCAL_RPC:-http://127.0.0.1:8545} LOG_RPC=${LOCAL_RPC:-http://127.0.0.1:8545} DEPLOY_BLOCK=${DEPLOY_BLOCK:-130643000} \
   BINDX_NO_RESTORE=1 BINDX_EXPORT_KEY=local-test-export-key-0123456789abcdef SOCIAL_SIGNER_KEY=$K \
-  ALLOW_TO=0x2c2787710Ec2B3D6b37b8936b8753982654aB4B3 setsid nohup node server/index.mjs > /tmp/fist-signer.log 2>&1 &
+  ALLOW_TO=0xdDD8af1D1C9513D6eB5F4C017516360B26955c26 setsid nohup node server/index.mjs > /tmp/fist-signer.log 2>&1 &
 sleep 2; curl -s localhost:10777/ | head -c 300; echo

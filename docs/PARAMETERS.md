@@ -1,4 +1,4 @@
-> FISTAGENT: NOT DEPLOYED. Planned mint 0x2c2787710Ec2B3D6b37b8936b8753982654aB4B3 · token 0xe252Cd16af4D41D7C01120e1d76c61683068fd15 · pair 0xdc6aCFe3dB5FB73f24E0de6E950a3743f67a277D (docs/DEPLOY.md). Figures below are BNAGENT's (v1 table + v2 banner); the only rule change is the post-open payment split.
+> FISTAGENT: NOT DEPLOYED. Planned mint 0xdDD8af1D1C9513D6eB5F4C017516360B26955c26 · token 0x7acDcE948Dc6F9185D96b8D1af80284C9a3c71c3 · pair 0xf375Def1f8f60Bf52A2a8D4309498B1FCE45C01B (docs/DEPLOY.md). Figures below are BNAGENT's (v1 table + v2 banner); the only rule change is the post-open payment split.
 > **v2 (current, 2026-10-30):** 100,000,000 shares (#1–#1,100 burned, sale from #1,101; 99,998,900 sellable, 4,223,766,600 USDT at table prices), 5,131 tiers 1U → 79.74U (Jager table continued by its last rule: 100,001–1,000,000 +0.02 per 10,000; then +0.015 per 20,000, rounded to cents), cap 10,000T, FLOOR_LINE 7,616,686,731 / LINE_DENOM 4,223,766,600, POOL_TOKEN_FLOOR 11,666,666,667. Every other rule unchanged.
 > The figures below describe **v1** (30,000 shares, mint 0xBd57…9e68a, paused 2026-10-30 05:03 CST) and are kept for the record.
 
@@ -16,7 +16,7 @@ FISTAGENT re-implements the mechanism in its own code with Jager's money model (
 | Price table | 5 tiers to 8.07 | first 3 tiers, truncated at 30,000 (max 2.28) | user |
 | Total USDT | 27,728,100 (table) / 27,727,060 (constant) | 47,400 for all 30,000; **46,300 for the 28,900 sellable** | sum of table |
 | Hard cap | 444T | 4.44T (4,440,000,000,000 × 1e18) | user |
-| Treasury / tax receiver / admin | multisig | 0x866396d4aee9467b67194431bdbDdE8E8044d8AE (Agentic Wallet, `iuhm.ai`) | user |
+| Treasury / tax receiver / admin | multisig | 0x49E6fb3812fdfD67eDfE17259f03CcbE59f39BCE (Agentic Wallet, `allin168.ai`) | user |
 | Floor line | paid × 50,000,000 / 27,727,060 (≈1.803293×) | paid × **83,492 / 46,300** (≈1.803283×) | denominator = price of the sellable shares (user); numerator = 46,300 × 50,000,000 / 27,727,060 = 83,492.4 → 83,492 |
 | Ceiling line (view only, unused in logic) | 60,000,000 / 27,727,060 | 100,191 / 46,300 | same scaling |
 | Opening pool | 8,000 USDT + 400B (hard-coded) | **parked amounts**: 8,900 × 0.80 = 7,120 USDT + 8,900 × 40M = 356B (50M per USDT) | user 00:34 |
