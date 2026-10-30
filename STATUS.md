@@ -4,10 +4,10 @@ FISTAGENT = exact clone of BNAGENT v2 (bnagent repo @ ea0c4c0) with ONE mechanis
 **after the pool opens at share 10,000, 100% of each mint payment goes to the treasury** (no LP added by mints; buyer still gets
 its tokens at 99% of the pool price). Before 10,000: 20% treasury / 80% parked → pool at 10,000, unchanged. Details: docs/JAGER-DIFF.md (top).
 
-## State: DEPLOYED ON BSC MAINNET, MINTING PAUSED (2026-10-30)
+## State: DEPLOYED ON BSC MAINNET, MINTING LIVE since 2026-10-30 23:17 CST (setPaused(false) tx 0xe79ebb99c7a1e30b6b745271b8c03c530773d77d813b759cb47e6d40af4e5757)
 - Deploy tx 0x371fe25ef197a25fffde067060d6f818700555d2f4fd5ebf2fe70665a26030f3, block 130677714, status 1.
 - Mint 0xdDD8af1D1C9513D6eB5F4C017516360B26955c26 · Token 0x7acDcE948Dc6F9185D96b8D1af80284C9a3c71c3 · Pair 0xf375Def1f8f60Bf52A2a8D4309498B1FCE45C01B.
-- Treasury allin168.ai 0x49E6fb3812fdfD67eDfE17259f03CcbE59f39BCE. paused() = true. setPaused(false) only on the user's explicit command.
+- Treasury allin168.ai 0x49E6fb3812fdfD67eDfE17259f03CcbE59f39BCE. paused() = false (opened on the user's command 2026-10-30 23:11 CST).
 - Source verified on Sourcify (full match, mint + token, 2026-10-30 22:07 CST).
 - No project X account: site shows no X link/handle and no FOLLOW task (user 2026-10-30).
 - GitHub: https://github.com/653366873iuhm-source/fistagent (main). Render: static `fistagent`, API `fistagent-api`.
