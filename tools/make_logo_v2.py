@@ -1,6 +1,6 @@
 from PIL import Image, ImageDraw, ImageFont, ImageFilter, ImageChops
 import shutil
-OUT = "/workspace/work/bnagent/site/assets/"
+OUT = "/workspace/work/fistagent/site/assets/"
 D = "/workspace/work/logo2/"
 BG = (7, 7, 7)
 FONT = D + "Michroma-Regular.ttf.ttf"
@@ -26,7 +26,7 @@ m = m.resize((round(m.width * H / m.height), H), Image.LANCZOS)
 pad = 48
 mark = Image.new("RGBA", (m.width + 2 * pad, m.height + 2 * pad), (0, 0, 0, 0))
 mark.alpha_composite(m, (pad, pad))
-mark.save(OUT + "bnagent-mark-v2.png", optimize=True)
+mark.save(OUT + "fistagent-mark-v2.png", optimize=True)
 tight = m
 
 
@@ -69,7 +69,7 @@ def text_img(txt, cap, tracking=0.22, fill=None):
 
 def lockup(mark_h):
     mk = tight.resize((round(tight.width * mark_h / tight.height), mark_h), Image.LANCZOS)
-    t = text_img("BNAGENT", int(mark_h * 0.36))
+    t = text_img("FISTAGENT", int(mark_h * 0.36))
     gap = int(mark_h * 0.30)
     W = mk.width + gap + t.width
     im = Image.new("RGBA", (W, mark_h), (0, 0, 0, 0))
@@ -78,7 +78,7 @@ def lockup(mark_h):
     return im
 
 lk = lockup(320)
-lk.save(OUT + "bnagent-lockup-v2.png", optimize=True)
+lk.save(OUT + "fistagent-lockup-v2.png", optimize=True)
 
 
 def icon(n, scale=0.80):
@@ -107,7 +107,7 @@ def glow_bg(w, h, cx, cy, rad, strength=70):
 og = glow_bg(1200, 630, 270, 315, 250, 90)
 mk = tight.resize((round(tight.width * 380 / tight.height), 380), Image.LANCZOS)
 og.alpha_composite(mk, (270 - mk.width // 2, 125))
-t = text_img("BNAGENT", 52)
+t = text_img("FISTAGENT", 52)
 X = 520
 og.alpha_composite(t, (X, 228))
 d = ImageDraw.Draw(og)

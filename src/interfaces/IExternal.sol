@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
-/// @dev Minimal PancakeSwap V2 factory surface used by BNAGENT.
+/// @dev Minimal PancakeSwap V2 factory surface used by FISTAGENT.
 interface IV2Factory {
     function getPair(address tokenA, address tokenB) external view returns (address);
     function createPair(address tokenA, address tokenB) external returns (address);
 }
 
-/// @dev Minimal PancakeSwap V2 pair surface used by BNAGENT.
+/// @dev Minimal PancakeSwap V2 pair surface used by FISTAGENT.
 interface IV2Pair {
     function token0() external view returns (address);
     function token1() external view returns (address);

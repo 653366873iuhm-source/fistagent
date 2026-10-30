@@ -5,17 +5,17 @@ import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
-import {BnagentToken} from "./BnagentToken.sol";
+import {FistagentToken} from "./FistagentToken.sol";
 import {IV2Factory, IV2Pair, IWrappedNative, IAgentIdRegistry, IPriceFeed, V2Math} from "./interfaces/IExternal.sol";
 
-/// @title BNAGENT mint
+/// @title FISTAGENT mint
 /// @notice Same mechanism and public interface as the $JAGENT mint (BSC 0x3643…2aB8), with only these
 ///         intended differences (docs/JAGER-DIFF.md):
 ///         (a) 100,000,000 shares; the reference price table (353 tiers to 8.07 USDT at 4,440,000) continued by its
 ///             last rule (+0.015 USDT every 20,000 shares, rounded to the cent): 5,131 tiers, 79.74 USDT at 100,000,000.
 ///         (b) 10,000T cap (a full sellout mints ~1,228T); floor line paid x 7,616,686,731 / 4,223,766,600 (reference
 ///             ratio 50,000,000 / 27,727,060 over the sellable shares); pool floor 11,666,666,667 (reference).
-///         (c) name BNAGENT; treasury 0x49E6…9BCE; own social-task signer.
+///         (c) name FISTAGENT; treasury 0x49E6…9BCE; own social-task signer.
 ///         (e) shares #1-#1,100 are burned at deploy (never sold, no tokens, no USDT): selling starts at #1,101
 ///             (table price at that index), 99,998,900 sellable. The pool still opens on the tx reaching share 10,000,
 ///             with the USDT actually parked (80% of 8,900 paid shares = 7,120) and the tokens actually parked at
@@ -32,20 +32,20 @@ import {IV2Factory, IV2Pair, IWrappedNative, IAgentIdRegistry, IPriceFeed, V2Mat
 ///         tokens at 99% of the pool price, 20% goes to the treasury, 80% is paired into the pool at the pool
 ///         price (LP to dead), and pool inventory is sent to dead while the circulating value is below the
 ///         floor line, by at most 0.8% per transaction, never below POOL_TOKEN_FLOOR.
-contract BnagentMint is ReentrancyGuard {
+contract FistagentMint is ReentrancyGuard {
     using SafeERC20 for IERC20;
 
     uint256 public constant TOTAL_SHARES = 100_000_000;
     uint256 public constant MAX_SUPPLY = 10_000_000_000_000_000 ether;
     uint256 public constant OPEN_AT = 10_000;
-    /// @notice BNAGENT: shares #1-#1,100 are burned at deploy (never sold; no tokens, no USDT).
+    /// @notice FISTAGENT: shares #1-#1,100 are burned at deploy (never sold; no tokens, no USDT).
     uint256 public constant BURNED_SHARES = 1_100;
     uint256 public constant SELLABLE_SHARES = TOTAL_SHARES - BURNED_SHARES; // 99,998,900
     uint256 public constant USER_SHARE = 50_000_000 ether;
     uint256 public constant POOL_SHARE = 40_000_000 ether;
     uint256 public constant TREASURY_BPS = 2_000;
     uint256 public constant MINT_PRICE_BPS = 9_900;
-    /// @notice BNAGENT safety valve: time after the first unpause before withdrawUnfilled() may be called.
+    /// @notice FISTAGENT safety valve: time after the first unpause before withdrawUnfilled() may be called.
     uint256 public constant MINT_WINDOW = 30 days;
     /// @dev Reference: 50,000,000 / 27,727,060. LINE_DENOM = price of the 99,998,900 sellable shares
     ///      (#1,101-#100,000,000: 4,223,767,700 - 1,100 = 4,223,766,600 USDT); FLOOR_LINE = 4,223,766,600 x 50,000,000 /
@@ -72,7 +72,7 @@ contract BnagentMint is ReentrancyGuard {
     bytes32 private constant DOMAIN_TYPEHASH =
         keccak256("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)");
 
-    BnagentToken public immutable token;
+    FistagentToken public immutable token;
     IERC20 public immutable usdt;
     IV2Pair public immutable pair;
     IV2Pair public immutable wbnbPair;
@@ -174,7 +174,7 @@ contract BnagentMint is ReentrancyGuard {
         ) revert ZeroAddress();
         // The token is created here so this contract is its minter without an initialize() call
         // (the CREATE2 deployer proxy used for deployment cannot make follow-up calls).
-        token = new BnagentToken(c.usdt, c.v2Factory, c.v4PoolManager, c.v4Vault);
+        token = new FistagentToken(c.usdt, c.v2Factory, c.v4PoolManager, c.v4Vault);
         usdt = IERC20(c.usdt);
         pair = IV2Pair(token.pair());
         wbnb = c.wbnb;
@@ -277,7 +277,7 @@ contract BnagentMint is ReentrancyGuard {
     }
 
     function domainSeparator() public view returns (bytes32) {
-        return keccak256(abi.encode(DOMAIN_TYPEHASH, keccak256("BnagentMint"), keccak256("1"), block.chainid, address(this)));
+        return keccak256(abi.encode(DOMAIN_TYPEHASH, keccak256("FistagentMint"), keccak256("1"), block.chainid, address(this)));
     }
 
     function overview()
@@ -386,7 +386,7 @@ contract BnagentMint is ReentrancyGuard {
         emit Renounced();
     }
 
-    /// @notice BNAGENT safety valve. Only the treasury address (immutable; not an admin power, so it keeps
+    /// @notice FISTAGENT safety valve. Only the treasury address (immutable; not an admin power, so it keeps
     ///         working after renounce()) and only after the 30-day deadline, while share 10,000 has not been
     ///         reached. Sends every USDT this contract holds (the parked 80% of payments, plus any stray USDT
     ///         sent here) to the treasury and resets the parked USDT to 0. The tokens parked for the pool
@@ -613,7 +613,7 @@ contract BnagentMint is ReentrancyGuard {
     ///      8,900 x 40M = 356B tokens (the pre-pool price, 50M per USDT). The parked counters (not the raw
     ///      USDT balance) are used so USDT donated to this contract cannot change the opening amounts or push
     ///      the token mint over the cap; such a donation stays here.
-    ///      Griefing: before this tx nobody can put BNAGENT into the pair (transfers are locked to mint-contract
+    ///      Griefing: before this tx nobody can put FISTAGENT into the pair (transfers are locked to mint-contract
     ///      sends, and skim() reverts), so the pair can never have LP supply before opening. USDT donated to the
     ///      empty pair (with or without sync()) is simply absorbed: pair.mint() credits balance - reserve, i.e.
     ///      exactly what is sent here, and the donation stays in the pool. Fork-tested in test_GriefEmptyPair*.

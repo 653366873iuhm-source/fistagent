@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" role="img" aria-label="BNAGENT"><defs>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" role="img" aria-label="FISTAGENT"><defs>
 <linearGradient id="mg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FBF0C0"/><stop offset=".45" stop-color="#E9CB6B"/><stop offset="1" stop-color="#7A5A12"/></linearGradient>
 <linearGradient id="mw" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FBF0C0"/><stop offset=".55" stop-color="#E9CB6B"/><stop offset="1" stop-color="#C9A23A"/></linearGradient>
 </defs><polygon points="50.00,3.00 90.70,26.50 90.70,73.50 50.00,97.00 9.30,73.50 9.30,26.50" fill="none" stroke="url(#mg)" stroke-width="1.60" stroke-linejoin="round" opacity=".9"/>

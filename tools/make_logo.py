@@ -1,11 +1,11 @@
-"""BNAGENT brand assets, generated from code (no AI images, no Binance artwork).
+"""FISTAGENT brand assets, generated from code (no AI images, no Binance artwork).
 
 Mark: a faceted gold hexagonal gem (six facets lit from the top-left) inside a fine hexagon frame, with a
 dark negative-space chevron "A" (agent / apex) and a small node. Wordmark: Montserrat SemiBold (OFL) glyphs
 converted to SVG paths, so it renders identically everywhere. Palette = site palette (#070707 / gold).
 
 Outputs (site/assets): mark.svg, logo.svg (mark + wordmark), favicon.svg, og.svg + PNG renders are made by
-tools/render_assets.js (favicon-32/180/512.png, og.png, logo-preview.png); horizontal logo = bnagent-logo.svg.
+tools/render_assets.js (favicon-32/180/512.png, og.png, logo-preview.png); horizontal logo = fistagent-logo.svg.
 """
 import math, os
 from fontTools.ttLib import TTFont
@@ -91,24 +91,24 @@ def write(name, svg):
 
 
 # --- mark only
-write("mark.svg", f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" role="img" aria-label="BNAGENT">{defs("m")}{mark("m")}</svg>')
+write("mark.svg", f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" role="img" aria-label="FISTAGENT">{defs("m")}{mark("m")}</svg>')
 
 # --- favicon (no frame, gem fills the tile on a dark rounded square for legibility at 16-32px)
 write("favicon.svg", f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">{defs("f")}<rect width="100" height="100" rx="22" fill="{BG}"/>{mark("f", 50, 51, 1.18, frame=False, bold=1.45)}</svg>')
 
 # --- horizontal logo: mark + wordmark
 H = 100
-d, w = wordmark("BNAGENT", FONT, 0, 0, 34, 0.14)
+d, w = wordmark("FISTAGENT", FONT, 0, 0, 34, 0.14)
 wx = 122
 logo_w = int(wx + w + 6)
-d2, _ = wordmark("BNAGENT", FONT, wx, 67, 34, 0.14)
-write("bnagent-logo.svg", f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {logo_w} {H}" role="img" aria-label="BNAGENT">{defs("l")}{mark("l", 50, 50, 1.0)}<path d="{d2}" fill="url(#lw)"/></svg>')
+d2, _ = wordmark("FISTAGENT", FONT, wx, 67, 34, 0.14)
+write("fistagent-logo.svg", f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {logo_w} {H}" role="img" aria-label="FISTAGENT">{defs("l")}{mark("l", 50, 50, 1.0)}<path d="{d2}" fill="url(#lw)"/></svg>')
 
 # --- OG image 1200x630
 ow, oh = 1200, 630
-dt, tw = wordmark("BNAGENT", FONT, 0, 0, 78, 0.16)
+dt, tw = wordmark("FISTAGENT", FONT, 0, 0, 78, 0.16)
 tx = (ow - tw) / 2 + 0
-dt2, _ = wordmark("BNAGENT", FONT, tx, 412, 78, 0.16)
+dt2, _ = wordmark("FISTAGENT", FONT, tx, 412, 78, 0.16)
 sub = "FAIR MINT FOR .AI AGENT IDS  ·  BNB SMART CHAIN"
 ds, sw = wordmark(sub, os.path.join(HERE, "fonts", "mont500.ttf"), 0, 0, 17, 0.22)
 ds2, _ = wordmark(sub, os.path.join(HERE, "fonts", "mont500.ttf"), (ow - sw) / 2, 470, 17, 0.22)

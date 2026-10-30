@@ -2,7 +2,7 @@
 > Mint 0xD6aFC30810B001CfA5306A2C54b5E6559DfC9Cf0 · Token 0xC7F95A3bff008053A4e2f235bAf2f6d784e6C5FB · Pair 0x7d4Fde617a4f5D83fD8A354672558d9B9Cd5aA6f · deploy tx 0x89fc3e2a…8ac6 · unpaused tx 0x3384c6d5…0943 (valve deadline 2026-11-29 05:19:06 CST).
 > The figures below describe **v1** (30,000 shares, mint 0xBd57…9e68a, paused 2026-10-30 05:03 CST) and are kept for the record.
 
-# BNAGENT vs Jager ($JAGENT) — function-by-function audit
+# FISTAGENT vs Jager ($JAGENT) — function-by-function audit
 
 Reference (verified source, `ref/`, gitignored): mint `JagentMintV2` 0x3643A907f875fA9B740e1C0747E91b5aA5222aB8, token `JagentTokenV2`
 0x8e6442663A4F8C50b6132c68d42A30E7DFE4Ae15 (BSC). Updated 2026-10-30 CST for the user's decisions of 00:25 and 00:34 CST:
@@ -17,7 +17,7 @@ allowed differences below. The earlier manual-LP / `openTrading()` / 400B-to-tre
 | B | **1,100 burned shares**: shares #1–#1,100 are burned at deploy — never sold, no tokens, no USDT. `totalMinted` starts at 1,100 (as Jager's `START_MINTED` 9,515, but with `totalPaid` = 0); first sold share #1,101 at the table price (1 USDT); 28,900 sellable. `BURNED_SHARES` / `SELLABLE_SHARES` constants, `soldShares()` view, `SharesBurned(1, 1100)` event in the constructor | mint |
 | C | **Opening amounts from what is parked**, not hard-coded 8,000 USDT / 400B: `_open()` pairs `pendingUsdt` with `pendingTokens` (8,900 paid shares → 7,120 USDT + 356B, same 50M/USDT pre-pool price). Jager's `pendingUsdt == OPEN_USDT` check becomes `pendingUsdt > 0 && pendingTokens > 0` (error `NotSeeded`). Uses the accounting counters, not `balanceOf`, so USDT donated to the mint contract cannot change the opening or push the token mint over the cap | `_open` |
 | D | **4.44T cap + scaled constants**: `MAX_SUPPLY` 4.44T (both contracts); floor line `paid × 83,492 / 46,300` (46,300 = price of the 28,900 sellable shares; 83,492 = 46,300 × 50,000,000 / 27,727,060 → same ≈1.8033× as Jager); ceiling (view only) 100,191 / 46,300; `POOL_TOKEN_FLOOR` 116,666,667 (Jager ÷100, cap ratio) | constants |
-| E | **Name** BNAGENT (token name/symbol, EIP-712 domain "BnagentMint") | |
+| E | **Name** FISTAGENT (token name/symbol, EIP-712 domain "FistagentMint") | |
 | F | **Treasury** 0x866396d4aee9467b67194431bdbDdE8E8044d8AE (immutable) | constructor |
 | G | **30-day `withdrawUnfilled()`, REPEATABLE, minting continues** (user 2026-10-30 00:54 CST; replaces the earlier one-shot close): `mintStartTime` is set on the first `setPaused(false)` (or `renounce()`, which also unpauses); `mintDeadline()` = start + 30 days. After the deadline (strictly `>`), while the pool is not open, **only `msg.sender == treasury`** (immutable; not gated by `renounced`, so it works after `renounce()`) can call it, **any number of times**: all USDT held by the mint contract (the parked 80% + any stray USDT) → treasury, `pendingUsdt = 0`; the parked pool tokens (`pendingTokens`, 40M/share) are sent to DEAD and `pendingTokens = 0`; counters `unfilledWithdrawals`, `totalUnfilledWithdrawn`; event `UnfilledWithdrawn(treasury, usdt, tokensToDead, totalMinted)`. **Minting is NOT paused or closed.** A pool that opens later (share 10,000) is seeded only with what was parked after the last withdraw, at the same pre-pool price 50M/USDT. Dead tokens stay in `totalSupply`, so the 4.44T cap check stays conservative (at most 8,900 × 40M = 356B can go to dead this way). Never callable before the deadline or once `opened()`. `MintClosed`/`mintClosed` removed. No other withdraw path exists. Views `canWithdrawUnfilled()`, `valve()` → (start, deadline, withdrawals, heldUsdt, withdrawable, withdrawnUsdt, parkedUsdt, parkedTokens) |
 | H | **Own social signer**: dedicated EOA 0x66ECa9C28e4e4807e37C078b917e527DC85aC199 (Jager also uses a dedicated key, 0xF6f3…2342) | deploy config |
@@ -27,9 +27,9 @@ CREATE2 deployer proxy cannot make follow-up calls. Migration (snapshot/quota im
 
 ## Full comparison
 
-| # | Area | Jager | BNAGENT | Verdict |
+| # | Area | Jager | FISTAGENT | Verdict |
 |---|---|---|---|---|
-| 1 | Name / symbol / EIP-712 domain | JAGENT, "JagentMint" | BNAGENT, "BnagentMint" v1 | E |
+| 1 | Name / symbol / EIP-712 domain | JAGENT, "JagentMint" | FISTAGENT, "FistagentMint" v1 | E |
 | 2 | Decimals | 18 | 18 | SAME |
 | 3 | TOTAL_SHARES | 4,440,000 | 30,000 | A |
 | 4 | Start of sale | `totalMinted = START_MINTED` (9,515, migration), `totalPaid = START_PAID` | `totalMinted = BURNED_SHARES` (1,100), `totalPaid = 0`, nothing minted for them | B |
@@ -67,10 +67,10 @@ CREATE2 deployer proxy cannot make follow-up calls. Migration (snapshot/quota im
 
 ## Griefing on the empty pair (checked against Jager, matched)
 
-The official pair is created empty by the token constructor. Before the open nobody but the mint contract can move BNAGENT, so:
-- Nobody can put BNAGENT into the pair; a USDT-only `pair.mint()` reverts (sqrt(x·0) − 1000 underflows) → **LP supply is always 0 before the open**.
+The official pair is created empty by the token constructor. Before the open nobody but the mint contract can move FISTAGENT, so:
+- Nobody can put FISTAGENT into the pair; a USDT-only `pair.mint()` reverts (sqrt(x·0) − 1000 underflows) → **LP supply is always 0 before the open**.
 - USDT donated to the pair, with or without `sync()`, is absorbed: `pair.mint()` credits `balance − reserve` = exactly what `_open` sends, and the donation stays in the pool (LP to dead). Tested with 1 wei + 50,000 USDT + sync, and 7 USDT without sync.
-- `skim()` reverts before the open (it transfers 0 BNAGENT out of the pair, which the lock refuses) — harmless, same as Jager.
+- `skim()` reverts before the open (it transfers 0 FISTAGENT out of the pair, which the lock refuses) — harmless, same as Jager.
 - USDT donated to the mint contract does not change the opening (counters, not balances; C). It stays in the contract; it is swept to the treasury only if `withdrawUnfilled()` runs (after day 30, before the open).
 Jager's `_open` behaves the same way; no fix was needed beyond C.
 
@@ -83,4 +83,4 @@ Jager's `_open` behaves the same way; no fix was needed beyond C.
   instead of a huge token side against a small USDT side. They stay counted in totalSupply → cap math only gets more conservative.
 
 ## Tests
-`test/BnagentFork.t.sol`, BSC mainnet fork: **26/26 pass** (docs/test-results.txt).
+`test/FistagentFork.t.sol`, BSC mainnet fork: **26/26 pass** (docs/test-results.txt).

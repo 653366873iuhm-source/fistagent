@@ -10,12 +10,12 @@ Batch 2 (all others except FullFlow): 17 passed
   planned token: 0x568bf080000E07A017AF1C886158a5b6ad366591
   planned pair: 0x495369C007508D28a27Aaaeca18B3D8af8233037
 Batch 3 test_FullFlow: passed
-  floor-burn txs 10,001-20,000: 999 · 20,001-30,000: 1000 · final pool USDT 37,065.03 · pool BNAGENT 507,564,786,142
+  floor-burn txs 10,001-20,000: 999 · 20,001-30,000: 1000 · final pool USDT 37,065.03 · pool FISTAGENT 507,564,786,142
   final supply 2,050,230,036,851 (< 4.44T) · circulating 1,143,331,067,728 · dead 399,334,182,980 · circ value 83,491 vs floor 83,492
   treasury USDT +9,260 (20% of 46,300) · treasury BNB from taxes 0.000996
 
 # Site headless tests (test/site/wallet-connect.test.js, playwright-core + chromium headless shell): 30 / 30 PASS
-  local site/, https://bnagent.onrender.com/ and https://653366873iuhm-source.github.io/bnagent/ (2026-10-30 ~01:15 CST)
+  local site/, https://fistagent.onrender.com/ and https://653366873iuhm-source.github.io/fistagent/ (2026-10-30 ~01:15 CST)
   incl. Agentic Wallet QR connect (mocked proxy: QR + pairing code, CONNECTING->CONNECTED, CREATED, chain-56 wallet, preview->execute->txHash,
   reload restore, disconnect), mobile deep link "Open in Binance App", header logo, og:image, SUPPLY bar, whitepaper withdraw text.
-  Live un-mocked check: both URLs get a real Binance sign-in QR through https://bnagent-api.onrender.com (scan/approve not exercised).
+  Live un-mocked check: both URLs get a real Binance sign-in QR through https://fistagent-api.onrender.com (scan/approve not exercised).

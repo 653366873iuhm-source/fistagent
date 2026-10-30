@@ -46,7 +46,7 @@ const results = []; const ok = (n, c, x = "") => results.push([c ? "PASS" : "FAI
   const addr = "0x" + Buffer.from(keccak_256(secp256k1.getPublicKey(priv, false).slice(1))).subarray(12).toString("hex");
   const msg = M.proofMessage("bind", "tester", addr, "2026-10-30T00:00:00.000Z");
   const sig = personalSign(priv, msg);
-  ok("proof: personal_sign recovers the signer; message names site, action, Agent ID, wallet, time", M.recoverPersonal(msg, sig) === addr && msg === `bnagent.onrender.com: bind X for tester.ai\nWallet: ${addr}\nTime: 2026-10-30T00:00:00.000Z`);
+  ok("proof: personal_sign recovers the signer; message names site, action, Agent ID, wallet, time", M.recoverPersonal(msg, sig) === addr && msg === `fistagent.onrender.com: bind X for tester.ai\nWallet: ${addr}\nTime: 2026-10-30T00:00:00.000Z`);
   ok("proof: tampered message does not recover the signer", M.recoverPersonal(msg.replace("bind", "unbind"), sig) !== addr);
   ok("post links: x.com / twitter.com / mobile parsed; /i/ and junk rejected", M.parsePostUrl("https://x.com/Bob_1/status/1234567890").user === "Bob_1" && M.parsePostUrl("https://mobile.twitter.com/a/status/12345").id === "12345" && !M.parsePostUrl("https://x.com/i/status/12345") && !M.parsePostUrl("hello"));
   ok("units: 18-decimal formatting", M.units(1357111130196713n) === "0.001357111130196713" && M.units(10n ** 18n * 252n / 100n) === "2.52" && M.units(0n) === "0");
@@ -65,7 +65,7 @@ const priv2 = secp256k1.utils.randomSecretKey ? secp256k1.utils.randomSecretKey(
 const ADDR2 = "0x" + Buffer.from(keccak_256(secp256k1.getPublicKey(priv2, false).slice(1))).subarray(12).toString("hex");
 const PORT = 10900 + Math.floor(Math.random() * 90), KEY = "k".repeat(40), B = `http://127.0.0.1:${PORT}`;
 const env = { ...process.env, NO_LISTEN: "0", PORT: String(PORT), BINDX_NO_RESTORE: "1", BINDX_EXPORT_KEY: KEY, TEST_HANDLES: JSON.stringify({ [ADDR]: "tester", [ADDR2]: "other" }),
-  XBIND_FAKE_POSTS: JSON.stringify({ "1111111111": { author: "Tester_X", text: "My BNAGENT Mint Pass Agent: tester.ai" }, "2222222222": { author: "Tester_X", text: "no handle here" }, "3333333333": { author: "Tester_X", text: "other.ai minting" } }) };
+  XBIND_FAKE_POSTS: JSON.stringify({ "1111111111": { author: "Tester_X", text: "My FISTAGENT Mint Pass Agent: tester.ai" }, "2222222222": { author: "Tester_X", text: "no handle here" }, "3333333333": { author: "Tester_X", text: "other.ai minting" } }) };
 const child = spawn(process.execPath, [SERVER], { env, stdio: ["ignore", "pipe", "pipe"] });
 let log = ""; child.stdout.on("data", (d) => (log += d)); child.stderr.on("data", (d) => (log += d));
 for (let i = 0; i < 50 && !log.includes("proxy on"); i++) await new Promise((r) => setTimeout(r, 100));
@@ -75,7 +75,7 @@ const proof = (action, handle = "tester", pk = priv, a = ADDR) => { const time =
 try {
   let [c, j] = await get("/api/stats");
   ok("GET /api/stats: Jager shape (token, mintContract, pair, usdt, chainId 56, totalMinted, price, tokensPerShare, mintingOpen, paused, poolOpensAt, maxPerTransaction, bnb[1..10])",
-    c === 200 && j.token.symbol === "BNAGENT" && j.token.address === "0xC7F95A3bff008053A4e2f235bAf2f6d784e6C5FB" && j.mintContract === "0xD6aFC30810B001CfA5306A2C54b5E6559DfC9Cf0" && j.chainId === 56 && j.totalMinted >= 1100 && typeof j.priceUsdtPerShare === "number" && j.tokensPerShare > 0 && typeof j.mintingOpen === "boolean" && j.poolOpensAt === 10000 && j.maxPerTransaction === 10 && j.bnb.length === 10 && j.bnb[0].shares === 1 && /^\d/.test(j.bnb[0].quoteBnb) && Number(j.bnb[0].sendBnb) > Number(j.bnb[0].quoteBnb),
+    c === 200 && j.token.symbol === "FISTAGENT" && j.token.address === "0xC7F95A3bff008053A4e2f235bAf2f6d784e6C5FB" && j.mintContract === "0xD6aFC30810B001CfA5306A2C54b5E6559DfC9Cf0" && j.chainId === 56 && j.totalMinted >= 1100 && typeof j.priceUsdtPerShare === "number" && j.tokensPerShare > 0 && typeof j.mintingOpen === "boolean" && j.poolOpensAt === 10000 && j.maxPerTransaction === 10 && j.bnb.length === 10 && j.bnb[0].shares === 1 && /^\d/.test(j.bnb[0].quoteBnb) && Number(j.bnb[0].sendBnb) > Number(j.bnb[0].quoteBnb),
     JSON.stringify(j).slice(0, 300));
   ok("GET /api/stats: sendBnb = quote × 1.02, costUsdt follows the price table", j && Math.abs(Number(j.bnb[1].sendBnb) / Number(j.bnb[1].quoteBnb) - 1.02) < 1e-9 && (j.totalMinted >= 10000 || j.bnb[2].costUsdt === "3"));
   [c, j] = await get("/api/verify?address=0x866396d4aee9467b67194431bdbDdE8E8044d8AE");
@@ -84,8 +84,8 @@ try {
   ok("GET /api/verify: no Agent ID -> agentId null, verified false", c === 200 && j.agentId === null && j.verified === false);
   [c, j] = await get("/api/verify?address=bad");
   ok("GET /api/verify: bad address -> 400 Invalid address", c === 400 && j.error === "Invalid address");
-  let r; [c, j, r] = await get("/api/verify?address=bad", { origin: "https://bnagent.onrender.com" });
-  ok("CORS: allowed origin echoed on the public GET routes", r.headers.get("access-control-allow-origin") === "https://bnagent.onrender.com");
+  let r; [c, j, r] = await get("/api/verify?address=bad", { origin: "https://fistagent.onrender.com" });
+  ok("CORS: allowed origin echoed on the public GET routes", r.headers.get("access-control-allow-origin") === "https://fistagent.onrender.com");
   [c, j] = await get("/api/pass?handle=tester");
   ok("GET /api/pass: {handle, points, level, x}", c === 200 && j.handle === "tester" && j.points === 0 && j.level === 0 && j.x === null, JSON.stringify(j));
   [c, j] = await get("/api/pass");

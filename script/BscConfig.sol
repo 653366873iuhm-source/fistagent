@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
-import {BnagentMint} from "../src/BnagentMint.sol";
+import {FistagentMint} from "../src/FistagentMint.sol";
 
-/// @notice BNB Smart Chain mainnet wiring for BNAGENT. Values mirror the reference deployment's
+/// @notice BNB Smart Chain mainnet wiring for FISTAGENT. Values mirror the reference deployment's
 ///         external dependencies (same feed, routers, factory, registry, feed bounds).
 library BscConfig {
     address internal constant CREATE2_PROXY = 0x4e59b44847b379578588920cA78FbF26c0B4956C;
@@ -28,14 +28,14 @@ library BscConfig {
     uint256 internal constant FEED_MIN = 5_000_000_000; // $50 (8 decimals)
     uint256 internal constant FEED_MAX = 5_000_000_000_000; // $50,000
 
-    bytes32 internal constant SALT = keccak256("BNAGENT.mint.v2");
+    bytes32 internal constant SALT = keccak256("FISTAGENT.mint.v1");
 
-    function params(address socialSigner) internal pure returns (BnagentMint.Params memory p) {
+    function params(address socialSigner) internal pure returns (FistagentMint.Params memory p) {
         address[] memory keep = new address[](3);
         keep[0] = PANCAKE_V2_ROUTER;
         keep[1] = PANCAKE_SMART_ROUTER;
         keep[2] = BINANCE_DEX_ROUTER;
-        p = BnagentMint.Params({
+        p = FistagentMint.Params({
             usdt: USDT,
             v2Factory: PANCAKE_V2_FACTORY,
             v4PoolManager: V4_POOL_MANAGER,
@@ -54,7 +54,7 @@ library BscConfig {
     }
 
     function initCode(address socialSigner) internal pure returns (bytes memory) {
-        return abi.encodePacked(type(BnagentMint).creationCode, abi.encode(params(socialSigner)));
+        return abi.encodePacked(type(FistagentMint).creationCode, abi.encode(params(socialSigner)));
     }
 
     function predicted(address socialSigner) internal pure returns (address) {

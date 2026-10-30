@@ -1,6 +1,6 @@
 (() => {
   "use strict";
-  const C = window.BNAGENT_CONFIG;
+  const C = window.FISTAGENT_CONFIG;
   const $ = (id) => document.getElementById(id);
   const isAddr = (a) => /^0x[0-9a-fA-F]{40}$/.test(a || "");
   const deployed = isAddr(C.mint);
@@ -16,7 +16,7 @@
   const AGENTIC = "com.binance.agentic-wallet";
   let awReady = false; // set once the Agentic Wallet code below is initialised
   const qsLang = new URLSearchParams(location.search).get("lang");
-  let lang = qsLang === "zh" || qsLang === "en" ? qsLang : localStorage.getItem("bnagent-lang") || "en";
+  let lang = qsLang === "zh" || qsLang === "en" ? qsLang : localStorage.getItem("fistagent-lang") || "en";
   let pay = "usdt", state = null, referrer = null;
   // wallet session
   const W = { provider: null, name: "", icon: "", rdns: "", account: null, chainId: null, handle: null, agentOk: false, status: null, bnb: null, usdt: null, busy: false };
@@ -24,7 +24,7 @@
   const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
   function setLang(l) {
-    lang = l; localStorage.setItem("bnagent-lang", l);
+    lang = l; localStorage.setItem("fistagent-lang", l);
     document.body.className = "lang-" + l;
     document.documentElement.lang = l === "zh" ? "zh-CN" : "en";
     $("langBtn").textContent = l === "zh" ? "English" : "中文";
@@ -84,7 +84,7 @@
   const fmt = (wei, dp = 2) => (Number(wei) / 1e18).toLocaleString(undefined, { maximumFractionDigits: dp });
   const short = (a) => a.slice(0, 6) + "…" + a.slice(-4);
 
-  // selectors (BnagentMint keeps the Jager/$JAGENT ABI)
+  // selectors (FistagentMint keeps the Jager/$JAGENT ABI)
   const SEL = {
     overview: "0x3a2056f1", valve: "0x3a81955f", walletStatus: "0x4d6d0af8", costOf: "0xfd326592", bnbQuote: "0x68bce8cd",
     mint: "0x836a1040", mintWithBnb: "0xe38fd349", allowance: "0xdd62ed3e", approve: "0x095ea7b3",
@@ -173,7 +173,7 @@
       renderReceive();
       const nt = tierEnd(next) < TOTAL ? priceCents(tierEnd(next) + 1) : 0;
       $("sTotal").innerHTML = `<span class="en">Total shares <span class="tv">${s.minted.toLocaleString()}</span> / 100,000,000${nt ? ` · Rises to ${uFmt(nt)}U at ${tierEnd(next).toLocaleString()}` : ""}</span><span class="zh">总份数 <span class="tv">${s.minted.toLocaleString()}</span> / 100,000,000${nt ? ` · 第 ${tierEnd(next).toLocaleString()} 份后涨至 ${uFmt(nt)}U` : ""}</span>`;
-      $("sPool").textContent = s.open ? `${fmt(s.u)} USDT / ${fmt(s.t, 0)} BNAGENT` : T(`Opens automatically at share 10,000 (${(10000 - s.minted).toLocaleString()} to go)`, `第 10,000 份时自动开池（还差 ${(10000 - s.minted).toLocaleString()} 份）`);
+      $("sPool").textContent = s.open ? `${fmt(s.u)} USDT / ${fmt(s.t, 0)} FISTAGENT` : T(`Opens automatically at share 10,000 (${(10000 - s.minted).toLocaleString()} to go)`, `第 10,000 份时自动开池（还差 ${(10000 - s.minted).toLocaleString()} 份）`);
       $("sPaused").textContent = s.paused ? T("Paused", "暂停中") : s.minted >= TOTAL ? T("Sold out", "已售罄") : T("Open", "开放中");
       markTier(next);
     } else {
@@ -315,7 +315,7 @@
       Object.assign(W, { provider: w.provider, name: w.name, icon: w.icon, rdns: w.rdns, account: accs[0] });
       resetWalletData();
       W.chainId = String(await w.provider.request({ method: "eth_chainId" })).toLowerCase();
-      localStorage.setItem("bnagent-wallet", w.rdns);
+      localStorage.setItem("fistagent-wallet", w.rdns);
       attachListeners(w.provider);
       closeModal();
       render();
@@ -345,14 +345,14 @@
     if (p) { try { p.request({ method: "wallet_revokePermissions", params: [{ eth_accounts: {} }] }).catch(() => {}); } catch (e) { /* optional */ } }
     Object.assign(W, { provider: null, name: "", icon: "", rdns: "", account: null, chainId: null });
     resetWalletData();
-    localStorage.removeItem("bnagent-wallet");
+    localStorage.removeItem("fistagent-wallet");
     status(""); render();
   }
   async function tryAutoReconnect() {
-    const want = localStorage.getItem("bnagent-wallet");
+    const want = localStorage.getItem("fistagent-wallet");
     if (!want || W.account || autoTried) return;
     if (want === AGENTIC && !awReady) return;
-    const w = want === AGENTIC ? (sessionStorage.getItem("bnagent-aw-addr") ? agenticWallet() : null) : walletList().find((x) => x.rdns === want);
+    const w = want === AGENTIC ? (sessionStorage.getItem("fistagent-aw-addr") ? agenticWallet() : null) : walletList().find((x) => x.rdns === want);
     if (!w) return;
     autoTried = true;
     try {
@@ -448,8 +448,8 @@
   function agentPrompt() {
     const base = dappUrl().replace(/[?].*$/, "").replace(/index\.html$/, "");
     return T(
-      `Read ${base}llms.txt and follow it to mint BNAGENT on BNB Smart Chain (chainId 56) with my Binance Agentic Wallet. Mint <N> shares, paying with <BNB or USDT>, referrer <handle.ai or none>. Use only the mint contract address published in that file; if it says the contracts are not deployed, stop and tell me. Show me the preview before you execute.`,
-      `请阅读 ${base}llms.txt 并按其中步骤，用我的币安 Agentic Wallet 在 BNB Smart Chain（chainId 56）上铸造 BNAGENT：铸造 <N> 份，用 <BNB 或 USDT> 支付，邀请人 <handle.ai 或无>。只使用该文件公布的铸造合约地址；如果文件写着合约未部署，就停止并告诉我。执行前先给我看预览（preview）。`
+      `Read ${base}llms.txt and follow it to mint FISTAGENT on BNB Smart Chain (chainId 56) with my Binance Agentic Wallet. Mint <N> shares, paying with <BNB or USDT>, referrer <handle.ai or none>. Use only the mint contract address published in that file; if it says the contracts are not deployed, stop and tell me. Show me the preview before you execute.`,
+      `请阅读 ${base}llms.txt 并按其中步骤，用我的币安 Agentic Wallet 在 BNB Smart Chain（chainId 56）上铸造 FISTAGENT：铸造 <N> 份，用 <BNB 或 USDT> 支付，邀请人 <handle.ai 或无>。只使用该文件公布的铸造合约地址；如果文件写着合约未部署，就停止并告诉我。执行前先给我看预览（preview）。`
     );
   }
 
@@ -460,10 +460,10 @@
   // the user approves each one in the Binance App. Exposed as an EIP-1193-style provider so the mint flow is unchanged.
   const AW = { abort: null, qr: null, phase: "idle", err: "" };
   const awStore = {
-    cid() { let c = sessionStorage.getItem("bnagent-aw-cid"); if (!c) { c = (crypto.randomUUID ? crypto.randomUUID() : String(Math.random()).slice(2) + Date.now()); sessionStorage.setItem("bnagent-aw-cid", c); } return c; },
-    sid: () => sessionStorage.getItem("bnagent-aw-sid"),
-    setSid: (v) => v && sessionStorage.setItem("bnagent-aw-sid", v),
-    clear: () => { sessionStorage.removeItem("bnagent-aw-sid"); sessionStorage.removeItem("bnagent-aw-addr"); },
+    cid() { let c = sessionStorage.getItem("fistagent-aw-cid"); if (!c) { c = (crypto.randomUUID ? crypto.randomUUID() : String(Math.random()).slice(2) + Date.now()); sessionStorage.setItem("fistagent-aw-cid", c); } return c; },
+    sid: () => sessionStorage.getItem("fistagent-aw-sid"),
+    setSid: (v) => v && sessionStorage.setItem("fistagent-aw-sid", v),
+    clear: () => { sessionStorage.removeItem("fistagent-aw-sid"); sessionStorage.removeItem("fistagent-aw-addr"); },
   };
   const deep = (o, k) => { if (!o || typeof o !== "object") return null; if (Array.isArray(o)) { for (const x of o) { const r = deep(x, k); if (r) return r; } return null; } if (typeof o[k] === "string" && o[k]) return o[k]; for (const v of Object.values(o)) { const r = deep(v, k); if (r) return r; } return null; };
   const sleep = (ms, sig) => new Promise((res, rej) => { const t = setTimeout(res, ms); if (sig) sig.addEventListener("abort", () => { clearTimeout(t); rej(new Error(T("Connection cancelled.", "已取消连接。"))); }, { once: true }); });
@@ -489,7 +489,7 @@
   const agenticProvider = {
     isBinanceAgentic: true,
     async request({ method, params }) {
-      const a = sessionStorage.getItem("bnagent-aw-addr");
+      const a = sessionStorage.getItem("fistagent-aw-addr");
       if (method === "eth_requestAccounts" || method === "eth_accounts") return a ? [a] : [];
       if (method === "eth_chainId") return BSC;
       if (method === "wallet_switchEthereumChain" || method === "wallet_addEthereumChain") return null;
@@ -547,7 +547,7 @@
         if (!addr) await sleep(2000, ctl.signal);
       }
       if (!addr) throw new Error(T("The Agentic Wallet did not finish connecting. Get a new code.", "Agentic Wallet 未完成连接，请获取新二维码。"));
-      sessionStorage.setItem("bnagent-aw-addr", addr);
+      sessionStorage.setItem("fistagent-aw-addr", addr);
       AW.phase = "idle"; AW.abort = null;
       await connectWith(agenticWallet());
     } catch (e) {
@@ -688,12 +688,12 @@
   };
 
   // ---------------------------------------------------------------- Invite & tasks · +1 mint (same dialog as jager.live)
-  const API = C.api || "https://bnagent-api.onrender.com";
-  const XH = (C.social && C.social.x) || "bnAgent_";
-  const SITE_HOST = "bnagent.onrender.com";
+  const API = C.api || "https://fistagent-api.onrender.com";
+  const XH = (C.social && C.social.x) || "FISTAGENT_X_TBD";
+  const SITE_HOST = "fistagent.onrender.com";
   const TASKS = [
     { id: "FOLLOW", hash: "0xd0da9b1693253fae9e3642967a8d27bb318f84f49ff0596c1d11ecec5bd752f3", title: () => T(`Follow @${XH} on X`, `在 X 关注 @${XH}`), action: () => T("Follow", "关注"), href: `https://x.com/intent/follow?screen_name=${XH}` },
-    { id: "TWEET", hash: "0x93e97387cbdd54fcd2e94ca587c3745ec0fd3255bec4a5a576b02fcd5dcd413e", title: () => T("Post your mint or BNAGENT content", "发布你的铸造或 BNAGENT 相关内容"), action: () => T("Post", "发帖"), href: `https://x.com/intent/post?text=${encodeURIComponent(`Minting BNAGENT with @${XH} on BNB Chain. ${SITE_HOST}`)}` },
+    { id: "TWEET", hash: "0x93e97387cbdd54fcd2e94ca587c3745ec0fd3255bec4a5a576b02fcd5dcd413e", title: () => T("Post your mint or FISTAGENT content", "发布你的铸造或 FISTAGENT 相关内容"), action: () => T("Post", "发帖"), href: `https://x.com/intent/post?text=${encodeURIComponent(`Minting FISTAGENT with @${XH} on BNB Chain. ${SITE_HOST}`)}` },
   ];
   const IV = { opened: {}, busy: null, err: {}, url: "", copied: null };
   const ICON_X = '<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>';
@@ -723,7 +723,7 @@
         : `<div class="tact"><a class="obtn" href="${esc(t.href)}" target="_blank" rel="noreferrer" data-open="${t.id}">${t.action()} ${ICON_X}</a>` +
           (W.account ? `<button type="button" class="pbtn" data-claim="${t.id}"${!canClaim || !ready || IV.busy ? " disabled" : ""}>${IV.busy === t.id ? "… " : ""}${T("Claim +1", "领取 +1")}</button>` : `<button type="button" class="pbtn" data-connect="1">${T("Connect to claim", "连接后领取")}</button>`) + `</div>`;
       const extra = t.id === "TWEET" && !done
-        ? `<p class="ivp">${T("Post your mint (or any post about BNAGENT) and paste its link. Reposted one from", "发布你的铸造（或任何关于 BNAGENT 的帖子）并粘贴帖子链接。转发了")} <a href="https://x.com/${XH}" target="_blank" rel="noreferrer" data-open="TWEET">@${XH}</a>${T("? Paste that post's link.", " 的帖子？粘贴那条帖子的链接。")}</p>
+        ? `<p class="ivp">${T("Post your mint (or any post about FISTAGENT) and paste its link. Reposted one from", "发布你的铸造（或任何关于 FISTAGENT 的帖子）并粘贴帖子链接。转发了")} <a href="https://x.com/${XH}" target="_blank" rel="noreferrer" data-open="TWEET">@${XH}</a>${T("? Paste that post's link.", " 的帖子？粘贴那条帖子的链接。")}</p>
            <input type="url" inputmode="url" id="ivUrl" value="${esc(IV.url)}" placeholder="https://x.com/…/status/…" aria-label="Post link">` : "";
       return `<li data-task="${t.id}"><div class="trow"><span class="tt${done ? " done" : ""}">${t.title()}</span>${act}</div>${extra}${IV.err[t.id] ? `<span class="terr">${esc(IV.err[t.id])}</span>` : ""}</li>`;
     }).join("");
@@ -779,7 +779,7 @@
   $("inviteModal").addEventListener("click", (e) => { if (e.target === $("inviteModal")) closeInvite(); });
 
   // ---------------------------------------------------------------- Leaderboard (same as jager.live: Invites / Mints / Holders, Day / Week, Top 100)
-  const LBS = [{ key: "invites", title: () => T("Invites", "邀请"), unit: () => T("Invites", "邀请") }, { key: "mints", title: () => T("Mints", "铸造"), unit: () => T("Shares", "份数") }, { key: "holders", title: () => T("Holders", "持有"), unit: () => "BNAGENT" }];
+  const LBS = [{ key: "invites", title: () => T("Invites", "邀请"), unit: () => T("Invites", "邀请") }, { key: "mints", title: () => T("Mints", "铸造"), unit: () => T("Shares", "份数") }, { key: "holders", title: () => T("Holders", "持有"), unit: () => "FISTAGENT" }];
   const LBV = { board: "invites", period: "day", data: null, err: false, timer: null };
   const big = (v) => { const r = Number(BigInt(v) / 10n ** 18n); return r >= 1e12 ? (r / 1e12).toFixed(2) + "T" : r >= 1e9 ? (r / 1e9).toFixed(2) + "B" : r >= 1e6 ? (r / 1e6).toFixed(2) + "M" : r.toLocaleString(); };
   function renderLb() {
@@ -851,18 +851,18 @@
   function postText(cn, c) {
     const id = `${c.handle}.ai`, link = `https://${SITE_HOST}/?ref=${id}`, x = c.x ? (cn ? `X：@${c.x}\n` : `X: @${c.x}\n`) : "";
     return cn
-      ? `BNAGENT Mint Pass\n\nAgent：${id}\n${x}Border：${c.b.cn} ${c.b.name}\n\n只有币安 .ai Agent ID 可以铸造。\n继续铸造：${link}\n\nCA：${C.token}`
-      : `My BNAGENT Mint Pass\n\nAgent: ${id}\n${x}Border: ${c.b.name}\n\nNo Binance .ai Agent ID, no mint.\nKeep minting: ${link}\n\nCA: ${C.token}`;
+      ? `FISTAGENT Mint Pass\n\nAgent：${id}\n${x}Border：${c.b.cn} ${c.b.name}\n\n只有币安 .ai Agent ID 可以铸造。\n继续铸造：${link}\n\nCA：${C.token}`
+      : `My FISTAGENT Mint Pass\n\nAgent: ${id}\n${x}Border: ${c.b.name}\n\nNo Binance .ai Agent ID, no mint.\nKeep minting: ${link}\n\nCA: ${C.token}`;
   }
   function cardHtml(c) {
     const rows = [["Agent", `${esc(c.handle)}.ai`], ["X", c.x ? "@" + esc(c.x) : "—"], ["Minted", `${c.minted} shares`], ["Border", `0${c.level + 1} / 07 ${c.b.name}`], ["Date", `${c.date} UTC`], ["Network", "BNB Chain"]];
-    return `<div class="mp3d" id="mp3d" tabindex="0" role="img" aria-label="${c.b.name} BNAGENT card. Drag or use the arrow keys to rotate."><div class="mpglow" style="background:${c.b.color}"></div>
+    return `<div class="mp3d" id="mp3d" tabindex="0" role="img" aria-label="${c.b.name} FISTAGENT card. Drag or use the arrow keys to rotate."><div class="mpglow" style="background:${c.b.color}"></div>
       <div class="mpcard" id="mpCard">
-        <div class="mpface front" style="--metal:${c.b.metal}"><div class="mptop"><span>BNAGENT<br>GENESIS 2026</span><span class="mpcoin"></span><span class="r">TIER 0${c.level + 1}<br>${c.b.name.toUpperCase()}</span></div>
-          <div class="mpwell"><div class="mpart"><div class="mpseal"><b>BNAGENT</b><i>2026</i></div><div class="mpplate"><b>BNAGENT</b><img src="assets/bnagent-mark-v3.svg" alt=""></div><div class="mptag">THE AI AGENT MINT<br>OF BNB CHAIN · ${esc(c.handle)}.ai</div><div class="mpholo"><b>BNAGENT</b><i>2026</i><em>${c.b.name.toUpperCase()}</em><small>COLLECTOR'S<br>EDITION</small></div></div></div>
+        <div class="mpface front" style="--metal:${c.b.metal}"><div class="mptop"><span>FISTAGENT<br>GENESIS 2026</span><span class="mpcoin"></span><span class="r">TIER 0${c.level + 1}<br>${c.b.name.toUpperCase()}</span></div>
+          <div class="mpwell"><div class="mpart"><div class="mpseal"><b>FISTAGENT</b><i>2026</i></div><div class="mpplate"><b>FISTAGENT</b><img src="assets/fistagent-mark-v3.svg" alt=""></div><div class="mptag">THE AI AGENT MINT<br>OF BNB CHAIN · ${esc(c.handle)}.ai</div><div class="mpholo"><b>FISTAGENT</b><i>2026</i><em>${c.b.name.toUpperCase()}</em><small>COLLECTOR'S<br>EDITION</small></div></div></div>
           <div class="mpfoot"><span>BUILT FOR AGENTIC WALLETS · AGENT ID ONLY</span><span class="mono">${esc(c.handle)}.ai</span></div></div>
-        <div class="mpface back" aria-hidden="true"><div class="mpback"><span class="mppill">${c.b.name.toUpperCase()} BORDER</span><img class="mplogo" src="assets/bnagent-lockup-v3.png" alt=""><span class="mpqr">${qrSvg("https://" + SITE_HOST)}</span><span class="mpscan">SCAN · ${SITE_HOST}</span>
-          <dl>${rows.map(([k, v]) => `<div><dt>${k}</dt><dd>${v}</dd></div>`).join("")}</dl><p>© 2026 BNAGENT · AI Agent mint on BNB Chain</p></div></div>
+        <div class="mpface back" aria-hidden="true"><div class="mpback"><span class="mppill">${c.b.name.toUpperCase()} BORDER</span><img class="mplogo" src="assets/fistagent-lockup-v3.png" alt=""><span class="mpqr">${qrSvg("https://" + SITE_HOST)}</span><span class="mpscan">SCAN · ${SITE_HOST}</span>
+          <dl>${rows.map(([k, v]) => `<div><dt>${k}</dt><dd>${v}</dd></div>`).join("")}</dl><p>© 2026 FISTAGENT · AI Agent mint on BNB Chain</p></div></div>
       </div></div>
       <div class="mpctl"><button type="button" class="chip" id="mpPause">${T("Pause", "暂停")}</button><button type="button" class="chip" id="mpFlip">${T("Flip", "翻面")}</button></div>`;
   }
@@ -893,7 +893,7 @@
     const nx = BORDERS[c.level + 1], cur = BORDERS[c.level];
     const span = nx ? nx.min - cur.min : 1, prog = nx ? c.points - cur.min : 1;
     const title = res ? T("Mint successful", "铸造成功") : T("Your Mint Pass", "你的 Mint Pass");
-    const sub = res ? T("Your BNAGENT is in your wallet. See the exact amount on BscScan.", "你的 BNAGENT 已到账，准确数量见 BscScan。") : preview ? T("Your Agent ID, X and border show here once you connect.", "连接后这里会显示你的 Agent ID、X 和边框。") : T("Share it on X with your invite link.", "带上你的邀请链接分享到 X。");
+    const sub = res ? T("Your FISTAGENT is in your wallet. See the exact amount on BscScan.", "你的 FISTAGENT 已到账，准确数量见 BscScan。") : preview ? T("Your Agent ID, X and border show here once you connect.", "连接后这里会显示你的 Agent ID、X 和边框。") : T("Share it on X with your invite link.", "带上你的邀请链接分享到 X。");
     $("passBody").innerHTML = `<button type="button" class="ivx pclose" id="passClose" aria-label="Close">✕</button>
       <div class="phd"><h2 id="pass-dialog-title">${title}</h2><p>${sub}</p></div>
       ${cardHtml(c)}
@@ -921,7 +921,7 @@
     g.strokeStyle = c.b.color; g.globalAlpha = 0.5; g.lineWidth = 3; rr(18, 18, W0 - 36, H0 - 36, 24); g.stroke(); g.globalAlpha = 1;
     g.font = "900 22px Arial"; const pill = `${c.b.name.toUpperCase()} BORDER`, pw = g.measureText(pill).width + 44;
     g.fillStyle = c.b.color; rr((W0 - pw) / 2, 56, pw, 42, 21); g.fill(); g.fillStyle = "#0b0b0b"; g.textAlign = "center"; g.fillText(pill, W0 / 2, 85);
-    const img = new Image(); img.src = "assets/bnagent-lockup-v3.png";
+    const img = new Image(); img.src = "assets/fistagent-lockup-v3.png";
     await new Promise((r) => { img.onload = r; img.onerror = r; });
     if (img.naturalWidth) { const w = 420, h = (img.naturalHeight / img.naturalWidth) * w; g.drawImage(img, (W0 - w) / 2, 140, w, h); }
     if (typeof window.qrcode === "function") { const q = window.qrcode(0, "M"); q.addData("https://" + SITE_HOST); q.make(); const n = q.getModuleCount(), size = 200, cell = size / n, x0 = (W0 - size) / 2, y0 = 300; g.fillStyle = "#fff"; rr(x0 - 14, y0 - 14, size + 28, size + 28, 14); g.fill(); g.fillStyle = "#0b0b0b"; for (let r = 0; r < n; r++) for (let cc = 0; cc < n; cc++) if (q.isDark(r, cc)) g.fillRect(x0 + cc * cell, y0 + r * cell, cell + 0.5, cell + 0.5); }
@@ -929,8 +929,8 @@
     const rows = [["AGENT", `${c.handle}.ai`], ["X", c.x ? "@" + c.x : "—"], ["MINTED", `${c.minted} shares`], ["BORDER", `0${c.level + 1} / 07 ${c.b.name}`], ["DATE", `${c.date} UTC`], ["NETWORK", "BNB Chain"]];
     g.textAlign = "left";
     rows.forEach(([kk, v], i) => { const x = i % 2 ? 320 : 60, y = 620 + Math.floor(i / 2) * 92; g.strokeStyle = "#ffffff26"; g.lineWidth = 2; g.beginPath(); g.moveTo(x, y); g.lineTo(x + 220, y); g.stroke(); g.fillStyle = "#ffffff80"; g.font = "600 15px Arial"; g.fillText(kk, x, y + 26); g.fillStyle = "#fff"; g.font = "700 24px Arial"; g.fillText(v.length > 16 ? v.slice(0, 15) + "…" : v, x, y + 58); });
-    g.textAlign = "center"; g.fillStyle = "#ffffff73"; g.font = "600 14px Arial"; g.fillText("© 2026 BNAGENT · AI AGENT MINT ON BNB CHAIN", W0 / 2, 950);
-    const a = document.createElement("a"); a.href = cv.toDataURL("image/png"); a.download = `BNAGENT-MintPass-${c.handle}.png`; a.click();
+    g.textAlign = "center"; g.fillStyle = "#ffffff73"; g.font = "600 14px Arial"; g.fillText("© 2026 FISTAGENT · AI AGENT MINT ON BNB CHAIN", W0 / 2, 950);
+    const a = document.createElement("a"); a.href = cv.toDataURL("image/png"); a.download = `FISTAGENT-MintPass-${c.handle}.png`; a.click();
   }
   function openPass(result) { PASS.result = result || null; renderPassModal(); const d = $("passModal"); if (!d.open) { if (typeof d.showModal === "function") d.showModal(); else d.setAttribute("open", ""); } }
   function closePass() { cancelAnimationFrame(SPIN.raf); const d = $("passModal"); if (d.open) { if (typeof d.close === "function") d.close(); else d.removeAttribute("open"); } }
@@ -996,5 +996,5 @@
   load();
   setTimeout(tryAutoReconnect, 400);
   setInterval(load, 15000);
-  window.__bnagent = { W, walletList, AW, agenticProvider };
+  window.__fistagent = { W, walletList, AW, agenticProvider };
 })();

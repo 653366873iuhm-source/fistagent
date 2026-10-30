@@ -3,8 +3,8 @@ pragma solidity ^0.8.24;
 
 import {Test, console2} from "forge-std/Test.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import {BnagentMint} from "../src/BnagentMint.sol";
-import {BnagentToken} from "../src/BnagentToken.sol";
+import {FistagentMint} from "../src/FistagentMint.sol";
+import {FistagentToken} from "../src/FistagentToken.sol";
 import {IV2Pair, IV2Factory, IAgentIdRegistry} from "../src/interfaces/IExternal.sol";
 import {BscConfig} from "../script/BscConfig.sol";
 
@@ -36,9 +36,9 @@ interface IRouterV2 {
 }
 
 /// @notice BSC mainnet fork tests. Run with BSC_RPC_URL set (an RPC that serves state at FORK_BLOCK).
-contract BnagentForkTest is Test {
-    BnagentMint mint;
-    BnagentToken token;
+contract FistagentForkTest is Test {
+    FistagentMint mint;
+    FistagentToken token;
     IV2Pair pair;
     IERC20 usdt = IERC20(BscConfig.USDT);
     IAgentIdRegistry reg = IAgentIdRegistry(BscConfig.AGENT_ID_REGISTRY);
@@ -80,7 +80,7 @@ contract BnagentForkTest is Test {
         require(ok && ret.length == 20, "create2 failed");
         address deployed = address(bytes20(ret));
         assertEq(deployed, BscConfig.predicted(signer), "address prediction");
-        mint = BnagentMint(payable(deployed));
+        mint = FistagentMint(payable(deployed));
         token = mint.token();
         assertEq(address(token), vm.computeCreateAddress(deployed, 1), "token address prediction");
         pair = mint.pair();
@@ -234,10 +234,10 @@ contract BnagentForkTest is Test {
         vm.prank(treasury);
         mint.setPaused(true);
         vm.prank(ALICE);
-        vm.expectRevert(BnagentMint.Paused.selector);
+        vm.expectRevert(FistagentMint.Paused.selector);
         mint.mint(1, address(0), 1 ether);
         vm.prank(ALICE);
-        vm.expectRevert(BnagentMint.NotTreasury.selector);
+        vm.expectRevert(FistagentMint.NotTreasury.selector);
         mint.setPaused(false);
         vm.prank(treasury);
         mint.setPaused(false);
@@ -248,23 +248,23 @@ contract BnagentForkTest is Test {
     function test_MintRules() public {
         uint256 t0 = usdt.balanceOf(treasury);
         vm.startPrank(ALICE);
-        vm.expectRevert(BnagentMint.BadShares.selector);
+        vm.expectRevert(FistagentMint.BadShares.selector);
         mint.mint(0, address(0), 100 ether);
-        vm.expectRevert(BnagentMint.BadShares.selector);
+        vm.expectRevert(FistagentMint.BadShares.selector);
         mint.mint(11, address(0), 100 ether);
-        vm.expectRevert(BnagentMint.OverMaxCost.selector);
+        vm.expectRevert(FistagentMint.OverMaxCost.selector);
         mint.mint(5, address(0), 4.99 ether);
         mint.mint(10, address(0), 10 ether);
         assertEq(token.balanceOf(ALICE), 500_000_000 ether);
         assertEq(usdt.balanceOf(treasury) - t0, 2 ether, "20% to treasury");
-        vm.expectRevert(BnagentMint.Quota.selector);
+        vm.expectRevert(FistagentMint.Quota.selector);
         mint.mint(1, address(0), 1 ether);
         vm.stopPrank();
 
         deal(BscConfig.USDT, NOBODY, 10 ether);
         vm.startPrank(NOBODY);
         usdt.approve(address(mint), 10 ether);
-        vm.expectRevert(BnagentMint.NoAgent.selector);
+        vm.expectRevert(FistagentMint.NoAgent.selector);
         mint.mint(1, address(0), 1 ether);
         vm.stopPrank();
 
@@ -295,7 +295,7 @@ contract BnagentForkTest is Test {
         assertEq(mint.quotaOf(uint256(keccak256("gm1117"))), 10);
         vm.startPrank(ALICE);
         mint.mint(10, address(0), 10 ether);
-        vm.expectRevert(BnagentMint.Quota.selector);
+        vm.expectRevert(FistagentMint.Quota.selector);
         mint.mint(1, address(0), 1 ether);
         vm.stopPrank();
     }
@@ -312,22 +312,22 @@ contract BnagentForkTest is Test {
         uint256 aid = uint256(keccak256("htetwai"));
         assertEq(mint.quotaOf(aid), 11);
         vm.prank(ALICE);
-        vm.expectRevert(BnagentMint.AlreadyGranted.selector);
+        vm.expectRevert(FistagentMint.AlreadyGranted.selector);
         mint.claimSocial(FOLLOW, xAcct, dl, sig);
         bytes memory sigB = _signTask(BOB, FOLLOW, xAcct, dl);
         vm.prank(BOB);
-        vm.expectRevert(BnagentMint.AlreadyGranted.selector);
+        vm.expectRevert(FistagentMint.AlreadyGranted.selector);
         mint.claimSocial(FOLLOW, xAcct, dl, sigB);
         bytes memory wrongUser = _signTask(ALICE, TWEET, keccak256("x:bob"), dl);
         vm.prank(BOB);
-        vm.expectRevert(BnagentMint.BadSignature.selector);
+        vm.expectRevert(FistagentMint.BadSignature.selector);
         mint.claimSocial(TWEET, keccak256("x:bob"), dl, wrongUser);
         bytes memory late = _signTask(ALICE, TG, keccak256("tg:a"), block.timestamp - 1);
         vm.prank(ALICE);
-        vm.expectRevert(BnagentMint.BadSignature.selector);
+        vm.expectRevert(FistagentMint.BadSignature.selector);
         mint.claimSocial(TG, keccak256("tg:a"), block.timestamp - 1, late);
         vm.prank(ALICE);
-        vm.expectRevert(BnagentMint.BadTask.selector);
+        vm.expectRevert(FistagentMint.BadTask.selector);
         mint.claimSocial(keccak256("OTHER"), xAcct, dl, sig);
         bytes memory s1 = _signTask(ALICE, TWEET, keccak256("x:alice_handle#tw"), dl);
         bytes memory s2 = _signTask(ALICE, TG, keccak256("tg:alice"), dl);
@@ -342,10 +342,10 @@ contract BnagentForkTest is Test {
         vm.prank(ALICE);
         mint.mint(1, address(0), 1 ether);
         vm.prank(ALICE);
-        vm.expectRevert(BnagentToken.TransfersClosed.selector);
+        vm.expectRevert(FistagentToken.TransfersClosed.selector);
         token.transfer(BOB, 1 ether);
         vm.prank(ALICE);
-        vm.expectRevert(BnagentToken.TransfersClosed.selector);
+        vm.expectRevert(FistagentToken.TransfersClosed.selector);
         token.transfer(address(pair), 1 ether); // nobody can fund the pair before the automatic open
     }
 
@@ -355,7 +355,7 @@ contract BnagentForkTest is Test {
         uint256 tBefore = treasury.balance;
         uint256 uBefore = usdt.balanceOf(treasury);
         vm.prank(ALICE);
-        vm.expectRevert(BnagentMint.OverMaxCost.selector);
+        vm.expectRevert(FistagentMint.OverMaxCost.selector);
         mint.mintWithBnb{value: need}(3, address(0), need - 1);
         vm.prank(ALICE);
         mint.mintWithBnb{value: need + 0.05 ether}(3, address(0), need + 0.05 ether);
@@ -369,17 +369,17 @@ contract BnagentForkTest is Test {
         _assertParked();
         uint256 one = mint.bnbQuote(1);
         vm.prank(ALICE);
-        vm.expectRevert(BnagentMint.BadPayment.selector);
+        vm.expectRevert(FistagentMint.BadPayment.selector);
         mint.mintWithBnb{value: one - 1}(1, address(0), need);
     }
 
     function test_HardCapEnforcedInToken() public {
         uint256 cap = token.MAX_SUPPLY();
         vm.prank(address(mint));
-        vm.expectRevert(BnagentToken.SupplyCap.selector);
+        vm.expectRevert(FistagentToken.SupplyCap.selector);
         token.mint(ALICE, cap + 1);
         vm.prank(ALICE);
-        vm.expectRevert(BnagentToken.NotMinter.selector);
+        vm.expectRevert(FistagentToken.NotMinter.selector);
         token.mint(ALICE, 1);
     }
 
@@ -416,7 +416,7 @@ contract BnagentForkTest is Test {
         assertFalse(mint.paused());
         assertTrue(token.blocksDisabled());
         vm.prank(treasury);
-        vm.expectRevert(BnagentMint.AdminRenounced.selector);
+        vm.expectRevert(FistagentMint.AdminRenounced.selector);
         mint.setPaused(true);
         _bulkMint(10_000 - mint.totalMinted());
         assertTrue(mint.opened());
@@ -426,16 +426,16 @@ contract BnagentForkTest is Test {
     }
 
     function test_JagerSelectors() public view {
-        assertEq(BnagentMint.mint.selector, bytes4(0x836a1040));
-        assertEq(BnagentMint.mintWithBnb.selector, bytes4(0xe38fd349));
-        assertEq(BnagentMint.bnbQuote.selector, bytes4(0x68bce8cd));
-        assertEq(BnagentMint.costOf.selector, bytes4(keccak256("costOf(uint256)")));
-        assertEq(BnagentMint.quotaOf.selector, bytes4(keccak256("quotaOf(uint256)")));
-        assertEq(BnagentMint.claimSocial.selector, bytes4(keccak256("claimSocial(bytes32,bytes32,uint256,bytes)")));
-        assertEq(BnagentMint.withdrawUnfilled.selector, bytes4(0xa65c6326));
-        assertEq(BnagentMint.Minted.selector, keccak256("Minted(address,uint256,uint256,uint256,uint256)"));
-        assertEq(BnagentMint.QuotaGranted.selector, keccak256("QuotaGranted(address,uint256,uint256,bytes32)"));
-        assertEq(BnagentMint.Opened.selector, keccak256("Opened(uint256,uint256,uint256)"));
+        assertEq(FistagentMint.mint.selector, bytes4(0x836a1040));
+        assertEq(FistagentMint.mintWithBnb.selector, bytes4(0xe38fd349));
+        assertEq(FistagentMint.bnbQuote.selector, bytes4(0x68bce8cd));
+        assertEq(FistagentMint.costOf.selector, bytes4(keccak256("costOf(uint256)")));
+        assertEq(FistagentMint.quotaOf.selector, bytes4(keccak256("quotaOf(uint256)")));
+        assertEq(FistagentMint.claimSocial.selector, bytes4(keccak256("claimSocial(bytes32,bytes32,uint256,bytes)")));
+        assertEq(FistagentMint.withdrawUnfilled.selector, bytes4(0xa65c6326));
+        assertEq(FistagentMint.Minted.selector, keccak256("Minted(address,uint256,uint256,uint256,uint256)"));
+        assertEq(FistagentMint.QuotaGranted.selector, keccak256("QuotaGranted(address,uint256,uint256,bytes32)"));
+        assertEq(FistagentMint.Opened.selector, keccak256("Opened(uint256,uint256,uint256)"));
         assertEq(mint.SOCIAL_TYPEHASH(), keccak256("Social(address user,bytes32 task,bytes32 account,uint256 deadline)"));
     }
 
@@ -445,7 +445,7 @@ contract BnagentForkTest is Test {
         vm.prank(treasury);
         (bool ok, bytes memory ret) = BscConfig.CREATE2_PROXY.call(abi.encodePacked(BscConfig.SALT, init));
         require(ok && ret.length == 20, "create2 failed");
-        BnagentMint m = BnagentMint(payable(address(bytes20(ret))));
+        FistagentMint m = FistagentMint(payable(address(bytes20(ret))));
         assertEq(address(m), BscConfig.predicted(BscConfig.SOCIAL_SIGNER));
         assertEq(m.quotaSigner(), BscConfig.SOCIAL_SIGNER);
         assertEq(m.treasury(), BscConfig.TREASURY);
@@ -508,7 +508,7 @@ contract BnagentForkTest is Test {
         assertEq(usdt.balanceOf(treasury) - treasuryUsdt0, 1_780 ether - 2 ether + (usdtFromBnb - 8 ether), "20% of 8,900");
         // withdrawUnfilled is gone for good once the pool is open (past-deadline case: test_ValveNeverAfterPoolOpens)
         vm.prank(treasury);
-        vm.expectRevert(BnagentMint.AlreadyOpen.selector);
+        vm.expectRevert(FistagentMint.AlreadyOpen.selector);
         mint.withdrawUnfilled();
         assertFalse(mint.canWithdrawUnfilled());
     }
@@ -535,13 +535,13 @@ contract BnagentForkTest is Test {
 
         otherPair = IV2Factory(BscConfig.PANCAKE_V2_FACTORY).createPair(address(token), BscConfig.WBNB);
         vm.prank(ALICE);
-        vm.expectRevert(BnagentToken.PoolRejected.selector);
+        vm.expectRevert(FistagentToken.PoolRejected.selector);
         token.transfer(otherPair, 1 ether);
         vm.prank(ALICE);
-        vm.expectRevert(BnagentToken.PoolRejected.selector);
+        vm.expectRevert(FistagentToken.PoolRejected.selector);
         token.transfer(BscConfig.V4_POOL_MANAGER, 1 ether);
         vm.prank(ALICE);
-        vm.expectRevert(BnagentToken.PoolRejected.selector);
+        vm.expectRevert(FistagentToken.PoolRejected.selector);
         token.transfer(BscConfig.INFINITY_VAULT, 1 ether);
     }
 
@@ -575,22 +575,22 @@ contract BnagentForkTest is Test {
         uint256 converted = held - token.balanceOf(address(mint));
         assertGt(treasury.balance, treasuryBnb0, "treasury received BNB from tax");
         assertLe(converted, tr * 10 / 10_000 + 1, "tax swap cap 0.1% of pool");
-        vm.expectRevert(BnagentMint.SwappedThisBlock.selector);
+        vm.expectRevert(FistagentMint.SwappedThisBlock.selector);
         mint.swapTax();
     }
 
     function _flowAdminAndBulk() internal {
         vm.startPrank(treasury);
-        vm.expectRevert(BnagentMint.NotBlockable.selector);
+        vm.expectRevert(FistagentMint.NotBlockable.selector);
         mint.setPoolBlocked(ALICE, true);
-        vm.expectRevert(BnagentMint.NotBlockable.selector);
+        vm.expectRevert(FistagentMint.NotBlockable.selector);
         mint.setPoolBlocked(BscConfig.PANCAKE_V2_ROUTER, true);
-        vm.expectRevert(BnagentMint.NotBlockable.selector);
+        vm.expectRevert(FistagentMint.NotBlockable.selector);
         mint.setPoolBlocked(address(pair), true);
         mint.setPoolBlocked(BscConfig.WBNB, true);
         vm.stopPrank();
         vm.prank(ALICE);
-        vm.expectRevert(BnagentToken.PoolRejected.selector);
+        vm.expectRevert(FistagentToken.PoolRejected.selector);
         token.transfer(BscConfig.WBNB, 1 ether);
 
         burnsA = _bulkMint(15_000 - mint.totalMinted());
@@ -615,13 +615,13 @@ contract BnagentForkTest is Test {
         vm.prank(ALICE);
         token.transfer(BscConfig.WBNB, 1 ether);
         vm.startPrank(treasury);
-        vm.expectRevert(BnagentMint.AdminRenounced.selector);
+        vm.expectRevert(FistagentMint.AdminRenounced.selector);
         mint.setPaused(true);
-        vm.expectRevert(BnagentMint.AdminRenounced.selector);
+        vm.expectRevert(FistagentMint.AdminRenounced.selector);
         mint.setPoolBlocked(otherPair, true);
         vm.stopPrank();
         vm.prank(ALICE);
-        vm.expectRevert(BnagentToken.PoolRejected.selector);
+        vm.expectRevert(FistagentToken.PoolRejected.selector);
         token.transfer(otherPair, 1 ether);
     }
 
@@ -637,7 +637,7 @@ contract BnagentForkTest is Test {
         assertEq(usdt.balanceOf(treasury) - treasuryUsdt0, 9_260 ether + surplus, "20% of 46,300 + BNB surplus");
         assertGt(treasury.balance, treasuryBnb0, "tax BNB to treasury");
         vm.prank(treasury);
-        vm.expectRevert(BnagentMint.AlreadyOpen.selector);
+        vm.expectRevert(FistagentMint.AlreadyOpen.selector);
         mint.withdrawUnfilled();
 
         (uint256 u, uint256 t) = mint.reserves();
@@ -645,7 +645,7 @@ contract BnagentForkTest is Test {
         console2.log("mint txs with floor burn, shares 10,001-20,000:", burnsA);
         console2.log("mint txs with floor burn, shares 20,001-30,000:", burnsB);
         console2.log("final pool USDT (wei):", u);
-        console2.log("final pool BNAGENT (tokens):", t / 1e18);
+        console2.log("final pool FISTAGENT (tokens):", t / 1e18);
         console2.log("final total supply (tokens):", token.totalSupply() / 1e18);
         console2.log("final circulating (tokens):", circ / 1e18);
         console2.log("dead balance (tokens):", token.balanceOf(mint.DEAD()) / 1e18);
@@ -666,7 +666,7 @@ contract BnagentForkTest is Test {
         assertEq(mint.totalMinted(), 99_999_995, "slot");
         _newBulkId();
         vm.prank(bulk);
-        vm.expectRevert(BnagentMint.SoldOut.selector);
+        vm.expectRevert(FistagentMint.SoldOut.selector);
         mint.mint(10, address(0), type(uint256).max);
         vm.prank(bulk);
         mint.mint(5, address(0), type(uint256).max);
@@ -674,7 +674,7 @@ contract BnagentForkTest is Test {
         assertEq(mint.mintableNow(), 0);
         _newBulkId();
         vm.prank(bulk);
-        vm.expectRevert(BnagentMint.SoldOut.selector);
+        vm.expectRevert(FistagentMint.SoldOut.selector);
         mint.mint(1, address(0), type(uint256).max);
         vm.store(address(mint), bytes32(slot), bytes32(saved));
     }
@@ -695,11 +695,11 @@ contract BnagentForkTest is Test {
         usdt.transfer(address(pair), 50_000 ether);
         pair.sync();
         vm.stopPrank();
-        // minters cannot put BNAGENT into the pair before the open
+        // minters cannot put FISTAGENT into the pair before the open
         vm.prank(ALICE);
         mint.mint(1, address(0), 1 ether);
         vm.prank(ALICE);
-        vm.expectRevert(BnagentToken.TransfersClosed.selector);
+        vm.expectRevert(FistagentToken.TransfersClosed.selector);
         token.transfer(address(pair), 1 ether);
         assertEq(IPairExtra(address(pair)).totalSupply(), 0, "no LP can exist before the open");
 
@@ -717,7 +717,7 @@ contract BnagentForkTest is Test {
     }
 
     /// @notice USDT donated without sync() cannot brick the automatic open either. skim() reverts before the open
-    ///         (it also moves a 0-BNAGENT transfer out of the pair, which the transfer lock refuses), as in the reference.
+    ///         (it also moves a 0-FISTAGENT transfer out of the pair, which the transfer lock refuses), as in the reference.
     function test_GriefEmptyPairDonateNoSyncAndSkim() public {
         address griefer = address(0x6121F0);
         deal(BscConfig.USDT, griefer, 100 ether);
@@ -753,12 +753,12 @@ contract BnagentForkTest is Test {
 
     function test_ValveNeverStartedNeverWithdrawable() public {
         vm.prank(treasury);
-        BnagentMint m = new BnagentMint(BscConfig.params(signer));
+        FistagentMint m = new FistagentMint(BscConfig.params(signer));
         assertEq(m.mintStartTime(), 0);
         assertEq(m.mintDeadline(), 0);
         vm.warp(block.timestamp + 365 days);
         vm.prank(treasury);
-        vm.expectRevert(BnagentMint.DeadlineNotReached.selector);
+        vm.expectRevert(FistagentMint.DeadlineNotReached.selector);
         m.withdrawUnfilled();
         // renounce() also unpauses, so it starts the clock
         vm.prank(treasury);
@@ -770,12 +770,12 @@ contract BnagentForkTest is Test {
         vm.prank(ALICE);
         mint.mint(10, address(0), 10 ether);
         vm.prank(treasury);
-        vm.expectRevert(BnagentMint.DeadlineNotReached.selector);
+        vm.expectRevert(FistagentMint.DeadlineNotReached.selector);
         mint.withdrawUnfilled();
         vm.warp(startTs + 30 days); // exactly at the deadline: still closed
         assertFalse(mint.canWithdrawUnfilled());
         vm.prank(treasury);
-        vm.expectRevert(BnagentMint.DeadlineNotReached.selector);
+        vm.expectRevert(FistagentMint.DeadlineNotReached.selector);
         mint.withdrawUnfilled();
         assertEq(usdt.balanceOf(address(mint)), 8 ether);
     }
@@ -787,7 +787,7 @@ contract BnagentForkTest is Test {
         address[4] memory who = [ALICE, BOB, NOBODY, address(mint)];
         for (uint256 i; i < who.length; i++) {
             vm.prank(who[i]);
-            vm.expectRevert(BnagentMint.NotTreasury.selector);
+            vm.expectRevert(FistagentMint.NotTreasury.selector);
             mint.withdrawUnfilled();
         }
         assertEq(usdt.balanceOf(address(mint)), 8 ether);
@@ -814,7 +814,7 @@ contract BnagentForkTest is Test {
         uint256 t0 = usdt.balanceOf(treasury);
         uint256 supply0 = token.totalSupply();
         vm.expectEmit(true, false, false, true, address(mint));
-        emit BnagentMint.UnfilledWithdrawn(treasury, 10.4 ether, 13 * 40_000_000 ether, 1_113);
+        emit FistagentMint.UnfilledWithdrawn(treasury, 10.4 ether, 13 * 40_000_000 ether, 1_113);
         vm.prank(treasury);
         mint.withdrawUnfilled();
         assertEq(usdt.balanceOf(treasury) - t0, 10.4 ether, "parked 80% to treasury");
@@ -854,10 +854,10 @@ contract BnagentForkTest is Test {
 
         // tokens stay non-transferable until the pool opens; no pool, no tax swap
         vm.prank(ALICE);
-        vm.expectRevert(BnagentToken.TransfersClosed.selector);
+        vm.expectRevert(FistagentToken.TransfersClosed.selector);
         token.transfer(BOB, 1 ether);
         assertFalse(token.tradingEnabled());
-        vm.expectRevert(BnagentMint.NotOpen.selector);
+        vm.expectRevert(FistagentMint.NotOpen.selector);
         mint.swapTax();
     }
 
@@ -890,7 +890,7 @@ contract BnagentForkTest is Test {
         assertEq(token.balanceOf(mint.DEAD()), 6_900 * 40_000_000 ether, "withdrawn shares' pool tokens at dead");
         assertLe(token.totalSupply(), token.MAX_SUPPLY());
         vm.prank(treasury);
-        vm.expectRevert(BnagentMint.AlreadyOpen.selector);
+        vm.expectRevert(FistagentMint.AlreadyOpen.selector);
         mint.withdrawUnfilled();
         assertFalse(mint.canWithdrawUnfilled());
         // curve minting after the open still works on the smaller pool
@@ -932,7 +932,7 @@ contract BnagentForkTest is Test {
         assertTrue(mint.opened());
         assertFalse(mint.canWithdrawUnfilled());
         vm.prank(treasury);
-        vm.expectRevert(BnagentMint.AlreadyOpen.selector);
+        vm.expectRevert(FistagentMint.AlreadyOpen.selector);
         mint.withdrawUnfilled();
         (uint256 u,) = mint.reserves();
         assertEq(u, 7_120 ether);
@@ -950,7 +950,7 @@ contract BnagentForkTest is Test {
         assertEq(mint.costOf(1), 1 ether);
         assertEq(mint.costOf(10), 10 ether);
         vm.expectEmit(true, true, false, true, address(mint));
-        emit BnagentMint.Minted(ALICE, uint256(keccak256("htetwai")), 1_101, 10, 10 ether);
+        emit FistagentMint.Minted(ALICE, uint256(keccak256("htetwai")), 1_101, 10, 10 ether);
         vm.prank(ALICE);
         mint.mint(10, address(0), 10 ether);
         assertEq(mint.totalMinted(), 1_110);

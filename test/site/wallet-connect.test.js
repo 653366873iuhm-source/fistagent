@@ -3,7 +3,7 @@
 const { chromium } = require('playwright-core');
 const http = require('http'), fs = require('fs'), path = require('path');
 const exe = require('child_process').execSync("find ~/.cache/ms-playwright/chromium_headless_shell-1148 -name headless_shell -type f").toString().trim();
-const ROOT = process.argv[2] || '/workspace/work/bnagent/site';
+const ROOT = process.argv[2] || '/workspace/work/fistagent/site';
 const BASE = process.argv[3]; // optional: test a live URL instead of a local server
 const types = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.svg': 'image/svg+xml', '.png': 'image/png', '.txt': 'text/plain', '.md': 'text/markdown' };
 const srv = http.createServer((q, r) => { let f = path.join(ROOT, decodeURIComponent(q.url.split('?')[0])); if (f.endsWith('/')) f += 'index.html'; fs.readFile(f, (e, d) => { if (e) { r.writeHead(404); return r.end(); } r.writeHead(200, { 'content-type': types[path.extname(f)] || 'application/octet-stream' }); r.end(d); }); });
@@ -28,13 +28,13 @@ const mock = (addr) => `(() => {
 const results = []; const ok = (name, cond, extra = '') => { results.push([cond ? 'PASS' : 'FAIL', name, extra]); };
 (async () => {
   let base = BASE;
-  const LOCAL = !base; if (!base) base = 'https://bnagent.local.test/';
+  const LOCAL = !base; if (!base) base = 'https://fistagent.local.test/';
   const px = process.env.HTTPS_PROXY || process.env.https_proxy || process.env.HTTP_PROXY || process.env.http_proxy;
   let proxy; if (px) { const u = new URL(px); proxy = { server: `${u.protocol}//${u.host}`, }; if (u.username) { proxy.username = decodeURIComponent(u.username); proxy.password = decodeURIComponent(u.password); } }
   console.log('browser proxy:', proxy ? 'from env' : 'none');
   const b0 = await chromium.launch({ executablePath: exe, proxy, env: { ...process.env, LD_LIBRARY_PATH: __dirname + '/libs' } });
   // serve the local site under a fake https origin (the sandbox proxy cannot reach 127.0.0.1)
-  const b = { close: () => b0.close(), newContext: async (o) => { const c = await b0.newContext(o); if (LOCAL) await c.route('https://bnagent.local.test/**', (route) => {
+  const b = { close: () => b0.close(), newContext: async (o) => { const c = await b0.newContext(o); if (LOCAL) await c.route('https://fistagent.local.test/**', (route) => {
       let f = path.join(ROOT, decodeURIComponent(new URL(route.request().url()).pathname)); if (f.endsWith('/')) f += 'index.html';
       if (!fs.existsSync(f)) return route.fulfill({ status: 404, body: '' });
       route.fulfill({ status: 200, contentType: types[path.extname(f)] || 'application/octet-stream', body: fs.readFileSync(f) }); }); return c; } };
@@ -117,14 +117,14 @@ const results = []; const ok = (name, cond, extra = '') => { results.push([cond 
     const wb = await pg.textContent('#walletBox');
     ok('qr: connects the Agentic Wallet on BSC (chainId 56) after confirm/query/wallets', wb.includes('Agentic Wallet') && wb.includes('0x49E6…9BCE') && wb.includes('BNB Smart Chain (56)'), wb + ' | ' + seen.join(','));
     ok('qr: Agent ID resolved for the Agentic Wallet', /allin168\.ai/.test(await pg.textContent('#walletBox')) || await pg.waitForFunction(() => /allin168\.ai/.test(document.getElementById('walletBox').textContent), null, { timeout: 15000 }).then(() => true).catch(() => false));
-    ok('qr: session id stored for later calls', (await pg.evaluate(() => sessionStorage.getItem('bnagent-aw-sid'))) === 'agentSessionId=test-session');
-    const tx = await pg.evaluate(async (a) => window.__bnagent.agenticProvider.request({ method: 'eth_sendTransaction', params: [{ from: a, to: '0x55d398326f99059fF775485246999027B3197955', data: '0x095ea7b3', gas: '0x30d40' }] }), ADDR).catch(e => 'ERR ' + e.message);
+    ok('qr: session id stored for later calls', (await pg.evaluate(() => sessionStorage.getItem('fistagent-aw-sid'))) === 'agentSessionId=test-session');
+    const tx = await pg.evaluate(async (a) => window.__fistagent.agenticProvider.request({ method: 'eth_sendTransaction', params: [{ from: a, to: '0x55d398326f99059fF775485246999027B3197955', data: '0x095ea7b3', gas: '0x30d40' }] }), ADDR).catch(e => 'ERR ' + e.message);
     ok('qr: eth_sendTransaction -> preview (chain 56) -> execute polled until txHash', tx === '0x' + 'ab'.repeat(32) && seen.includes('preview:56:0x55d398326f99059fF775485246999027B3197955'), String(tx));
     await pg.reload({ waitUntil: 'networkidle' });
     await pg.waitForFunction(() => /0x49E6/.test(document.getElementById('walletBox').textContent), null, { timeout: 10000 }).catch(() => {});
     ok('qr: Agentic Wallet session restored after reload', (await pg.textContent('#walletBox')).includes('0x49E6…9BCE'));
     await pg.click('#disconnectBtn');
-    ok('qr: disconnect clears the Agentic session', (await pg.textContent('#walletBox')).includes('Not connected') && !(await pg.evaluate(() => sessionStorage.getItem('bnagent-aw-addr'))));
+    ok('qr: disconnect clears the Agentic session', (await pg.textContent('#walletBox')).includes('Not connected') && !(await pg.evaluate(() => sessionStorage.getItem('fistagent-aw-addr'))));
     ok('qr: no console errors', errs.length === 0, errs.join(' | '));
     await ctx.close();
   }
@@ -145,10 +145,10 @@ const results = []; const ok = (name, cond, extra = '') => { results.push([cond 
   {
     const ctx = await b.newContext(); const pg = await ctx.newPage();
     await pg.goto(base + '?lang=en', { waitUntil: 'networkidle' });
-    const logoOk = await pg.evaluate(async () => { const img = document.querySelector('header img'); return !!img && img.complete && img.naturalWidth > 0 && /assets\/bnagent-lockup-v3\.png/.test(img.src); });
-    ok('brand: header logo loads and is the v3 lockup (woven chevron A mark + BNAGENT)', logoOk);
+    const logoOk = await pg.evaluate(async () => { const img = document.querySelector('header img'); return !!img && img.complete && img.naturalWidth > 0 && /assets\/fistagent-lockup-v3\.png/.test(img.src); });
+    ok('brand: header logo loads and is the v3 lockup (woven chevron A mark + FISTAGENT)', logoOk);
     const og = await pg.getAttribute('meta[property="og:image"]', 'content');
-    ok('brand: og:image on bnagent.onrender.com', og === 'https://bnagent.onrender.com/assets/og-v3.png', og);
+    ok('brand: og:image on fistagent.onrender.com', og === 'https://fistagent.onrender.com/assets/og-v3.png', og);
     const sup = await pg.evaluate(() => ({ label: document.querySelector('.slabel').textContent, big: document.querySelector('.sbig').textContent.replace(/\s+/g, ' ').trim(), bars: document.querySelectorAll('.supply .bar i').length, legend: document.getElementById('sLegend').textContent, legends: document.querySelectorAll('.slegend').length }));
     ok('supply: SUPPLY, staged N / 10,000 in stage 1 (N >= 1,100), one gold bar, one legend', sup.label === 'SUPPLY' && /^(\d{1,3}(,\d{3})*) \/ (10,000|20,000|100,000|1,000,000|100,000,000)$/.test(sup.big) && +sup.big.split(' ')[0].replace(/,/g, '') >= 1100 && sup.bars === 1 && sup.legends === 1 && sup.legend === 'Burned + Minted ' + sup.big, JSON.stringify(sup));
     const wp = await pg.textContent('#whitepaper');
@@ -156,8 +156,8 @@ const results = []; const ok = (name, cond, extra = '') => { results.push([cond 
     const page = await pg.textContent('body'); const foot = await pg.textContent('footer');
     ok('slim: no GitHub link, no burned-at-deploy lead sentence, no risk box, footer 30-day + not-affiliated line', !/GitHub/.test(page) && !(await pg.$('#repoLink')) && !(await pg.$('#risk')) && !/Shares #1–#1,100 are burned at deploy and never sold/.test(page) && /team may withdraw the parked 80%\. Independent project, not affiliated with Binance\./.test(foot), foot);
     ok('slim: no 30-day status rows or 30-day lead sentence (zh+en)', !(await pg.$('#sDeadline')) && !(await pg.$('#sWithdrawn')) && !/30 天期限|团队已提取|若开放铸造后 30 天内|backed only by/.test(page + await pg.content()), '');
-    const xl = await pg.$$eval('a[href="https://x.com/bnAgent_"]', l => l.map(e => e.id));
-    ok('social: X link https://x.com/bnAgent_ in header and footer, no Telegram on the page', xl.includes('xLinkHead') && xl.includes('xLinkFoot') && !/telegram|t\.me\//i.test(await pg.content()), JSON.stringify(xl));
+    const xl = await pg.$$eval('a[href="https://x.com/FISTAGENT_X_TBD"]', l => l.map(e => e.id));
+    ok('social: X link https://x.com/FISTAGENT_X_TBD in header and footer, no Telegram on the page', xl.includes('xLinkHead') && xl.includes('xLinkFoot') && !/telegram|t\.me\//i.test(await pg.content()), JSON.stringify(xl));
     await ctx.close();
   }
   await b.close();

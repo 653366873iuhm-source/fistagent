@@ -2,16 +2,16 @@
 > Mint 0xD6aFC30810B001CfA5306A2C54b5E6559DfC9Cf0 · Token 0xC7F95A3bff008053A4e2f235bAf2f6d784e6C5FB · Pair 0x7d4Fde617a4f5D83fD8A354672558d9B9Cd5aA6f · deploy tx 0x89fc3e2a…8ac6 · unpaused tx 0x3384c6d5…0943 (valve deadline 2026-11-29 05:19:06 CST).
 > The figures below describe **v1** (30,000 shares, mint 0xBd57…9e68a, paused 2026-10-30 05:03 CST) and are kept for the record.
 
-# BNAGENT parameters and scaling math
+# FISTAGENT parameters and scaling math
 
 **Deployed** on BSC mainnet 2026-10-30 (tx 0xb5783c0dff18c9f48cc2720b6c1d389a7298fdd52b5795dcaffe55012f16430b): mint 0xBd57F860B043924f4F37d35AC16c3aab37068e9a, token 0xFfA0441EC4ce08F1afE3fdA5093d69ab30e5b97c, pair 0xb8E1f4a2B792BAc02599e183e1B8d6f2E54286Dc; treasury 0x866396d4aee9467b67194431bdbDdE8E8044d8AE (iuhm.ai). Minting starts paused.
 
 Reference mechanism: the $JAGENT mint/token (BSC 0x3643…2aB8 / 0x8e64…5aE15, verified source read from Sourcify).
-BNAGENT re-implements the mechanism in its own code with Jager's money model (user decision 2026-10-30 00:25 CST). These values differ (user-decided); audit: docs/JAGER-DIFF.md.
+FISTAGENT re-implements the mechanism in its own code with Jager's money model (user decision 2026-10-30 00:25 CST). These values differ (user-decided); audit: docs/JAGER-DIFF.md.
 
-| Parameter | Reference | BNAGENT | How |
+| Parameter | Reference | FISTAGENT | How |
 |---|---|---|---|
-| Name / ticker | JAGENT | BNAGENT | user |
+| Name / ticker | JAGENT | FISTAGENT | user |
 | Total shares | 4,440,000 | 30,000 | user |
 | Burned shares | — (migration start 9,515) | **#1–#1,100 burned at deploy** (no tokens, no USDT); sale starts at #1,101; 28,900 sellable | user 2026-10-30 00:34 |
 | Price table | 5 tiers to 8.07 | first 3 tiers, truncated at 30,000 (max 2.28) | user |
@@ -30,6 +30,6 @@ BNAGENT re-implements the mechanism in its own code with Jager's money model (us
 
 ## Fork-test outcome at sell-out (`test_FullFlow`, 28,900 sold shares, synthetic 10-share mints)
 
-Pool opened at share 10,000 with 7,120 USDT / 356B BNAGENT (LP to dead). At share 30,000: pool ≈ 37,065 USDT / 507.6B BNAGENT,
+Pool opened at share 10,000 with 7,120 USDT / 356B FISTAGENT (LP to dead). At share 30,000: pool ≈ 37,065 USDT / 507.6B FISTAGENT,
 total supply ≈ 2.050T (cap 4.44T), dead ≈ 399.3B, circulating ≈ 1.143T whose pool value (83,491 USDT) sits on the floor line (83,492).
 Floor burns in 999 of 1,000 mint txs in 10,001–20,000 and all 1,000 in 20,001–30,000. Treasury: 9,260 USDT (20% of 46,300) + BNB-swap surplus + tax BNB.

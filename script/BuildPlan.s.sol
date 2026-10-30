@@ -26,7 +26,7 @@ contract BuildPlan is Script {
         vm.serializeBytes32(o, "initCodeHash", keccak256(init));
 
         string memory t1 = "tx1";
-        vm.serializeString(t1, "description", "Deploy BnagentMint via the CREATE2 deployer proxy (also deploys BnagentToken and creates the official, empty PancakeSwap BNAGENT/USDT pair). Mint starts PAUSED; shares #1-#1,100 are burned (sale starts at #1,101). Jager money model: 20% of each payment to the treasury, 80% held by the mint contract; the tx reaching share 10,000 automatically opens the official pool with everything parked (7,120 USDT + 356B BNAGENT), LP to dead; afterwards 80% of each mint is added to the pool (LP to dead).");
+        vm.serializeString(t1, "description", "Deploy FistagentMint via the CREATE2 deployer proxy (also deploys FistagentToken and creates the official, empty PancakeSwap FISTAGENT/USDT pair). Mint starts PAUSED; shares #1-#1,100 are burned (sale starts at #1,101). Jager money model: 20% of each payment to the treasury, 80% held by the mint contract; the tx reaching share 10,000 automatically opens the official pool with everything parked (7,120 USDT + 356B FISTAGENT), LP to dead; afterwards 80% of each mint is added to the pool (LP to dead).");
         vm.serializeAddress(t1, "to", BscConfig.CREATE2_PROXY);
         vm.serializeString(t1, "value", "0");
         vm.serializeAddress(t1, "expectedAddress", mintAddr);

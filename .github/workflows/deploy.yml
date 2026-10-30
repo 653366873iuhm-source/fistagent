@@ -21,7 +21,7 @@ jobs:
       - name: Mirror site/ to gh-pages
         run: |
           set -e
-          git config --global user.name "bnagent-bot"
+          git config --global user.name "fistagent-bot"
           git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git fetch origin gh-pages --depth 1 || true
           git worktree add -B gh-pages /tmp/ghp origin/gh-pages 2>/dev/null || git worktree add -B gh-pages /tmp/ghp
@@ -43,7 +43,7 @@ jobs:
             if [ -n "$HOOK_SITE" ]; then curl -sf -X POST "$HOOK_SITE" > /dev/null && echo "site deploy triggered"; fi
             if [ -n "$HOOK_API" ]; then curl -sf -X POST "$HOOK_API" > /dev/null && echo "api deploy triggered"; fi
           elif [ -n "$RENDER_API_KEY" ]; then
-            for s in srv-dbhnqqqjnfac73afudj0 srv-dbhnrnnlk1mc73d80lm0; do
+            for s in $RENDER_SERVICE_IDS_FISTAGENT_TBD; do
               curl -sf -X POST -H "Authorization: Bearer $RENDER_API_KEY" -H "content-type: application/json" -d '{}' "https://api.render.com/v1/services/$s/deploys" | jq -r '.id // .deploy.id'
             done
           else

@@ -1,13 +1,13 @@
-# jager.live "Bind X" + "Border season" — spec, and how BNAGENT implements it
+# jager.live "Bind X" + "Border season" — spec, and how FISTAGENT implements it
 
 Source: jager.live HTML + JS bundle fetched 2026-10-30 (`/_next/static/immutable/chunks/3p23tnq0x9sck.js` app code,
 `0pyaahj5ti35c.js` wallet + border table) and live probes of `/api/pass`, `/api/x-bind`, `/api/leaderboard`.
-BNAGENT implementation: `server/index.mjs` (API) + `site/app.js` (UI). No database: chain data is recomputed from logs;
+FISTAGENT implementation: `server/index.mjs` (API) + `site/app.js` (UI). No database: chain data is recomputed from logs;
 the only off-chain data (Bind X) lives in API memory and is persisted to the `data` branch by GitHub Actions.
 
 ## 1. Borders (levels)
 
-Jager table (module 8576, export `a`), identical in BNAGENT (`BORDERS` in server and site):
+Jager table (module 8576, export `a`), identical in FISTAGENT (`BORDERS` in server and site):
 
 | level | name | cn | min points | color |
 |---|---|---|---|---|
@@ -35,7 +35,7 @@ Rules as implemented (`computeSeason`):
 - Day = UTC day. Only completed days score (today's live board does not).
 - Boards (same as `/api/leaderboard` day boards, Agent IDs only, Top 100 after skipping non-Agent-ID wallets):
   Invites = sum of `QuotaGranted(reason INVITE)` per inviter that day; Mints = sum of `Minted.shares` per minter that day;
-  Holders = BNAGENT balance at 23:59:59 UTC (replay of token `Transfer` logs), excluding pair, mint, token, dead, zero.
+  Holders = FISTAGENT balance at 23:59:59 UTC (replay of token `Transfer` logs), excluding pair, mint, token, dead, zero.
 - +1 point per board per day where the wallet is in the Top 100 (max 3/day). Ties keep log order (stable sort).
 - Points are recomputed from the full log history since the deploy block (130,514,568), so they are deterministic and can
   only grow; no storage needed. Recomputed when new blocks are indexed or the UTC day changes.
@@ -43,7 +43,7 @@ Rules as implemented (`computeSeason`):
 
 ## 3. Bind X
 
-UI (Jager component `a4`, also in the header wallet chip "Add X" → dialog "X profile link"); BNAGENT puts it in the
+UI (Jager component `a4`, also in the header wallet chip "Add X" → dialog "X profile link"); FISTAGENT puts it in the
 Invite & tasks dialog, between Social tasks and Border season (same as Jager's dialog order `a3, a4, a6`):
 - Title "Bind X" (X logo) + "@x" on the right when bound.
 - Text: "Shows your @X next to your .ai on the leaderboards and your Mint Pass. One X per Agent ID. After unbinding, wait 7 days
@@ -59,7 +59,7 @@ Flow: `proveWallet(action, handle)` →
   the same proxy) which BSC wallet the session controls and requires it to equal `address`.
 - Browser wallet: `personal_sign` of
   `"<site>: <action> X for <handle>.ai\nWallet: <address lowercase>\nTime: <ISO time>"` → `{kind:"sig", time, signature}`.
-  Jager uses `jager.live:`; BNAGENT uses `bnagent.onrender.com:`. Server accepts `time` within ±10 min.
+  Jager uses `jager.live:`; FISTAGENT uses `fistagent.onrender.com:`. Server accepts `time` within ±10 min.
 
 API (same paths and shapes as Jager):
 - `GET /api/x-bind?handle=<h>` → `{"x":null|"name","boundAt":null|ms,"cooldownMs":0|ms}`; bad/unknown handle → 400
@@ -78,11 +78,11 @@ Storage (no DB): `Map(address → {x, boundAt})` + `Map(address → unboundAt)` 
 - `GET /api/x-bind/export` → `{"version":1,"note","updatedAt","bindings":[{"address","x","boundAt"}],"unbinds":[{"address","at"}]}`
   (public data only: wallet address, X handle, timestamps; `updatedAt` = newest timestamp so unchanged data gives an identical file).
   Auth: header `x-export-key` = Render env `BINDX_EXPORT_KEY` (≥32 chars, constant-time compare) **or**
-  `Authorization: Bearer <GitHub Actions OIDC token>` with iss `https://token.actions.githubusercontent.com`, aud `bnagent-api`,
-  repository `653366873iuhm-source/bnagent` (RS256 verified against GitHub's JWKS). 503 until the boot restore finished.
+  `Authorization: Bearer <GitHub Actions OIDC token>` with iss `https://token.actions.githubusercontent.com`, aud `fistagent-api`,
+  repository `653366873iuhm-source/fistagent` (RS256 verified against GitHub's JWKS). 503 until the boot restore finished.
 - `.github/workflows/keepalive.yml` job `export-bindx` (every 10 min): OIDC token → export → `jq` validate → commit
   `data/bindx.json` on branch `data` with GITHUB_TOKEN (only when changed).
-- Boot: the API fetches `https://raw.githubusercontent.com/653366873iuhm-source/bnagent/data/data/bindx.json` (404 = empty;
+- Boot: the API fetches `https://raw.githubusercontent.com/653366873iuhm-source/fistagent/data/data/bindx.json` (404 = empty;
   other failure = retry every 60 s, export stays 503 so an empty memory never overwrites the file).
 - Known gap: a bind made less than ~10 min before an API restart (deploy) is lost if the export had not run yet; the user binds again.
 
@@ -96,5 +96,5 @@ Pause/Resume + Flip; border progress box; when connected: Post text 中文/EN, "
 "Save image" (PNG), hint "Attach the saved image to your post. Then paste the post link under Invite & tasks to bind your X and
 claim the post task.", BscScan link after a mint. Post text template (EN): "My … Mint Pass\n\nAgent: h.ai\n[X: @x\n]Border: Name\n\n
 No Binance .ai Agent ID, no mint.\nKeep minting: <site>/?ref=h.ai\n\nCA: <token>"; CN: "… Mint Pass\n\nAgent：h.ai\n[X：@x\n]
-Border：青铜 Bronze\n\n只有币安 .ai Agent ID 可以铸造。\n继续铸造：…\n\nCA：…" (BNAGENT drops Jager's "Only Binance .ai Agent ID can
-mint." English line inside the CN text and keeps the Chinese one). BNAGENT's card art is a CSS re-creation (no Jager images).
+Border：青铜 Bronze\n\n只有币安 .ai Agent ID 可以铸造。\n继续铸造：…\n\nCA：…" (FISTAGENT drops Jager's "Only Binance .ai Agent ID can
+mint." English line inside the CN text and keeps the Chinese one). FISTAGENT's card art is a CSS re-creation (no Jager images).

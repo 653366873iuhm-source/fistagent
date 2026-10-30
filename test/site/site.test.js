@@ -34,13 +34,13 @@ const XB_STATE = { x: null, boundAt: null, cooldownMs: 0 };
 const results = []; const ok = (name, cond, extra = '') => { results.push([cond ? 'PASS' : 'FAIL', name, extra]); };
 (async () => {
   let base = BASE;
-  const LOCAL = !base; if (!base) base = 'https://bnagent.local.test/';
+  const LOCAL = !base; if (!base) base = 'https://fistagent.local.test/';
   const px = process.env.HTTPS_PROXY || process.env.https_proxy || process.env.HTTP_PROXY || process.env.http_proxy;
   let proxy; if (px) { const u = new URL(px); proxy = { server: `${u.protocol}//${u.host}`, }; if (u.username) { proxy.username = decodeURIComponent(u.username); proxy.password = decodeURIComponent(u.password); } }
   console.log('browser proxy:', proxy ? 'from env' : 'none');
   const b0 = await chromium.launch({ executablePath: exe, proxy, env: { ...process.env, LD_LIBRARY_PATH: process.env.PW_LIBS || __dirname + '/libs' } });
   // serve the local site under a fake https origin (the sandbox proxy cannot reach 127.0.0.1)
-  const b = { close: () => b0.close(), newContext: async (o) => { const c = await b0.newContext(o); if (LOCAL) { await c.route(/\/api\/pass\?/, (route) => route.fulfill({ status: 200, contentType: 'application/json', headers: { 'access-control-allow-origin': '*' }, body: JSON.stringify({ handle: new URL(route.request().url()).searchParams.get('handle'), points: 3, level: 0, x: null }) })); await c.route(/\/api\/x-bind\?/, (route) => route.fulfill({ status: 200, contentType: 'application/json', headers: { 'access-control-allow-origin': '*' }, body: JSON.stringify(XB_STATE) })); } if (LOCAL) await c.route('**/api/leaderboard', (route) => route.fulfill({ status: 200, contentType: 'application/json', headers: { 'access-control-allow-origin': '*' }, body: JSON.stringify(LBMOCK) })); if (LOCAL) await c.route('https://bnagent.local.test/**', (route) => {
+  const b = { close: () => b0.close(), newContext: async (o) => { const c = await b0.newContext(o); if (LOCAL) { await c.route(/\/api\/pass\?/, (route) => route.fulfill({ status: 200, contentType: 'application/json', headers: { 'access-control-allow-origin': '*' }, body: JSON.stringify({ handle: new URL(route.request().url()).searchParams.get('handle'), points: 3, level: 0, x: null }) })); await c.route(/\/api\/x-bind\?/, (route) => route.fulfill({ status: 200, contentType: 'application/json', headers: { 'access-control-allow-origin': '*' }, body: JSON.stringify(XB_STATE) })); } if (LOCAL) await c.route('**/api/leaderboard', (route) => route.fulfill({ status: 200, contentType: 'application/json', headers: { 'access-control-allow-origin': '*' }, body: JSON.stringify(LBMOCK) })); if (LOCAL) await c.route('https://fistagent.local.test/**', (route) => {
       let f = path.join(ROOT, decodeURIComponent(new URL(route.request().url()).pathname)); if (f.endsWith('/')) f += 'index.html';
       if (!fs.existsSync(f)) return route.fulfill({ status: 404, body: '' });
       route.fulfill({ status: 200, contentType: types[path.extname(f)] || 'application/octet-stream', body: fs.readFileSync(f) }); }); return c; } };
@@ -123,14 +123,14 @@ const results = []; const ok = (name, cond, extra = '') => { results.push([cond 
     const wb = await pg.textContent('#walletBox');
     ok('qr: connects the Agentic Wallet on BSC (chainId 56) after confirm/query/wallets', wb.includes('Agentic Wallet') && wb.includes('0x49E6…9BCE') && wb.includes('BNB Smart Chain (56)'), wb + ' | ' + seen.join(','));
     ok('qr: Agent ID resolved for the Agentic Wallet', /allin168\.ai/.test(await pg.textContent('#walletBox')) || await pg.waitForFunction(() => /allin168\.ai/.test(document.getElementById('walletBox').textContent), null, { timeout: 15000 }).then(() => true).catch(() => false));
-    ok('qr: session id stored for later calls', (await pg.evaluate(() => sessionStorage.getItem('bnagent-aw-sid'))) === 'agentSessionId=test-session');
-    const tx = await pg.evaluate(async (a) => window.__bnagent.agenticProvider.request({ method: 'eth_sendTransaction', params: [{ from: a, to: '0x55d398326f99059fF775485246999027B3197955', data: '0x095ea7b3', gas: '0x30d40' }] }), ADDR).catch(e => 'ERR ' + e.message);
+    ok('qr: session id stored for later calls', (await pg.evaluate(() => sessionStorage.getItem('fistagent-aw-sid'))) === 'agentSessionId=test-session');
+    const tx = await pg.evaluate(async (a) => window.__fistagent.agenticProvider.request({ method: 'eth_sendTransaction', params: [{ from: a, to: '0x55d398326f99059fF775485246999027B3197955', data: '0x095ea7b3', gas: '0x30d40' }] }), ADDR).catch(e => 'ERR ' + e.message);
     ok('qr: eth_sendTransaction -> preview (chain 56) -> execute polled until txHash', tx === '0x' + 'ab'.repeat(32) && seen.includes('preview:56:0x55d398326f99059fF775485246999027B3197955'), String(tx));
     await pg.reload({ waitUntil: 'networkidle' });
     await pg.waitForFunction(() => /0x49E6/.test(document.getElementById('walletBox').textContent), null, { timeout: 10000 }).catch(() => {});
     ok('qr: Agentic Wallet session restored after reload', (await pg.textContent('#walletBox')).includes('0x49E6…9BCE'));
     await pg.click('#disconnectBtn');
-    ok('qr: disconnect clears the Agentic session', (await pg.textContent('#walletBox')).includes('Not connected') && !(await pg.evaluate(() => sessionStorage.getItem('bnagent-aw-addr'))));
+    ok('qr: disconnect clears the Agentic session', (await pg.textContent('#walletBox')).includes('Not connected') && !(await pg.evaluate(() => sessionStorage.getItem('fistagent-aw-addr'))));
     ok('qr: no console errors', errs.length === 0, errs.join(' | '));
     await ctx.close();
   }
@@ -151,10 +151,10 @@ const results = []; const ok = (name, cond, extra = '') => { results.push([cond 
   {
     const ctx = await b.newContext(); const pg = await ctx.newPage();
     await pg.goto(base + '?lang=en', { waitUntil: 'networkidle' });
-    const logoOk = await pg.evaluate(async () => { const img = document.querySelector('header img'); return !!img && img.complete && img.naturalWidth > 0 && /assets\/bnagent-lockup-v3\.png/.test(img.src); });
-    ok('brand: header logo loads and is the v3 lockup (woven chevron A mark + BNAGENT)', logoOk);
+    const logoOk = await pg.evaluate(async () => { const img = document.querySelector('header img'); return !!img && img.complete && img.naturalWidth > 0 && /assets\/fistagent-lockup-v3\.png/.test(img.src); });
+    ok('brand: header logo loads and is the v3 lockup (woven chevron A mark + FISTAGENT)', logoOk);
     const og = await pg.getAttribute('meta[property="og:image"]', 'content');
-    ok('brand: og:image on bnagent.onrender.com', og === 'https://bnagent.onrender.com/assets/og-v3.png', og);
+    ok('brand: og:image on fistagent.onrender.com', og === 'https://fistagent.onrender.com/assets/og-v3.png', og);
     const sup = await pg.evaluate(() => ({ label: document.querySelector('.slabel').textContent, big: document.querySelector('.sbig').textContent.replace(/\s+/g, ' ').trim(), bars: document.querySelectorAll('.supply .bar i').length, legend: document.getElementById('sLegend').textContent, legends: document.querySelectorAll('.slegend').length }));
     ok('supply: SUPPLY, staged N / 10,000 in stage 1 (N >= 1,100), one gold bar, one legend', sup.label === 'SUPPLY' && /^(\d{1,3}(,\d{3})*) \/ (10,000|20,000|100,000|1,000,000|100,000,000)$/.test(sup.big) && +sup.big.split(' ')[0].replace(/,/g, '') >= 1100 && sup.bars === 1 && sup.legends === 1 && sup.legend === 'Burned + Minted ' + sup.big, JSON.stringify(sup));
     const wpPg = await ctx.newPage(); await wpPg.goto(base + 'whitepaper/?lang=en', { waitUntil: 'networkidle' }); const wp = await wpPg.textContent('#whitepaper'); await wpPg.close();
@@ -162,8 +162,8 @@ const results = []; const ok = (name, cond, extra = '') => { results.push([cond 
     const page = await pg.textContent('body'); const foot = await pg.textContent('footer');
     ok('slim: no GitHub link, no burned-at-deploy lead sentence, no risk box, footer 30-day + not-affiliated line', !/GitHub/.test(page) && !(await pg.$('#repoLink')) && !(await pg.$('#risk')) && !/Shares #1–#1,100 are burned at deploy and never sold/.test(page) && /team may withdraw the parked 80%\. Independent project, not affiliated with Binance\./.test(foot), foot);
     ok('slim: no 30-day status rows or 30-day lead sentence (zh+en)', !(await pg.$('#sDeadline')) && !(await pg.$('#sWithdrawn')) && !/30 天期限|团队已提取|若开放铸造后 30 天内|backed only by/.test(page + await pg.content()), '');
-    const xl = await pg.$$eval('a[href="https://x.com/bnAgent_"]', l => l.map(e => e.id));
-    ok('social: X link https://x.com/bnAgent_ in header and footer, no Telegram on the page', xl.includes('xLinkHead') && xl.includes('xLinkFoot') && !/telegram|t\.me\//i.test(await pg.content()), JSON.stringify(xl));
+    const xl = await pg.$$eval('a[href="https://x.com/FISTAGENT_X_TBD"]', l => l.map(e => e.id));
+    ok('social: X link https://x.com/FISTAGENT_X_TBD in header and footer, no Telegram on the page', xl.includes('xLinkHead') && xl.includes('xLinkFoot') && !/telegram|t\.me\//i.test(await pg.content()), JSON.stringify(xl));
     await ctx.close();
   }
   // --- 6: Invite & tasks · +1 mint dialog, shares radios and leaderboard (same structure as jager.live)
@@ -181,9 +181,9 @@ const results = []; const ok = (name, cond, extra = '') => { results.push([cond 
     ok('invite: header button "Invite & tasks · +1 mint" (mobile label "Earn")', (await pg.textContent('#inviteBtn .hlg')).includes('Invite & tasks · +1 mint') && (await pg.textContent('#inviteBtn .hsm')).includes('Earn'));
     await pg.click('#inviteBtn');
     let iv = await pg.textContent('#inviteBody');
-    ok('invite: dialog opens: Earn extra mints, connect-to-claim, invite placeholder, 2 social tasks (no Telegram)', (await pg.evaluate(() => document.getElementById('inviteModal').open)) && iv.includes('Earn extra mints') && iv.includes('Connect Binance Wallet to claim') && iv.includes('bnagent.onrender.com/?ref=yourname.ai') && (await pg.$$('#ivTasks li')).length === 2 && iv.includes('Follow @bnAgent_ on X') && iv.includes('Connect to claim') && !/telegram/i.test(iv), iv.slice(0, 300));
+    ok('invite: dialog opens: Earn extra mints, connect-to-claim, invite placeholder, 2 social tasks (no Telegram)', (await pg.evaluate(() => document.getElementById('inviteModal').open)) && iv.includes('Earn extra mints') && iv.includes('Connect Binance Wallet to claim') && iv.includes('fistagent.onrender.com/?ref=yourname.ai') && (await pg.$$('#ivTasks li')).length === 2 && iv.includes('Follow @FISTAGENT_X_TBD on X') && iv.includes('Connect to claim') && !/telegram/i.test(iv), iv.slice(0, 300));
     const hrefs = await pg.$$eval('#ivTasks a.obtn', l => l.map(a => a.href));
-    ok('invite: task links = X follow intent + X post intent mentioning @bnAgent_ and the site', hrefs[0] === 'https://x.com/intent/follow?screen_name=bnAgent_' && hrefs[1].startsWith('https://x.com/intent/post?text=') && decodeURIComponent(hrefs[1]).includes('@bnAgent_') && decodeURIComponent(hrefs[1]).includes('bnagent.onrender.com'), JSON.stringify(hrefs));
+    ok('invite: task links = X follow intent + X post intent mentioning @FISTAGENT_X_TBD and the site', hrefs[0] === 'https://x.com/intent/follow?screen_name=FISTAGENT_X_TBD' && hrefs[1].startsWith('https://x.com/intent/post?text=') && decodeURIComponent(hrefs[1]).includes('@FISTAGENT_X_TBD') && decodeURIComponent(hrefs[1]).includes('fistagent.onrender.com'), JSON.stringify(hrefs));
     await pg.click('#ivClose');
     // leaderboard
     await pg.waitForFunction(() => document.querySelectorAll('#lbList li.lbrow').length > 0, null, { timeout: 10000 }).catch(() => {});
@@ -191,7 +191,7 @@ const results = []; const ok = (name, cond, extra = '') => { results.push([cond 
     ok('leaderboard: tabs Invites/Mints/Holders, Day/Week, Top 100 · UTC day, Rank/Agent ID/Invites, rows from /api/leaderboard', lb.tabs.join() === 'Invites,Mints,Holders' && lb.per.join() === 'Day,Week' && /^Top 100 · UTC day \d{4}-\d{2}-\d{2}/.test(lb.sub) && lb.cols.includes('Rank') && lb.cols.includes('Agent ID') && lb.cols.includes('Invites') && (LOCAL ? lb.rows.length === 2 && lb.rows[0].includes('allin168.ai') && lb.rows[0].endsWith('3') : true), JSON.stringify(lb));
     ok('leaderboard: no "Opens after launch" placeholder', !/Opens after launch/.test(await pg.textContent('#boards')));
     await pg.click('#lbBoards button[data-b="holders"]');
-    ok('leaderboard: Holders tab shows BNAGENT unit, snapshot note and M/B/T formatting', (await pg.textContent('#lbUnit')) === 'BNAGENT' && (await pg.textContent('#lbSub')).includes('Snapshot at 23:59 UTC') && (LOCAL ? (await pg.textContent('#lbList')).includes('500.00M') : /\.ai/.test(await pg.textContent('#lbList'))), await pg.textContent('#lbList'));
+    ok('leaderboard: Holders tab shows FISTAGENT unit, snapshot note and M/B/T formatting', (await pg.textContent('#lbUnit')) === 'FISTAGENT' && (await pg.textContent('#lbSub')).includes('Snapshot at 23:59 UTC') && (LOCAL ? (await pg.textContent('#lbList')).includes('500.00M') : /\.ai/.test(await pg.textContent('#lbList'))), await pg.textContent('#lbList'));
     await pg.click('#lbBoards button[data-b="mints"]'); await pg.click('#lbPeriod button[data-p="week"]');
     ok('leaderboard: Mints/Week shows Shares unit (empty message on the mock)', (await pg.textContent('#lbUnit')) === 'Shares' && (LOCAL ? (await pg.textContent('#lbList')).includes('Nobody on this board yet.') : true) && /UTC week from Monday \d{4}-/.test(await pg.textContent('#lbSub')));
     // connect
@@ -206,7 +206,7 @@ const results = []; const ok = (name, cond, extra = '') => { results.push([cond 
     await pg.click('#inviteBtn');
     await pg.waitForSelector('#ivQuota', { timeout: 15000 }).catch(() => {});
     iv = await pg.textContent('#inviteBody');
-    ok('invite: connected shows Quota / Minted / Remaining, invite link ?ref=allin168.ai with Copy link + Code allin168.ai', !!(await pg.$('#ivQuota')) && (await pg.textContent('#ivLink')) === 'https://bnagent.onrender.com/?ref=allin168.ai' && iv.includes('Copy link') && iv.includes('Copy code') && iv.includes('allin168.ai') && /\d+ counted/.test(iv) && /\d \/ 2 done/.test(iv), iv.slice(0, 400));
+    ok('invite: connected shows Quota / Minted / Remaining, invite link ?ref=allin168.ai with Copy link + Code allin168.ai', !!(await pg.$('#ivQuota')) && (await pg.textContent('#ivLink')) === 'https://fistagent.onrender.com/?ref=allin168.ai' && iv.includes('Copy link') && iv.includes('Copy code') && iv.includes('allin168.ai') && /\d+ counted/.test(iv) && /\d \/ 2 done/.test(iv), iv.slice(0, 400));
     const followClaim = '#ivTasks [data-claim="FOLLOW"]';
     const doneAlready = !(await pg.$(followClaim));
     ok('invite: Claim +1 disabled until the Follow link was opened', doneAlready || await pg.isDisabled(followClaim));
@@ -269,7 +269,7 @@ const results = []; const ok = (name, cond, extra = '') => { results.push([cond 
     const minted = +(await pg.textContent('#hMinted')).replace(/,/g, '');
     ok('header counter: "N / 100,000,000 · Shares · Now 1U" live', minted >= 1100 && new RegExp(`^${minted.toLocaleString('en-US')} / 100,000,000 Shares · Now (1|1\\.\\d+|2(\\.\\d+)?)U$`).test(hc), hc);
     const pc = await pg.evaluate(() => ({ top: document.querySelector('.ptop').innerText.replace(/\s+/g, ' '), name: document.getElementById('pName').textContent, line: document.getElementById('pLine').textContent, btn: document.getElementById('passBtn').textContent, conn: document.getElementById('connectBtn').innerText, mintHidden: getComputedStyle(document.getElementById('mintBtn')).display === 'none' }));
-    ok('Mint Pass card: "BNAGENT · MINT PASS / BSC", Agent ID "Wallet not connected", Jager status line, connect button, "Preview your Mint Pass"', pc.top === 'BNAGENT · MINT PASS BSC' && pc.name === 'Wallet not connected' && pc.line === 'Connect the Binance Agentic Wallet that holds your .ai Agent ID' && pc.btn === 'Preview your Mint Pass' && pc.conn === 'Connect Binance Wallet to mint' && pc.mintHidden, JSON.stringify(pc));
+    ok('Mint Pass card: "FISTAGENT · MINT PASS / BSC", Agent ID "Wallet not connected", Jager status line, connect button, "Preview your Mint Pass"', pc.top === 'FISTAGENT · MINT PASS BSC' && pc.name === 'Wallet not connected' && pc.line === 'Connect the Binance Agentic Wallet that holds your .ai Agent ID' && pc.btn === 'Preview your Mint Pass' && pc.conn === 'Connect Binance Wallet to mint' && pc.mintHidden, JSON.stringify(pc));
     const dl = await pg.evaluate(() => ({ tier: document.getElementById('sTier').textContent, next: document.getElementById('sNext').textContent, get: document.getElementById('sGet').textContent, note: document.querySelector('.pnote .en').textContent, total: document.querySelector('#sTotal .en').textContent, cap: document.querySelector('.pcap .en').textContent }));
     ok('Mint Pass: Current tier "Tier 1 · 1U", Next serial "#N+1", You receive (est.) ≈ 50,000,000 + Jager explanation', dl.tier === 'Tier 1 · 1U' && dl.next === '#' + (minted + 1).toLocaleString('en-US') && dl.get === '≈ 50,000,000' && dl.note === 'Set by the pool price at mint time, 1% below market. The exact amount shows after the mint.', JSON.stringify(dl));
     ok('Mint Pass: "Total shares N / 100,000,000 · Rises to 1.1U at 10,000" + Jager figcaption', dl.total === `Total shares ${minted.toLocaleString('en-US')} / 100,000,000 · Rises to 1.1U at 10,000` && dl.cap.startsWith('Each Agent ID mints 10 shares, plus one for every invitee') && dl.cap.endsWith('20% goes to the treasury.'), dl.total);
@@ -278,7 +278,7 @@ const results = []; const ok = (name, cond, extra = '') => { results.push([cond 
     const tb = await pg.evaluate(() => ({ rows: [...document.querySelectorAll('#tierBody tr')].map(r => r.innerText.replace(/\s+/g, ' ').trim()), cur: [...document.querySelectorAll('#tierBody tr[aria-current="step"]')].map(r => r.innerText.replace(/\s+/g, ' ').trim()), sum: document.querySelector('.tiersum .en').textContent, details: !!document.querySelector('#prices details') }));
     ok('price table: every row listed (burned row + 5,131 tiers, 1U → 79.74U), current tier marked "· Current", no expand/collapse', tb.rows.length === 5132 && tb.rows[0] === '— 1 - 1,100 Burned at deploy (never sold)' && tb.rows[1].startsWith('1 1,101 - 10,000 = 1U') && tb.rows[2] === '2 10,001 - 11,000 = 1.1U' && tb.rows[21] === '21 29,001 - 30,000 = 2.28U' && tb.rows[92] === '92 100,001 - 110,000 = 3.7U' && tb.rows[353] === '353 4,420,001 - 4,440,000 = 8.07U' && tb.rows[5131] === '5131 99,980,001 - 100,000,000 = 79.74U' && tb.cur.length === 1 && tb.cur[0].endsWith('· Current') && tb.sum === '1U to 10,000 · then rises in steps · 5,131 tiers · Max 79.74U' && !tb.details, JSON.stringify(tb.rows.slice(0, 3)) + JSON.stringify(tb.cur));
     const notes = await pg.textContent('#notes .en:nth-of-type(1)').catch(() => '') + (await pg.$$eval('#notes p.en', l => l.map(p => p.textContent).join(' ')));
-    ok('safety notes: pay only to the mint contract, token contract never receives BNB/USDT, never transfer USDT directly (approve + mint / mintWithBnb), "Minted before?" token address, "AI agents: read llms.txt"', /Pay only to the mint contract 0xD6aFC30810B001CfA5306A2C54b5E6559DfC9Cf0/.test(notes) && /is for adding the token to a wallet; never send BNB or USDT to it/.test(notes) && /Never transfer USDT directly to the mint contract; approve USDT and call mint\(shares, referrer, maxCost\), or send BNB with mintWithBnb/.test(notes) && /Minted before\? Your BNAGENT is already in your wallet\. To see it, add this token address in your wallet/.test(notes) && /AI agents: read bnagent\.onrender\.com\/llms\.txt before minting/.test(notes), notes.slice(0, 200));
+    ok('safety notes: pay only to the mint contract, token contract never receives BNB/USDT, never transfer USDT directly (approve + mint / mintWithBnb), "Minted before?" token address, "AI agents: read llms.txt"', /Pay only to the mint contract 0xD6aFC30810B001CfA5306A2C54b5E6559DfC9Cf0/.test(notes) && /is for adding the token to a wallet; never send BNB or USDT to it/.test(notes) && /Never transfer USDT directly to the mint contract; approve USDT and call mint\(shares, referrer, maxCost\), or send BNB with mintWithBnb/.test(notes) && /Minted before\? Your FISTAGENT is already in your wallet\. To see it, add this token address in your wallet/.test(notes) && /AI agents: read fistagent\.onrender\.com\/llms\.txt before minting/.test(notes), notes.slice(0, 200));
     ok('no risk / investment-advice disclaimer, no Telegram', !/investment advice|highly volatile|投资建议/i.test(await pg.content()) && !/telegram|t\.me\//i.test(await pg.content()));
     // Mint Pass preview (not connected)
     await pg.click('#passBtn');
@@ -308,11 +308,11 @@ const results = []; const ok = (name, cond, extra = '') => { results.push([cond 
     await pg.waitForSelector('#passText', { timeout: 5000 }).catch(() => {});
     const txt = await pg.textContent('#passText').catch(() => '');
     const btns = await pg.$$eval('.pgrid button', l => l.map(b => b.textContent));
-    ok('connected Mint Pass: post text (cn default per page language) with Agent, Border, invite link, CA; Post on X / Copy text / Save image', /^My BNAGENT Mint Pass\n\nAgent: allin168\.ai\nBorder: Bronze\n\nNo Binance \.ai Agent ID, no mint\.\nKeep minting: https:\/\/bnagent\.onrender\.com\/\?ref=allin168\.ai\n\nCA: 0xC7F95A3bff008053A4e2f235bAf2f6d784e6C5FB$/.test(txt) && btns.join() === 'Post on X,Copy text,Save image', JSON.stringify(txt) + btns);
+    ok('connected Mint Pass: post text (cn default per page language) with Agent, Border, invite link, CA; Post on X / Copy text / Save image', /^My FISTAGENT Mint Pass\n\nAgent: allin168\.ai\nBorder: Bronze\n\nNo Binance \.ai Agent ID, no mint\.\nKeep minting: https:\/\/fistagent\.onrender\.com\/\?ref=allin168\.ai\n\nCA: 0xC7F95A3bff008053A4e2f235bAf2f6d784e6C5FB$/.test(txt) && btns.join() === 'Post on X,Copy text,Save image', JSON.stringify(txt) + btns);
     await pg.click('[data-pl="cn"]');
-    ok('Mint Pass post text in Chinese', /^BNAGENT Mint Pass\n\nAgent：allin168\.ai\nBorder：青铜 Bronze/.test(await pg.textContent('#passText')));
+    ok('Mint Pass post text in Chinese', /^FISTAGENT Mint Pass\n\nAgent：allin168\.ai\nBorder：青铜 Bronze/.test(await pg.textContent('#passText')));
     const dl0 = pg.waitForEvent('download', { timeout: 8000 }).catch(() => null); await pg.click('#passSave'); const dlf = await dl0;
-    ok('Save image downloads BNAGENT-MintPass-allin168.png', !!dlf && dlf.suggestedFilename() === 'BNAGENT-MintPass-allin168.png', dlf ? dlf.suggestedFilename() : 'none');
+    ok('Save image downloads FISTAGENT-MintPass-allin168.png', !!dlf && dlf.suggestedFilename() === 'FISTAGENT-MintPass-allin168.png', dlf ? dlf.suggestedFilename() : 'none');
     await pg.click('#passClose');
     await pg.click('#inviteBtn');
     await pg.waitForSelector('#xbUrl', { timeout: 10000 }).catch(() => {});
@@ -323,7 +323,7 @@ const results = []; const ok = (name, cond, extra = '') => { results.push([cond 
       await pg.waitForFunction(() => /Unbind @allin_x/.test(document.getElementById('inviteBody').textContent), null, { timeout: 10000 }).catch(() => {});
       const sent = xbPosts[0] || {}, signed = await pg.evaluate(() => window.__signed);
       const msg = signed ? Buffer.from(signed[0].slice(2), 'hex').toString() : '';
-      ok('Bind X: personal_sign "bnagent.onrender.com: bind X for allin168.ai / Wallet / Time" → POST /api/x-bind {action, address, tweetUrl, proof{kind:sig}} → shows Unbind @allin_x', sent.action === 'bind' && sent.address === ADDR && sent.tweetUrl === 'https://x.com/allin_x/status/1234567890' && sent.proof && sent.proof.kind === 'sig' && sent.proof.signature === '0x' + '11'.repeat(65) && msg === `bnagent.onrender.com: bind X for allin168.ai\nWallet: ${ADDR.toLowerCase()}\nTime: ${sent.proof.time}` && (await pg.textContent('#inviteBody')).includes('Unbind @allin_x'), JSON.stringify(sent) + ' ' + msg);
+      ok('Bind X: personal_sign "fistagent.onrender.com: bind X for allin168.ai / Wallet / Time" → POST /api/x-bind {action, address, tweetUrl, proof{kind:sig}} → shows Unbind @allin_x', sent.action === 'bind' && sent.address === ADDR && sent.tweetUrl === 'https://x.com/allin_x/status/1234567890' && sent.proof && sent.proof.kind === 'sig' && sent.proof.signature === '0x' + '11'.repeat(65) && msg === `fistagent.onrender.com: bind X for allin168.ai\nWallet: ${ADDR.toLowerCase()}\nTime: ${sent.proof.time}` && (await pg.textContent('#inviteBody')).includes('Unbind @allin_x'), JSON.stringify(sent) + ' ' + msg);
       Object.assign(XB_STATE, { x: null, boundAt: null, cooldownMs: 0 });
     }
     await pg.click('#ivClose');
@@ -338,7 +338,7 @@ const results = []; const ok = (name, cond, extra = '') => { results.push([cond 
     const ref = fs.readFileSync(path.join(__dirname, 'whitepaper-reference.html'), 'utf8');
     const refEn = /<div class="en">([\s\S]*?)<\/div>\n  <div class="zh">/.exec(ref)[1].replace(/\s+/g, ' ').trim(), refZh = /<div class="zh">([\s\S]*?)<\/div>\n  <h3>/.exec(ref)[1].replace(/\s+/g, ' ').trim();
     const wp = await pg.evaluate(() => ({ en: document.querySelector('#whitepaper > div.en').innerHTML, zh: document.querySelector('#whitepaper > div.zh').innerHTML, h1: document.querySelector('.wphead h1 .en').textContent, addr: document.getElementById('addrBox').textContent, css: getComputedStyle(document.body).backgroundColor, logo: document.querySelector('header img').naturalWidth }));
-    ok('whitepaper page: /whitepaper/ loads with styles + logo, "BNAGENT Whitepaper", content identical to the old section (en + zh), contracts incl. mint + treasury', r && r.status() === 200 && wp.logo > 0 && wp.css === 'rgb(7, 7, 7)' && wp.h1 === 'BNAGENT Whitepaper' && wp.en.replace(/\s+/g, ' ').trim() === refEn && wp.zh.replace(/\s+/g, ' ').trim() === refZh && wp.addr.includes(MINT) && wp.addr.includes(TREASURY), wp.h1 + ' ' + (wp.en.replace(/\s+/g, ' ').trim() === refEn) + ' ' + (wp.zh.replace(/\s+/g, ' ').trim() === refZh));
+    ok('whitepaper page: /whitepaper/ loads with styles + logo, "FISTAGENT Whitepaper", content identical to the old section (en + zh), contracts incl. mint + treasury', r && r.status() === 200 && wp.logo > 0 && wp.css === 'rgb(7, 7, 7)' && wp.h1 === 'FISTAGENT Whitepaper' && wp.en.replace(/\s+/g, ' ').trim() === refEn && wp.zh.replace(/\s+/g, ' ').trim() === refZh && wp.addr.includes(MINT) && wp.addr.includes(TREASURY), wp.h1 + ' ' + (wp.en.replace(/\s+/g, ' ').trim() === refEn) + ' ' + (wp.zh.replace(/\s+/g, ' ').trim() === refZh));
     await pg.click('#langBtn');
     ok('whitepaper page: CN/EN toggle', (await pg.evaluate(() => document.body.className)).includes('lang-zh') && (await pg.isVisible('.wphead h1 .zh')));
     ok('home has no whitepaper section any more (moved to its own page)', LOCAL ? !fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8').includes('id="whitepaper"') : true);

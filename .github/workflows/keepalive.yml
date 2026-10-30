@@ -2,7 +2,7 @@ name: keepalive
 # Every 10 minutes: (1) ping the API so the Render free instance stays awake (QR login / social vouchers answer fast);
 # (2) export the off-chain Bind X data (Agent ID wallet address <-> X handle, public) from the API and commit it to
 #     data/bindx.json on the `data` branch. The API restores from that file on boot.
-# Export auth: a GitHub Actions OIDC token (audience "bnagent-api", repository claim checked by the API) — no stored secret
+# Export auth: a GitHub Actions OIDC token (audience "fistagent-api", repository claim checked by the API) — no stored secret
 # needed; if the optional repo secret BINDX_EXPORT_KEY exists it is sent as well.
 on:
   schedule:
@@ -18,10 +18,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - name: Ping bnagent-api
+      - name: Ping fistagent-api
         run: |
           for i in 1 2 3; do
-            code=$(curl -s -o /tmp/out -w '%{http_code}' --max-time 90 https://bnagent-api.onrender.com/ || true)
+            code=$(curl -s -o /tmp/out -w '%{http_code}' --max-time 90 https://fistagent-api.onrender.com/ || true)
             echo "attempt $i: HTTP $code"; head -c 300 /tmp/out || true; echo
             [ "$code" = "200" ] && exit 0
             sleep 20
@@ -39,10 +39,10 @@ jobs:
           EXPORT_KEY: ${{ secrets.BINDX_EXPORT_KEY }}
         run: |
           set -e
-          TOKEN=$(curl -sf -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=bnagent-api" | jq -r .value)
+          TOKEN=$(curl -sf -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=fistagent-api" | jq -r .value)
           echo "::add-mask::$TOKEN"
           for i in 1 2 3 4; do
-            code=$(curl -s -o /tmp/bindx.json -w '%{http_code}' --max-time 90 -H "Authorization: Bearer $TOKEN" ${EXPORT_KEY:+-H "x-export-key: $EXPORT_KEY"} https://bnagent-api.onrender.com/api/x-bind/export || true)
+            code=$(curl -s -o /tmp/bindx.json -w '%{http_code}' --max-time 90 -H "Authorization: Bearer $TOKEN" ${EXPORT_KEY:+-H "x-export-key: $EXPORT_KEY"} https://fistagent-api.onrender.com/api/x-bind/export || true)
             echo "attempt $i: HTTP $code"
             [ "$code" = "200" ] && break
             sleep 20
@@ -57,14 +57,14 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -e
-          git config --global user.name "bnagent-bot"
+          git config --global user.name "fistagent-bot"
           git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
           url="https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
           if git ls-remote --exit-code --heads "$url" data > /dev/null; then
             git clone --depth 1 --branch data "$url" d
           else
             mkdir d && cd d && git init -q -b data && git remote add origin "$url" && cd ..
-            printf '# BNAGENT data branch\n\nWritten by .github/workflows/keepalive.yml. data/bindx.json = Bind X (Agent ID wallet address <-> X handle), public data restored by the API on boot.\n' > d/README.md
+            printf '# FISTAGENT data branch\n\nWritten by .github/workflows/keepalive.yml. data/bindx.json = Bind X (Agent ID wallet address <-> X handle), public data restored by the API on boot.\n' > d/README.md
           fi
           mkdir -p d/data && cp /tmp/bindx.pretty.json d/data/bindx.json
           cd d && git add -A

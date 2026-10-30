@@ -1,4 +1,4 @@
-// BNAGENT Agentic Wallet QR proxy (same approach as jager.live's /api/agent-wallet route).
+// FISTAGENT Agentic Wallet QR proxy (same approach as jager.live's /api/agent-wallet route).
 // Node >= 18, no dependencies. Run: node server/index.mjs   (PORT, ALLOW_ORIGINS, ALLOW_TO env vars)
 //
 // The browser cannot talk to Binance's Agentic Wallet API directly: the session is an `agentSessionId` cookie that a
@@ -7,10 +7,10 @@
 // transaction still needs the user's confirmation in the Binance App.
 //
 // Social tasks: POST /social/sign {user, task, xHandle} returns an EIP-712 Social(...) grant signed by the dedicated social signer
-// (SOCIAL_SIGNER_KEY env var, never logged) that the user's wallet then passes to BnagentMint.claimSocial(). See signSocial().
+// (SOCIAL_SIGNER_KEY env var, never logged) that the user's wallet then passes to FistagentMint.claimSocial(). See signSocial().
 //
 // Actions: login, confirm, query, wallets, preview, execute, logout. `preview` only accepts `to` addresses in ALLOW_TO
-// (the BNAGENT mint contract + USDT), so this endpoint cannot be used to request approvals for other contracts.
+// (the FISTAGENT mint contract + USDT), so this endpoint cannot be used to request approvals for other contracts.
 import http from "node:http";
 import crypto from "node:crypto";
 import { secp256k1, keccak_256 } from "./noble.mjs";
@@ -18,7 +18,7 @@ import { secp256k1, keccak_256 } from "./noble.mjs";
 const PORT = Number(process.env.PORT || 10000);
 const BASE = "https://www.binance.com/bapi/defi/v1/public/wallet-direct/agent-wallet";
 const ORIGINS = (process.env.ALLOW_ORIGINS ||
-  "https://bnagent.onrender.com,https://bnagent-ai.onrender.com,https://bnagentai.onrender.com,https://653366873iuhm-source.github.io")
+  "https://fistagent.onrender.com,https://fistagent-ai.onrender.com,https://fistagentai.onrender.com,https://653366873iuhm-source.github.io")
   .split(",").map((s) => s.trim()).filter(Boolean);
 const USDT = "0x55d398326f99059ff775485246999027b3197955";
 const ALLOW_TO = new Set([USDT, ...(process.env.ALLOW_TO || "").split(",").map((s) => s.trim().toLowerCase()).filter((s) => /^0x[0-9a-f]{40}$/.test(s))]);
@@ -41,7 +41,7 @@ function headersFor(clientId, sessionId) {
     "Content-Type": "application/json",
     agentClientId: cid, "bnc-uuid": cid, agentClientSystem: "Web", agentClientType: "AGENT_CLI",
     agentClientVersion: VERSION, clientVersion: VERSION, version_code: VERSION,
-    "x-trace-id": crypto.randomBytes(16).toString("hex"), device_name: "BNAGENT web",
+    "x-trace-id": crypto.randomBytes(16).toString("hex"), device_name: "FISTAGENT web",
   };
   const sid = typeof sessionId === "string" ? sessionId.replace(/^agentSessionId=/, "") : "";
   if (okId(sid)) h.Cookie = `agentSessionId=${sid}`;
@@ -115,7 +115,7 @@ const w32 = (h) => h.replace(/^0x/, "").padStart(64, "0");
 const SEL = { agentOf: sel("agentOf(address)"), socialDone: sel("socialDone(uint256,bytes32)"), accountAgent: sel("accountAgent(bytes32)"), domainSeparator: sel("domainSeparator()"), claimSocial: sel("claimSocial(bytes32,bytes32,uint256,bytes)") };
 const SOCIAL_TYPEHASH = kec("Social(address user,bytes32 task,bytes32 account,uint256 deadline)");
 const DOMAIN = kec(Buffer.concat([
-  kec("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)"), kec("BnagentMint"), kec("1"),
+  kec("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)"), kec("FistagentMint"), kec("1"),
   unhex(w32(CHAIN_ID.toString(16))), unhex(w32(MINT)),
 ].map((b) => Buffer.from(b))));
 let SIGNER = null, SIGNER_ADDR = null;
@@ -193,7 +193,7 @@ async function signSocial(b, ip) {
 }
 
 // ---------------------------------------------------------------- leaderboard (same shape as jager.live /api/leaderboard)
-// Boards: invites (QuotaGranted with reason INVITE, by inviter), mints (Minted shares, by minter), holders (live BNAGENT balance).
+// Boards: invites (QuotaGranted with reason INVITE, by inviter), mints (Minted shares, by minter), holders (live FISTAGENT balance).
 // Day = current UTC day, week = UTC week from Monday. Scans mint + token logs from the deploy block in 5,000-block chunks on
 // public RPCs that allow eth_getLogs, keeps everything in memory (rebuilt after a restart; `syncing` is true while catching up).
 const TOKEN = (process.env.TOKEN || "0xC7F95A3bff008053A4e2f235bAf2f6d784e6C5FB").toLowerCase();
@@ -339,11 +339,11 @@ async function stats() {
       bnb.push({ shares: n, costUsdt: units(cost), quoteBnb: quote == null ? null : units(quote), sendBnb: quote == null ? null : units((quote * 102n) / 100n) });
     }
     const data = {
-      token: { symbol: "BNAGENT", address: TOKEN_CS, decimals: 18 }, mintContract: MINT_CS, pair: PAIR_CS, usdt: USDT_ADDR, chainId: 56,
+      token: { symbol: "FISTAGENT", address: TOKEN_CS, decimals: 18 }, mintContract: MINT_CS, pair: PAIR_CS, usdt: USDT_ADDR, chainId: 56,
       totalMinted: minted, priceUsdtPerShare: price, tokensPerShare,
       tokensPerShareNote: open
         ? "Estimate at the current pool price. After share 10,000 each share pays its USDT price at the pool price with a 1% discount, so the amount changes with the pool."
-        : "Fixed at 50,000,000 BNAGENT per share up to share 10,000. After share 10,000 each share pays its USDT price at the pool price with a 1% discount, so the amount changes with the pool.",
+        : "Fixed at 50,000,000 FISTAGENT per share up to share 10,000. After share 10,000 each share pays its USDT price at the pool price with a 1% discount, so the amount changes with the pool.",
       mintingOpen: !paused && minted < 100000000 && mintable !== 0, paused, poolOpensAt: 10000, maxPerTransaction: 10,
       burnedAtDeploy: 1100, totalShares: 100000000, bnb,
     };
@@ -447,7 +447,7 @@ async function pass(handle) {
 // Kept in memory; GitHub Actions exports it every 10 min to data/bindx.json on the `data` branch; restored from there on boot.
 const COOLDOWN = 7 * 86400000;
 const XB = { byAddr: new Map(), unbound: new Map(), restored: false };
-const RESTORE_URL = process.env.BINDX_RESTORE_URL || "https://raw.githubusercontent.com/653366873iuhm-source/bnagent/data/data/bindx.json";
+const RESTORE_URL = process.env.BINDX_RESTORE_URL || "https://raw.githubusercontent.com/653366873iuhm-source/fistagent/data/data/bindx.json";
 export function xbLoad(j) {
   if (!j || !Array.isArray(j.bindings)) throw new Error("bad bindx file");
   for (const b of j.bindings) {
@@ -465,7 +465,7 @@ export function xbExport() {
   const bindings = [...XB.byAddr].map(([address, v]) => ({ address, x: v.x, boundAt: v.boundAt })).sort((p, q) => (p.address < q.address ? -1 : 1));
   const unbinds = [...XB.unbound].map(([address, at]) => ({ address, at })).sort((p, q) => (p.address < q.address ? -1 : 1));
   const updatedAt = Math.max(0, ...bindings.map((b) => b.boundAt), ...unbinds.map((u) => u.at));
-  return { version: 1, note: "BNAGENT Bind X: Agent ID wallet address <-> X handle (public data).", updatedAt, bindings, unbinds };
+  return { version: 1, note: "FISTAGENT Bind X: Agent ID wallet address <-> X handle (public data).", updatedAt, bindings, unbinds };
 }
 async function xbRestore() {
   if (process.env.BINDX_NO_RESTORE === "1") { XB.restored = true; return; }
@@ -477,7 +477,7 @@ async function xbRestore() {
   } catch (e) { console.log("bindx restore failed, retrying:", e.message); setTimeout(xbRestore, 60000); }
 }
 const xOf = (x) => { for (const [a, v] of XB.byAddr) if (v.x.toLowerCase() === x.toLowerCase()) return a; return null; };
-export const proofMessage = (action, handle, address, time) => `bnagent.onrender.com: ${action} X for ${handle}.ai\nWallet: ${address.toLowerCase()}\nTime: ${time}`;
+export const proofMessage = (action, handle, address, time) => `fistagent.onrender.com: ${action} X for ${handle}.ai\nWallet: ${address.toLowerCase()}\nTime: ${time}`;
 export function recoverPersonal(message, signature) {
   const sig = String(signature || "").replace(/^0x/, "");
   if (!/^[0-9a-fA-F]{130}$/.test(sig)) return null;
@@ -570,9 +570,9 @@ async function xbindPost(b, ip) {
   XB.byAddr.set(a, { x: post.author, boundAt: Date.now() }); LB.cache = null;
   return [200, { x: post.author, boundAt: XB.byAddr.get(a).boundAt, cooldownMs: 0 }];
 }
-// export auth: shared key (Render env BINDX_EXPORT_KEY) or a GitHub Actions OIDC token for this repo (audience "bnagent-api")
+// export auth: shared key (Render env BINDX_EXPORT_KEY) or a GitHub Actions OIDC token for this repo (audience "fistagent-api")
 const OIDC = { keys: null, at: 0 };
-const REPO = process.env.GITHUB_REPO || "653366873iuhm-source/bnagent";
+const REPO = process.env.GITHUB_REPO || "653366873iuhm-source/fistagent";
 const b64u = (s) => Buffer.from(s.replace(/-/g, "+").replace(/_/g, "/"), "base64");
 async function oidcOk(tok) {
   const [h, p, sg] = String(tok || "").split("."); if (!sg) return false;
@@ -585,7 +585,7 @@ async function oidcOk(tok) {
   const jwk = OIDC.keys.find((k) => k.kid === head.kid); if (!jwk) return false;
   const good = crypto.verify("RSA-SHA256", Buffer.from(h + "." + p), crypto.createPublicKey({ key: jwk, format: "jwk" }), b64u(sg));
   const now = Date.now() / 1000;
-  return good && claims.iss === "https://token.actions.githubusercontent.com" && claims.aud === "bnagent-api" && claims.repository === REPO && claims.exp > now && (claims.nbf || 0) <= now + 60;
+  return good && claims.iss === "https://token.actions.githubusercontent.com" && claims.aud === "fistagent-api" && claims.repository === REPO && claims.exp > now && (claims.nbf || 0) <= now + 60;
 }
 async function exportAuthorized(req) {
   const key = process.env.BINDX_EXPORT_KEY || "";
@@ -608,7 +608,7 @@ const server = http.createServer(async (req, res) => {
   const body = (max, fn) => { let raw = ""; req.on("data", (c) => { raw += c; if (raw.length > max) req.destroy(); }); req.on("end", async () => { let j; try { j = JSON.parse(raw || "{}"); } catch (e) { return send(400, { error: "Bad JSON" }); } try { const [code, obj] = await fn(j); send(code, obj); } catch (e) { send(502, { error: "Could not check the chain right now. Try again." }); } }); };
   const ip = String(req.headers["x-forwarded-for"] || req.socket.remoteAddress || "").split(",")[0].trim();
   if (req.method === "OPTIONS" && ["/api/stats", "/api/verify", "/api/pass", "/api/x-bind", "/api/leaderboard", "/stats/leaderboard"].includes(url)) { res.writeHead(allowed ? 204 : 403, cors); return res.end(); }
-  if (isGet && (url === "/" || url === "/health")) return send(200, { ok: true, service: "bnagent agent-wallet proxy + social signer + public API", allowTo: [...ALLOW_TO], social: SIGNER_ADDR, features: { xbind: true, season: true, bindxRestored: XB.restored } });
+  if (isGet && (url === "/" || url === "/health")) return send(200, { ok: true, service: "fistagent agent-wallet proxy + social signer + public API", allowTo: [...ALLOW_TO], social: SIGNER_ADDR, features: { xbind: true, season: true, bindxRestored: XB.restored } });
   if (isGet && url === "/api/stats") { try { return send(200, await stats()); } catch (e) { return send(502, { error: "Could not read the chain right now." }); } }
   if (isGet && url === "/api/verify") { try { const [c, o] = await verify(q.get("address") || ""); return send(c, o); } catch (e) { return send(502, { error: "Could not read the chain right now." }); } }
   if (isGet && url === "/api/pass") { try { const [c, o] = await pass(q.get("handle")); return send(c, o); } catch (e) { return send(502, { error: "Could not read the chain right now." }); } }

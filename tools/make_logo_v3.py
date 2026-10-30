@@ -1,6 +1,6 @@
 """Logo v3 'Woven chevron A' (concept r3-4), redrawn as clean vector geometry.
 Gold upward chevron (Λ) woven with an amber V: gold left leg passes over the V, the V's right arm passes over the gold right leg.
-Outputs into site/assets: bnagent-mark-v3.svg/.png, bnagent-lockup-v3.png, favicon-v3.svg, favicon-v3-32/180/512.png, og-v3.png,
+Outputs into site/assets: fistagent-mark-v3.svg/.png, fistagent-lockup-v3.png, favicon-v3.svg, favicon-v3-32/180/512.png, og-v3.png,
 logo-v3-preview.png."""
 import os
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
@@ -91,8 +91,8 @@ def lockup(mark_h, color=CREAM):
     m = render_mark(mark_h)
     cap = int(mark_h * 0.42)
     # pick font size so cap height == cap
-    size = cap; t = text_img('BNAGENT', size, 0, color)
-    size = int(size * cap / t.size[1]); t = text_img('BNAGENT', size, int(size * 0.09), color)
+    size = cap; t = text_img('FISTAGENT', size, 0, color)
+    size = int(size * cap / t.size[1]); t = text_img('FISTAGENT', size, int(size * 0.09), color)
     gap = int(mark_h * 0.32)
     W = m.size[0] + gap + t.size[0]
     im = Image.new('RGBA', (W, mark_h), (0, 0, 0, 0))
@@ -128,10 +128,10 @@ def og():
     return bg.convert('RGB')
 
 if __name__ == '__main__':
-    open(os.path.join(OUT, 'bnagent-mark-v3.svg'), 'w').write(svg_mark_tight())
+    open(os.path.join(OUT, 'fistagent-mark-v3.svg'), 'w').write(svg_mark_tight())
     open(os.path.join(OUT, 'favicon-v3.svg'), 'w').write(svg_mark(pad=W0 * 0.2, bg='#161412', rx=0.22))
-    render_mark(512).save(os.path.join(OUT, 'bnagent-mark-v3.png'))
-    lockup(108).save(os.path.join(OUT, 'bnagent-lockup-v3.png'))
+    render_mark(512).save(os.path.join(OUT, 'fistagent-mark-v3.png'))
+    lockup(108).save(os.path.join(OUT, 'fistagent-lockup-v3.png'))
     for s in (32, 180, 512):
         icon(s, pad=0.08 if s == 32 else 0.17).save(os.path.join(OUT, f'favicon-v3-{s}.png'))
     o = og(); o.save(os.path.join(OUT, 'og-v3.png'))

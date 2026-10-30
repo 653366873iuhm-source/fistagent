@@ -2,7 +2,7 @@
 
 ## v2 LIVE DEPLOYMENT (current) — minting LIVE since setPaused(false) tx 0x3384c6d5d1596935a51f45ebe15f58c77cee3426bfdffb65db42edcc75f70943
 - 100,000,000 shares (#1–#1,100 burned at deploy, sale from #1,101; 99,998,900 sellable), 5,131 tiers 1U → 79.74U, cap 10,000T.
-- Deploy tx 0x89fc3e2ad568a0d080849914e1d2fd2d402c6250ceaa2e2ed0cc37186c268ac6 (block 130,542,132, CREATE2 salt keccak256("BNAGENT.mint.v2")).
+- Deploy tx 0x89fc3e2ad568a0d080849914e1d2fd2d402c6250ceaa2e2ed0cc37186c268ac6 (block 130,542,132, CREATE2 salt keccak256("FISTAGENT.mint.v2")).
 - Mint 0xD6aFC30810B001CfA5306A2C54b5E6559DfC9Cf0 · Token 0xC7F95A3bff008053A4e2f235bAf2f6d784e6C5FB · Pair 0x7d4Fde617a4f5D83fD8A354672558d9B9Cd5aA6f.
 - Verified on Sourcify (match) and BscScan (getsourcecode OK) for mint and token.
 - Render API ALLOW_TO = new mint; server DEPLOY_BLOCK default 130542132.
@@ -12,21 +12,21 @@
 - Mint 0xBd57F860B043924f4F37d35AC16c3aab37068e9a, token 0xFfA0441EC4ce08F1afE3fdA5093d69ab30e5b97c, pair 0xb8E1f4a2B792BAc02599e183e1B8d6f2E54286Dc; totalMinted 1,101 (1 share sold). Its 30-day valve opens 2026-11-29 02:34:08 CST (treasury-only withdrawUnfilled).
 
 ---
-# BNAGENT — STATUS (2026-10-30 ~05:00 CST)
+# FISTAGENT — STATUS (2026-10-30 ~05:00 CST)
 
 ## DEPLOYED on BSC mainnet — MINTING LIVE (setPaused(false) sent; totalMinted 1,101 at 03:30 CST)
 - Deploy tx 0xb5783c0dff18c9f48cc2720b6c1d389a7298fdd52b5795dcaffe55012f16430b (block 130,514,568, success), sent from the treasury Agentic Wallet **0x866396d4aee9467b67194431bdbDdE8E8044d8AE (`iuhm.ai`)**.
 - Mint **0xBd57F860B043924f4F37d35AC16c3aab37068e9a** · token **0xFfA0441EC4ce08F1afE3fdA5093d69ab30e5b97c** · pair **0xb8E1f4a2B792BAc02599e183e1B8d6f2E54286Dc** (from `mint.pair()`).
 - Source **verified on BscScan** (Etherscan v2 API, standard-JSON) and **Sourcify** (full match) for mint and token.
 - On-chain: `paused()` = false (minting open), `totalMinted()` = 1,101 at last check, `treasury()` = iuhm.ai wallet.
-- Render `bnagent-api`: `ALLOW_TO=0xBd57F860B043924f4F37d35AC16c3aab37068e9a` set and redeployed. Site config/llms.txt/agent.md/docs carry the live addresses; site reads paused/supply live.
-- Note: the NatSpec comment in src/BnagentMint.sol still says "treasury 0x49E6…9BCE" — left unchanged on purpose (verified source must match
+- Render `fistagent-api`: `ALLOW_TO=0xBd57F860B043924f4F37d35AC16c3aab37068e9a` set and redeployed. Site config/llms.txt/agent.md/docs carry the live addresses; site reads paused/supply live.
+- Note: the NatSpec comment in src/FistagentMint.sol still says "treasury 0x49E6…9BCE" — left unchanged on purpose (verified source must match
   what was deployed; the treasury is a constructor argument, so the comment has no effect).
 
 
 ## Done
 - Contracts on **Jager's money model** + allowed differences (docs/JAGER-DIFF.md): 20% of each payment → treasury 0x8663…d8AE (iuhm.ai), 80% parked;
-  the tx reaching share 10,000 auto-opens the PancakeSwap BNAGENT/USDT pool (LP to dead, transfer lock lifted); afterwards 80% of each mint → pool.
+  the tx reaching share 10,000 auto-opens the PancakeSwap FISTAGENT/USDT pool (LP to dead, transfer lock lifted); afterwards 80% of each mint → pool.
 - **1,100 burned shares**: sale starts at #1,101; 28,900 sellable (46,300 USDT).
 - **30-day rule, REPEATABLE (user 2026-10-30 00:54 CST):** clock starts at the first unpause. After 30 days, while share 10,000 has not been reached,
   only the treasury can call `withdrawUnfilled()` **as many times as it wants, and minting continues**. Each call: all USDT held (the parked 80%) →
@@ -35,18 +35,18 @@
   `MintClosed` removed. Dead tokens stay in totalSupply (cap math conservative).
 - Fork tests: **26/26 PASS** (docs/test-results.txt).
 - Deploy plan `deploy/bsc-mainnet-plan.json` (tx 1 broadcast byte-identical), docs/DEPLOY.md (deployed addresses + verification).
-- Site: **https://bnagent.onrender.com/** (Render static site `bnagent`, publish dir `site/`; auto-deploy does NOT fire, trigger a manual deploy via API) + GitHub Pages mirror
-  https://653366873iuhm-source.github.io/bnagent/ (gh-pages = copy of site/). **Logo v3** (2026-10-30; tools/make_logo_v3.py, concept r3-4 "Woven chevron A"):
-  clean vector mark: gold #E8B84A upward chevron woven with an amber #B07823 V forming an A (bnagent-mark-v3.svg/.png) + Space Grotesk Bold
-  cream "BNAGENT" lockup (bnagent-lockup-v3.png); favicon-v3.svg + favicon-v3-32/180/512.png, og-v3.png; preview logo-v3-preview.png.
+- Site: **https://fistagent.onrender.com/** (Render static site `fistagent`, publish dir `site/`; auto-deploy does NOT fire, trigger a manual deploy via API) + GitHub Pages mirror
+  https://653366873iuhm-source.github.io/fistagent/ (gh-pages = copy of site/). **Logo v3** (2026-10-30; tools/make_logo_v3.py, concept r3-4 "Woven chevron A"):
+  clean vector mark: gold #E8B84A upward chevron woven with an amber #B07823 V forming an A (fistagent-mark-v3.svg/.png) + Space Grotesk Bold
+  cream "FISTAGENT" lockup (fistagent-lockup-v3.png); favicon-v3.svg + favicon-v3-32/180/512.png, og-v3.png; preview logo-v3-preview.png.
   New filenames per version (Render CDN caches old ones). Concept sheets logo-r3-1..6.png; v2 helmet files kept but unused. og/twitter tags, canonical = onrender.
-- **Binance Agentic Wallet (.ai Agent ID) QR connect** like jager.live: `server/index.mjs` proxy (Render web service `bnagent-api`,
-  https://bnagent-api.onrender.com, free plan, Singapore) → Binance agent-wallet login/confirm/query/mpc-wallet list/contract-call preview/execute.
+- **Binance Agentic Wallet (.ai Agent ID) QR connect** like jager.live: `server/index.mjs` proxy (Render web service `fistagent-api`,
+  https://fistagent-api.onrender.com, free plan, Singapore) → Binance agent-wallet login/confirm/query/mpc-wallet list/contract-call preview/execute.
   Desktop: QR + pairing code; mobile: "Open in Binance App" link (the QR URL is a Binance universal link). Connected session acts as an EIP-1193
   provider, so the mint flow is unchanged (preview → user approves in the app → txHash). Headless tests 32/32 (deployed-state checks: live supply 1,100/30,000, paused label, addresses).
 
 ## Social tasks, invite dialog, leaderboard, keep-alive (2026-10-30 ~03:30 CST)
-- API `bnagent-api` now also serves `POST /api/social` (alias `/social/sign`): click-based vouchers like jager.live (FOLLOW: no input;
+- API `fistagent-api` now also serves `POST /api/social` (alias `/social/sign`): click-based vouchers like jager.live (FOLLOW: no input;
   TWEET: pasted post link or xHandle), EIP-712 Social(...) signed by 0x66EC…C199 (key in Render env `SOCIAL_SIGNER_KEY`, never committed;
   keystore stays in secrets/), Agent ID + socialDone + accountAgent checked on-chain, rate limits 30/10min per IP, 8/10min per wallet.
   `GET /api/leaderboard` (alias `/stats/leaderboard`): Invites / Mints / Holders × UTC day / week, top 100, Agent IDs only, from mint+token
@@ -54,7 +54,7 @@
   noble.mjs = vendored @noble/curves+hashes bundle (service stays dependency-free, build `echo no-deps`).
 - Site copies jager.live: header "Invite & tasks · +1 mint" (mobile "Earn") dialog (quota grid, invite link + code copy, social tasks
   Follow/Post → Claim +1 → claimSocial via the connected wallet), shares radio 1–10 + USDT/BNB radios in the mint card, Leaderboard card.
-- `.github/workflows/keepalive.yml` pings https://bnagent-api.onrender.com/ every 10 min; the site also pings it on load.
+- `.github/workflows/keepalive.yml` pings https://fistagent-api.onrender.com/ every 10 min; the site also pings it on load.
 
 ## Not done / next
 - Render auto-deploy: both services show autoDeploy=yes / trigger=commit / repo linked, but Render gets no push events (the Render
