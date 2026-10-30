@@ -1,7 +1,7 @@
 # FISTAGENT — agent guide
 
 > Independent community project, not affiliated with Binance. Nothing here promises profit.
-> **Deployed on BNB Smart Chain (chainId 56)**, source verified on BscScan. Mint contract `0xD6aFC30810B001CfA5306A2C54b5E6559DfC9Cf0` (the only address that accepts payment), token `0xC7F95A3bff008053A4e2f235bAf2f6d784e6C5FB`, PancakeSwap pair `0x7d4Fde617a4f5D83fD8A354672558d9B9Cd5aA6f`, treasury `0x866396d4aee9467b67194431bdbDdE8E8044d8AE` (iuhm.ai). Minting is **open**; still check `paused()` (or `mintingOpen` in https://fistagent-api.onrender.com/api/stats) before minting.
+> **Deployed on BNB Smart Chain (chainId 56)**, source verified on BscScan. Mint contract `0x2c2787710Ec2B3D6b37b8936b8753982654aB4B3` (the only address that accepts payment), token `0xe252Cd16af4D41D7C01120e1d76c61683068fd15`, PancakeSwap pair `0xdc6aCFe3dB5FB73f24E0de6E950a3743f67a277D`, treasury `0x866396d4aee9467b67194431bdbDdE8E8044d8AE` (iuhm.ai). Minting is **open**; still check `paused()` (or `mintingOpen` in https://fistagent-api.onrender.com/api/stats) before minting.
 > The mint contract keeps the $JAGENT (jager.live) mint ABI: same function names, selectors, events and errors.
 
 ## 1. Check eligibility
@@ -73,10 +73,11 @@ Leaderboard JSON (Invites / Mints / Holders, UTC day and week, top 100): `GET ht
 - Shares 1,101–10,000 give 50,000,000 FISTAGENT each; after the pool opens, pool price −1%.
 - Taxes: buy 1%, sell 1% burn + 1% treasury, wallet transfers 0%.
 
-## 6. Funds and liquidity (same model as $JAGENT)
+## 6. Funds and liquidity ($JAGENT model, with one change)
 
-- Every payment: 20% to the project treasury `0x866396d4aee9467b67194431bdbDdE8E8044d8AE`, 80% stays in the mint contract (BNB is swapped to USDT first; any surplus over the table price goes to the treasury).
-- Up to share 10,000 each share parks 0.80 USDT + 40,000,000 FISTAGENT. The tx that reaches share 10,000 opens the official PancakeSwap FISTAGENT/USDT pool with everything parked (8,900 paid shares → 7,120 USDT + 356,000,000,000 FISTAGENT; less if the team withdrew under the 30-day rule, see §7); LP to the dead address. After that 80% of each payment is added to the pool, LP burned.
+- **After the pool opens (share 10,000), 100% of each mint payment goes to the treasury; mints add no liquidity.**
+- Up to share 10,000, every payment: 20% to the project treasury `0x866396d4aee9467b67194431bdbDdE8E8044d8AE`, 80% stays in the mint contract (BNB is swapped to USDT first; any surplus over the table price goes to the treasury).
+- Up to share 10,000 each share parks 0.80 USDT + 40,000,000 FISTAGENT. The tx that reaches share 10,000 opens the official PancakeSwap FISTAGENT/USDT pool with everything parked (8,900 paid shares → 7,120 USDT + 356,000,000,000 FISTAGENT; less if the team withdrew under the 30-day rule, see §7); LP to the dead address. After that 100% of each mint payment goes to the treasury (no liquidity is added by mints); the buyer still gets FISTAGENT at the pool price minus 1%.
 
 ## 7. 30-day rule
 

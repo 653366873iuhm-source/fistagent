@@ -859,9 +859,9 @@
     return `<div class="mp3d" id="mp3d" tabindex="0" role="img" aria-label="${c.b.name} FISTAGENT card. Drag or use the arrow keys to rotate."><div class="mpglow" style="background:${c.b.color}"></div>
       <div class="mpcard" id="mpCard">
         <div class="mpface front" style="--metal:${c.b.metal}"><div class="mptop"><span>FISTAGENT<br>GENESIS 2026</span><span class="mpcoin"></span><span class="r">TIER 0${c.level + 1}<br>${c.b.name.toUpperCase()}</span></div>
-          <div class="mpwell"><div class="mpart"><div class="mpseal"><b>FISTAGENT</b><i>2026</i></div><div class="mpplate"><b>FISTAGENT</b><img src="assets/fistagent-mark-v3.svg" alt=""></div><div class="mptag">THE AI AGENT MINT<br>OF BNB CHAIN · ${esc(c.handle)}.ai</div><div class="mpholo"><b>FISTAGENT</b><i>2026</i><em>${c.b.name.toUpperCase()}</em><small>COLLECTOR'S<br>EDITION</small></div></div></div>
+          <div class="mpwell"><div class="mpart"><div class="mpseal"><b>FISTAGENT</b><i>2026</i></div><div class="mpplate"><b>FISTAGENT</b><img src="assets/fistagent-mark.svg" alt=""></div><div class="mptag">THE AI AGENT MINT<br>OF BNB CHAIN · ${esc(c.handle)}.ai</div><div class="mpholo"><b>FISTAGENT</b><i>2026</i><em>${c.b.name.toUpperCase()}</em><small>COLLECTOR'S<br>EDITION</small></div></div></div>
           <div class="mpfoot"><span>BUILT FOR AGENTIC WALLETS · AGENT ID ONLY</span><span class="mono">${esc(c.handle)}.ai</span></div></div>
-        <div class="mpface back" aria-hidden="true"><div class="mpback"><span class="mppill">${c.b.name.toUpperCase()} BORDER</span><img class="mplogo" src="assets/fistagent-lockup-v3.png" alt=""><span class="mpqr">${qrSvg("https://" + SITE_HOST)}</span><span class="mpscan">SCAN · ${SITE_HOST}</span>
+        <div class="mpface back" aria-hidden="true"><div class="mpback"><span class="mppill">${c.b.name.toUpperCase()} BORDER</span><img class="mplogo" src="assets/fistagent-lockup.png" alt=""><span class="mpqr">${qrSvg("https://" + SITE_HOST)}</span><span class="mpscan">SCAN · ${SITE_HOST}</span>
           <dl>${rows.map(([k, v]) => `<div><dt>${k}</dt><dd>${v}</dd></div>`).join("")}</dl><p>© 2026 FISTAGENT · AI Agent mint on BNB Chain</p></div></div>
       </div></div>
       <div class="mpctl"><button type="button" class="chip" id="mpPause">${T("Pause", "暂停")}</button><button type="button" class="chip" id="mpFlip">${T("Flip", "翻面")}</button></div>`;
@@ -921,7 +921,7 @@
     g.strokeStyle = c.b.color; g.globalAlpha = 0.5; g.lineWidth = 3; rr(18, 18, W0 - 36, H0 - 36, 24); g.stroke(); g.globalAlpha = 1;
     g.font = "900 22px Arial"; const pill = `${c.b.name.toUpperCase()} BORDER`, pw = g.measureText(pill).width + 44;
     g.fillStyle = c.b.color; rr((W0 - pw) / 2, 56, pw, 42, 21); g.fill(); g.fillStyle = "#0b0b0b"; g.textAlign = "center"; g.fillText(pill, W0 / 2, 85);
-    const img = new Image(); img.src = "assets/fistagent-lockup-v3.png";
+    const img = new Image(); img.src = "assets/fistagent-lockup.png";
     await new Promise((r) => { img.onload = r; img.onerror = r; });
     if (img.naturalWidth) { const w = 420, h = (img.naturalHeight / img.naturalWidth) * w; g.drawImage(img, (W0 - w) / 2, 140, w, h); }
     if (typeof window.qrcode === "function") { const q = window.qrcode(0, "M"); q.addData("https://" + SITE_HOST); q.make(); const n = q.getModuleCount(), size = 200, cell = size / n, x0 = (W0 - size) / 2, y0 = 300; g.fillStyle = "#fff"; rr(x0 - 14, y0 - 14, size + 28, size + 28, 14); g.fill(); g.fillStyle = "#0b0b0b"; for (let r = 0; r < n; r++) for (let cc = 0; cc < n; cc++) if (q.isDark(r, cc)) g.fillRect(x0 + cc * cell, y0 + r * cell, cell + 0.5, cell + 0.5); }

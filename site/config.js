@@ -1,11 +1,11 @@
-// FISTAGENT site configuration. v2 deployed on BSC mainnet 2026-10-30 (tx 0x89fc3e2ad568a0d080849914e1d2fd2d402c6250ceaa2e2ed0cc37186c268ac6, block 130,542,132).
-// The site reads paused/supply live from the mint contract. (v1 mint 0xBd57…9e68a is paused and retired.)
+// FISTAGENT site configuration. NOT DEPLOYED YET: mint/token/pair are the planned CREATE2 addresses from deploy/bsc-mainnet-plan.json
+// (salt keccak256("FISTAGENT.mint.v1"), social signer 0x66EC…C199, treasury 0x8663…d8AE). The site reads paused/supply live from the mint contract.
 window.FISTAGENT_CONFIG = {
   chainId: 56,
   rpc: ["https://bsc-dataseed.bnbchain.org", "https://bsc-rpc.publicnode.com", "https://bsc-dataseed1.binance.org"],
-  mint: "0xD6aFC30810B001CfA5306A2C54b5E6559DfC9Cf0",   // FistagentMint
-  token: "0xC7F95A3bff008053A4e2f235bAf2f6d784e6C5FB",  // FistagentToken
-  pair: "0x7d4Fde617a4f5D83fD8A354672558d9B9Cd5aA6f",   // PancakeSwap FISTAGENT/USDT pair (mint.pair())
+  mint: "0x2c2787710Ec2B3D6b37b8936b8753982654aB4B3",   // FistagentMint
+  token: "0xe252Cd16af4D41D7C01120e1d76c61683068fd15",  // FistagentToken
+  pair: "0xdc6aCFe3dB5FB73f24E0de6E950a3743f67a277D",   // PancakeSwap FISTAGENT/USDT pair (mint.pair())
   usdt: "0x55d398326f99059fF775485246999027B3197955",
   agentRegistry: "0x60B9262456dE011F7d15a54CdD8c48bAaa8B022F",
   treasury: "0x866396d4aee9467b67194431bdbDdE8E8044d8AE",

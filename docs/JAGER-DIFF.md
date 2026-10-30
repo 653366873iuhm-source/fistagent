@@ -1,6 +1,34 @@
-> **v2 (current, 2026-10-30):** 100,000,000 shares (#1–#1,100 burned, sale from #1,101; 99,998,900 sellable, 4,223,766,600 USDT at table prices), 5,131 tiers 1U → 79.74U (Jager table continued by its last rule: 100,001–1,000,000 +0.02 per 10,000; then +0.015 per 20,000, rounded to cents), cap 10,000T, FLOOR_LINE 7,616,686,731 / LINE_DENOM 4,223,766,600, POOL_TOKEN_FLOOR 11,666,666,667. Every other rule unchanged.
-> Mint 0xD6aFC30810B001CfA5306A2C54b5E6559DfC9Cf0 · Token 0xC7F95A3bff008053A4e2f235bAf2f6d784e6C5FB · Pair 0x7d4Fde617a4f5D83fD8A354672558d9B9Cd5aA6f · deploy tx 0x89fc3e2a…8ac6 · unpaused tx 0x3384c6d5…0943 (valve deadline 2026-11-29 05:19:06 CST).
-> The figures below describe **v1** (30,000 shares, mint 0xBd57…9e68a, paused 2026-10-30 05:03 CST) and are kept for the record.
+# FISTAGENT — difference from BNAGENT (the ONLY mechanism change)
+
+FISTAGENT is a copy of BNAGENT v2 (bnagent repo @ ea0c4c0; mint 0xD6aF…9Cf0 on BSC) with the name changed and **one** rule changed
+(user, 2026-10-30 17:39 CST: "打满1万份80%进入池子，20%进入金库；打满1万份开池后，后面打的100%都进入金库，就只有这里改了"):
+
+| | BNAGENT v2 | FISTAGENT |
+|---|---|---|
+| Shares #1,101–#10,000 (pool not open) | 20% → treasury, 80% parked for the pool | **same** (20% → treasury, 80% parked) |
+| Tx reaching share 10,000 | opens the pool with everything parked (7,120 USDT + 356B), LP → dead, transfers unlocked | **same** |
+| Each share after the pool opened | 20% → treasury, **80% paired into the pool at the pool price, LP → dead** | **100% → treasury. No USDT, no tokens, no LP added to the pool by mints.** |
+| Buyer after the open | tokens = pay × t × 10,000 / (u × 9,900) (99% of pool price) | **same formula, same amount** |
+| BNB payment after the open | swap output: 80% of table cost → pool, rest → treasury | whole swap output → treasury |
+| Floor-line burn of pool inventory (≤0.8%/tx, ≥ POOL_TOKEN_FLOOR) | yes | **same code**, now the only thing that touches the pool in a mint |
+
+Code (src/FistagentMint.sol, `git diff 454a63b c0faf3b -- src/`): in `_mintShares` the post-open branch adds `pay - cut` to `toTreasury`
+instead of passing it to `_curveShare` as `lpUsdt`; `_curveShare` loses the LP-add lines (`lpT`, `p.u/p.t/addU/addT` updates);
+`Pool.addU/addT` removed; `_settle` keeps only `burnFromPair` + `sync` and runs when `p.burnT > 0`.
+Everything else (constants, 100,000,000 shares, 1,100 burned, 5,131 tiers, 10,000T cap, Agent ID gate, quotas, social signer
+scheme, 30-day repeatable treasury-only `withdrawUnfilled()`, taxes, pool rejection, renounce, selectors, events, errors) is byte-for-byte
+the BNAGENT source apart from the BNAGENT→FISTAGENT rename (token name/symbol, EIP-712 domain name "FistagentMint").
+CREATE2 salt keccak256("FISTAGENT.mint.v1").
+
+Consequences buyers should know (stated on the site and in the whitepaper):
+- After the open the pool's USDT side only changes by trading (it starts at 7,120 USDT, less if the 30-day withdraw was used).
+- The floor-line burn still raises the pool price by up to 0.8% per mint transaction while circulating value is below the line;
+  with no USDT added it fires on nearly every post-open mint tx (fork run: 999 of 1,000 txs for shares 10,001–20,000), so pool
+  FISTAGENT falls (356B → ~98B by share 30,000 in the fork run) and the mint price per token rises.
+
+---
+
+> Parameters (BNAGENT v2, kept by FISTAGENT): 100,000,000 shares (#1–#1,100 burned, sale from #1,101; 99,998,900 sellable, 4,223,766,600 USDT at table prices), 5,131 tiers 1U → 79.74U, cap 10,000T, FLOOR_LINE 7,616,686,731 / LINE_DENOM 4,223,766,600, POOL_TOKEN_FLOOR 11,666,666,667. The Jager audit table below was written for BNAGENT v1 (30,000 shares, 4.44T cap); only those figures differ, every rule is the same, except row 18 (FISTAGENT change).
 
 # FISTAGENT vs Jager ($JAGENT) — function-by-function audit
 
@@ -46,7 +74,7 @@ CREATE2 deployer proxy cannot make follow-up calls. Migration (snapshot/quota im
 | 15 | `opened()` | `totalMinted >= OPEN_AT` | identical | SAME |
 | 16 | A tx crossing 10,000 | opens inside the tx; later shares pool-priced | identical (`test_OpenInsideCrossingTx`) | SAME |
 | 17 | Post-open tokens per share | `pay·t·10,000 / (u·9,900)` | identical | SAME |
-| 18 | Post-open split | 20% treasury, 80% paired at pool price, LP to dead (`_curveShare` + `_settle`) | identical code | SAME |
+| 18 | Post-open split | 20% treasury, 80% paired at pool price, LP to dead (`_curveShare` + `_settle`) | **100% treasury, nothing paired, no LP** (`_curveShare` without the LP add; `_settle` = floor burn only) | **FISTAGENT CHANGE** |
 | 19 | USDT path | `transferFrom(buyer → mint)` then split | identical | SAME |
 | 20 | BNB pricing / swap / refund | Chainlink +1%, swap on WBNB/USDT V2, `SwapShort`, surplus to treasury, refund | identical | SAME |
 | 21 | Floor-line burn (`RISE` 1008/1000, pool minimum, `PoolBurned`) | | identical code, scaled constants | SAME / D |
@@ -83,4 +111,4 @@ Jager's `_open` behaves the same way; no fix was needed beyond C.
   instead of a huge token side against a small USDT side. They stay counted in totalSupply → cap math only gets more conservative.
 
 ## Tests
-`test/FistagentFork.t.sol`, BSC mainnet fork: **26/26 pass** (docs/test-results.txt).
+`test/FistagentFork.t.sol`, BSC mainnet fork: **29/29 pass** (26 ported from BNAGENT, adjusted for the post-open change, + 3 new `test_Fist*`; docs/test-results.txt).

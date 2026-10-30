@@ -75,7 +75,7 @@ const proof = (action, handle = "tester", pk = priv, a = ADDR) => { const time =
 try {
   let [c, j] = await get("/api/stats");
   ok("GET /api/stats: Jager shape (token, mintContract, pair, usdt, chainId 56, totalMinted, price, tokensPerShare, mintingOpen, paused, poolOpensAt, maxPerTransaction, bnb[1..10])",
-    c === 200 && j.token.symbol === "FISTAGENT" && j.token.address === "0xC7F95A3bff008053A4e2f235bAf2f6d784e6C5FB" && j.mintContract === "0xD6aFC30810B001CfA5306A2C54b5E6559DfC9Cf0" && j.chainId === 56 && j.totalMinted >= 1100 && typeof j.priceUsdtPerShare === "number" && j.tokensPerShare > 0 && typeof j.mintingOpen === "boolean" && j.poolOpensAt === 10000 && j.maxPerTransaction === 10 && j.bnb.length === 10 && j.bnb[0].shares === 1 && /^\d/.test(j.bnb[0].quoteBnb) && Number(j.bnb[0].sendBnb) > Number(j.bnb[0].quoteBnb),
+    c === 200 && j.token.symbol === "FISTAGENT" && j.token.address === "0xe252Cd16af4D41D7C01120e1d76c61683068fd15" && j.mintContract === "0x2c2787710Ec2B3D6b37b8936b8753982654aB4B3" && j.chainId === 56 && j.totalMinted >= 1100 && typeof j.priceUsdtPerShare === "number" && j.tokensPerShare > 0 && typeof j.mintingOpen === "boolean" && j.poolOpensAt === 10000 && j.maxPerTransaction === 10 && j.bnb.length === 10 && j.bnb[0].shares === 1 && /^\d/.test(j.bnb[0].quoteBnb) && Number(j.bnb[0].sendBnb) > Number(j.bnb[0].quoteBnb),
     JSON.stringify(j).slice(0, 300));
   ok("GET /api/stats: sendBnb = quote × 1.02, costUsdt follows the price table", j && Math.abs(Number(j.bnb[1].sendBnb) / Number(j.bnb[1].quoteBnb) - 1.02) < 1e-9 && (j.totalMinted >= 10000 || j.bnb[2].costUsdt === "3"));
   [c, j] = await get("/api/verify?address=0x866396d4aee9467b67194431bdbDdE8E8044d8AE");

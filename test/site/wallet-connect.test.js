@@ -9,7 +9,7 @@ const types = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/cs
 const srv = http.createServer((q, r) => { let f = path.join(ROOT, decodeURIComponent(q.url.split('?')[0])); if (f.endsWith('/')) f += 'index.html'; fs.readFile(f, (e, d) => { if (e) { r.writeHead(404); return r.end(); } r.writeHead(200, { 'content-type': types[path.extname(f)] || 'application/octet-stream' }); r.end(d); }); });
 const ADDR = '0x49E6fb3812fdfD67eDfE17259f03CcbE59f39BCE'; // test fixture: a wallet holding allin168.ai on BSC (not the treasury; treasury = 0x8663…d8AE iuhm.ai)
 const TREASURY = '0x866396d4aee9467b67194431bdbDdE8E8044d8AE'; // iuhm.ai Agentic Wallet
-const MINT = '0xD6aFC30810B001CfA5306A2C54b5E6559DfC9Cf0';
+const MINT = '0x2c2787710Ec2B3D6b37b8936b8753982654aB4B3';
 const mock = (addr) => `(() => {
   const calls = []; window.__calls = calls; let chain = '0x1'; let added = false; const ls = {};
   const p = { isMetaMask: true, request: async ({ method, params }) => { calls.push(method);
@@ -145,10 +145,10 @@ const results = []; const ok = (name, cond, extra = '') => { results.push([cond 
   {
     const ctx = await b.newContext(); const pg = await ctx.newPage();
     await pg.goto(base + '?lang=en', { waitUntil: 'networkidle' });
-    const logoOk = await pg.evaluate(async () => { const img = document.querySelector('header img'); return !!img && img.complete && img.naturalWidth > 0 && /assets\/fistagent-lockup-v3\.png/.test(img.src); });
-    ok('brand: header logo loads and is the v3 lockup (woven chevron A mark + FISTAGENT)', logoOk);
+    const logoOk = await pg.evaluate(async () => { const img = document.querySelector('header img'); return !!img && img.complete && img.naturalWidth > 0 && /assets\/fistagent-lockup\.png/.test(img.src); });
+    ok('brand: header logo loads and is the FISTAGENT lockup (gold circle mark + FISTAGENT)', logoOk);
     const og = await pg.getAttribute('meta[property="og:image"]', 'content');
-    ok('brand: og:image on fistagent.onrender.com', og === 'https://fistagent.onrender.com/assets/og-v3.png', og);
+    ok('brand: og:image on fistagent.onrender.com', og === 'https://fistagent.onrender.com/assets/og-fist.png', og);
     const sup = await pg.evaluate(() => ({ label: document.querySelector('.slabel').textContent, big: document.querySelector('.sbig').textContent.replace(/\s+/g, ' ').trim(), bars: document.querySelectorAll('.supply .bar i').length, legend: document.getElementById('sLegend').textContent, legends: document.querySelectorAll('.slegend').length }));
     ok('supply: SUPPLY, staged N / 10,000 in stage 1 (N >= 1,100), one gold bar, one legend', sup.label === 'SUPPLY' && /^(\d{1,3}(,\d{3})*) \/ (10,000|20,000|100,000|1,000,000|100,000,000)$/.test(sup.big) && +sup.big.split(' ')[0].replace(/,/g, '') >= 1100 && sup.bars === 1 && sup.legends === 1 && sup.legend === 'Burned + Minted ' + sup.big, JSON.stringify(sup));
     const wp = await pg.textContent('#whitepaper');
