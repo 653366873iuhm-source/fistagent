@@ -1,0 +1,7 @@
+out/
+cache/
+ref/
+broadcast/
+.env
+secrets/
+test/site/shot-*.png
