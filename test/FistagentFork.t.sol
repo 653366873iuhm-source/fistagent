@@ -398,13 +398,15 @@ contract FistagentForkTest is Test {
         assertTrue(token.tradingEnabled(), "transfer lock lifted by the automatic open");
         assertGt(mint.openedTime(), 0);
         (uint256 u, uint256 t) = mint.reserves();
-        assertEq(u, 7_120 ether + 5 * 0.88 ether, "7,120 + 80% of 5 x 1.10");
-        assertLt(t, 356_000_000_000 ether + 5 * 400_000_000 ether);
+        // FISTAGENT: the 5 shares after the open add nothing to the pool; their full payment goes to the treasury
+        assertEq(u, 7_120 ether, "pool USDT = the parked 7,120 only (no LP from post-open mints)");
+        assertLe(t, 356_000_000_000 ether, "pool tokens: only the floor burn can change them");
         assertGt(token.balanceOf(bulk) - k0, 250_000_000 ether, "5 x 50M + 5 pool-priced shares");
-        assertEq(usdt.balanceOf(treasury) - tr0, 5 * 0.2 ether + 5 * 0.22 ether, "20% to treasury");
+        assertEq(usdt.balanceOf(treasury) - tr0, 5 * 0.2 ether + 5 * 1.1 ether, "20% of the first 5, 100% of the last 5");
         assertEq(usdt.balanceOf(address(mint)), 0, "nothing left in the mint contract");
         assertEq(mint.pendingUsdt(), 0);
         assertGt(_lpAtDead(), 0, "LP at dead");
+        assertEq(_lpAtDead() + 1_000, IPairExtra(address(pair)).totalSupply(), "only the opening LP exists");
         assertEq(IPairExtra(address(pair)).balanceOf(treasury), 0, "no LP for the team");
     }
 
@@ -522,10 +524,10 @@ contract FistagentForkTest is Test {
         vm.prank(CAROL);
         mint.mint(1, address(0), 1.1 ether);
         assertEq(token.balanceOf(CAROL), expectTokens, "phase-2 tokens at 99% of pool price");
-        assertEq(usdt.balanceOf(treasury) - tr0, 0.22 ether, "20% to treasury");
+        assertEq(usdt.balanceOf(treasury) - tr0, 1.1 ether, "FISTAGENT: 100% to treasury after the open");
         (uint256 u2,) = mint.reserves();
-        assertEq(u2, u + 0.88 ether, "80% into the pool");
-        assertGt(_lpAtDead(), lp0, "new LP to dead");
+        assertEq(u2, u, "FISTAGENT: nothing added to the pool");
+        assertEq(_lpAtDead(), lp0, "FISTAGENT: no new LP");
         assertGt(_poolPrice(), p0, "floor burn raised price");
         assertLe(_poolPrice(), p0 * 1_008_001 / 1_000_000);
 
@@ -601,9 +603,9 @@ contract FistagentForkTest is Test {
         vm.prank(CAROL);
         mint.mintWithBnb{value: q}(5, address(0), q);
         uint256 d = usdt.balanceOf(treasury) - tu;
-        assertGe(d, c5 * 2 / 10, "20% + surplus");
+        assertGe(d, c5, "FISTAGENT: 100% + surplus after the open");
         usdPaidInBnb += c5;
-        usdtFromBnb += d + c5 * 8 / 10;
+        usdtFromBnb += d; // after the open the whole swap output goes to the treasury
         burnsA += _bulkMint(20_000 - mint.totalMinted());
         assertEq(mint.priceCents(mint.totalMinted() + 1), 210);
 
@@ -634,7 +636,11 @@ contract FistagentForkTest is Test {
         assertLe(token.totalSupply(), token.MAX_SUPPLY());
         assertEq(usdt.balanceOf(address(mint)), 0, "mint contract keeps no USDT");
         uint256 surplus = usdtFromBnb - usdPaidInBnb;
-        assertEq(usdt.balanceOf(treasury) - treasuryUsdt0, 9_260 ether + surplus, "20% of 46,300 + BNB surplus");
+        // FISTAGENT: 20% of the 8,900 USDT paid before the open (1,780) + 100% of the 37,400 paid after it
+        assertEq(usdt.balanceOf(treasury) - treasuryUsdt0, 39_180 ether + surplus, "20% pre-open + 100% post-open + BNB surplus");
+        (uint256 uEnd,) = mint.reserves();
+        console2.log("pool USDT vs opening 7,120 (trades only):", uEnd / 1e18);
+        assertEq(_lpAtDead() + 1_000, IPairExtra(address(pair)).totalSupply(), "FISTAGENT: only the opening LP exists");
         assertGt(treasury.balance, treasuryBnb0, "tax BNB to treasury");
         vm.prank(treasury);
         vm.expectRevert(FistagentMint.AlreadyOpen.selector);
@@ -900,7 +906,7 @@ contract FistagentForkTest is Test {
         assertGt(token.totalSupply(), supplyBefore);
         assertLe(token.totalSupply(), token.MAX_SUPPLY());
         (uint256 u2,) = mint.reserves();
-        assertGt(u2, u);
+        assertEq(u2, u, "FISTAGENT: post-open mints add no USDT to the pool");
     }
 
     function test_ValveWorksAfterRenounce() public {
@@ -956,5 +962,89 @@ contract FistagentForkTest is Test {
         assertEq(mint.totalMinted(), 1_110);
         assertEq(mint.soldShares(), 10);
         assertEq(mint.totalPaid(), 10 ether);
+    }
+
+    // ------------------------------------------------------------------ FISTAGENT: the one mechanism change
+
+    function _lpSupply() internal view returns (uint256) {
+        return IPairExtra(address(pair)).totalSupply();
+    }
+
+    /// @notice Before the open the split stays 20% treasury / 80% parked, share by share, USDT and BNB.
+    function test_FistPreOpenSplit2080() public {
+        uint256 t0 = usdt.balanceOf(treasury);
+        vm.prank(ALICE);
+        mint.mint(7, address(0), 7 ether);
+        assertEq(usdt.balanceOf(treasury) - t0, 1.4 ether, "20% of 7");
+        assertEq(usdt.balanceOf(address(mint)), 5.6 ether, "80% of 7 parked");
+        _bulkMint(9_000 - mint.totalMinted());
+        _assertParked();
+        assertEq(usdt.balanceOf(treasury) - t0, 7_900 * 0.2 ether, "20% of 7,900 sold");
+        assertEq(mint.pendingUsdt(), 7_900 * 0.8 ether, "80% of 7,900 parked");
+        (uint256 u, uint256 t) = mint.reserves();
+        assertEq(u + t, 0, "pair untouched before the open");
+    }
+
+    /// @notice After the open: 100% of each USDT payment to the treasury, zero USDT/tokens/LP added to the pool,
+    ///         buyer still gets its tokens at 99% of the pool price (same formula as BNAGENT).
+    function test_FistPostOpenAllToTreasuryNoLp() public {
+        _bulkMint(10_000 - mint.totalMinted());
+        assertTrue(mint.opened());
+        (uint256 u0, uint256 t0) = mint.reserves();
+        assertEq(u0, 7_120 ether);
+        uint256 lp0 = _lpSupply();
+        uint256 lpDead0 = _lpAtDead();
+        uint256 pairUsdt0 = usdt.balanceOf(address(pair));
+        uint256 tr0 = usdt.balanceOf(treasury);
+
+        // one share: exact token amount = BNAGENT formula on the current reserves
+        uint256 expectTokens = 1.1 ether * t0 * 10_000 / (u0 * 9_900);
+        vm.prank(CAROL);
+        mint.mint(1, address(0), 1.1 ether);
+        assertEq(token.balanceOf(CAROL), expectTokens, "buyer tokens unchanged vs BNAGENT");
+        assertEq(usdt.balanceOf(treasury) - tr0, 1.1 ether, "100% to treasury");
+        assertEq(usdt.balanceOf(address(pair)), pairUsdt0, "no USDT into the pair");
+        assertEq(_lpSupply(), lp0, "no LP minted");
+        assertEq(_lpAtDead(), lpDead0);
+        assertEq(usdt.balanceOf(address(mint)), 0, "mint contract keeps nothing");
+        (uint256 u1, uint256 t1) = mint.reserves();
+        assertEq(u1, u0, "pool USDT unchanged");
+        assertLe(t1, t0, "pool tokens: only the floor burn may lower them");
+
+        // many full transactions (10 shares each, price tier 1.10 then 1.20)
+        uint256 tr1 = usdt.balanceOf(treasury);
+        uint256 cost;
+        uint256 m0 = mint.totalMinted();
+        for (uint256 i; i < 200; i++) {
+            cost += mint.costOf(10);
+            _bulkMint(10);
+        }
+        assertEq(mint.totalMinted(), m0 + 2_000);
+        assertEq(usdt.balanceOf(treasury) - tr1, cost, "100% of 2,000 post-open shares to treasury");
+        assertEq(usdt.balanceOf(address(pair)), pairUsdt0, "still no USDT into the pair");
+        assertEq(_lpSupply(), lp0, "still no LP minted");
+        assertEq(usdt.balanceOf(address(mint)), 0);
+    }
+
+    /// @notice Post-open BNB mint: the whole swap output (table cost + 1% headroom surplus) goes to the treasury.
+    function test_FistPostOpenBnbAllToTreasury() public {
+        _bulkMint(10_000 - mint.totalMinted());
+        uint256 lp0 = _lpSupply();
+        (uint256 u0,) = mint.reserves();
+        uint256 c = mint.costOf(4);
+        uint256 q = mint.bnbQuote(4);
+        vm.deal(BOB, 1 ether);
+        uint256 tr0 = usdt.balanceOf(treasury);
+        vm.prank(BOB);
+        mint.mintWithBnb{value: q}(4, address(0), q);
+        uint256 d = usdt.balanceOf(treasury) - tr0;
+        assertGe(d, c, "at least the full table cost");
+        assertLe(d, c * 103 / 100, "cost + ~1% headroom (+ fork drift)");
+        assertGt(token.balanceOf(BOB), 0);
+        (uint256 u1,) = mint.reserves();
+        assertEq(u1, u0, "pool USDT unchanged");
+        assertEq(_lpSupply(), lp0, "no LP minted");
+        assertEq(usdt.balanceOf(address(mint)), 0);
+        assertEq(address(mint).balance, 0);
     }
 }

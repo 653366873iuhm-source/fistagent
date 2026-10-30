@@ -22,18 +22,19 @@ contract BuildPlan is Script {
         vm.serializeAddress(o, "socialSigner", socialSigner);
         vm.serializeAddress(o, "expectedMint", mintAddr);
         vm.serializeAddress(o, "expectedToken", tokenAddr);
+        vm.serializeAddress(o, "expectedPair", _pancakePair(tokenAddr, BscConfig.USDT));
         vm.serializeBytes32(o, "salt", BscConfig.SALT);
         vm.serializeBytes32(o, "initCodeHash", keccak256(init));
 
         string memory t1 = "tx1";
-        vm.serializeString(t1, "description", "Deploy FistagentMint via the CREATE2 deployer proxy (also deploys FistagentToken and creates the official, empty PancakeSwap FISTAGENT/USDT pair). Mint starts PAUSED; shares #1-#1,100 are burned (sale starts at #1,101). Jager money model: 20% of each payment to the treasury, 80% held by the mint contract; the tx reaching share 10,000 automatically opens the official pool with everything parked (7,120 USDT + 356B FISTAGENT), LP to dead; afterwards 80% of each mint is added to the pool (LP to dead).");
+        vm.serializeString(t1, "description", "Deploy FistagentMint via the CREATE2 deployer proxy (also deploys FistagentToken and creates the official, empty PancakeSwap FISTAGENT/USDT pair). Mint starts PAUSED; shares #1-#1,100 are burned (sale starts at #1,101). Before share 10,000: 20% of each payment to the treasury, 80% held by the mint contract; the tx reaching share 10,000 automatically opens the official pool with everything parked (7,120 USDT + 356B FISTAGENT), LP to dead. FISTAGENT change vs BNAGENT: after the pool opens, 100% of each mint payment goes to the treasury (no LP is added by mints).");
         vm.serializeAddress(t1, "to", BscConfig.CREATE2_PROXY);
         vm.serializeString(t1, "value", "0");
         vm.serializeAddress(t1, "expectedAddress", mintAddr);
         string memory tx1 = vm.serializeBytes(t1, "data", deployData);
 
         string memory t2 = "tx2";
-        vm.serializeString(t2, "description", "Open minting: treasury calls setPaused(false) on the mint contract (only after the website shows the deployed addresses). The first unpause starts the 30-day clock: if share 10,000 is not reached by mintStartTime + 30 days, only the treasury can call withdrawUnfilled() (selector 0xa65c6326), which sends all USDT held to the treasury and closes minting for good.");
+        vm.serializeString(t2, "description", "Open minting: treasury calls setPaused(false) on the mint contract (only after the website shows the deployed addresses). The first unpause starts the 30-day clock: if share 10,000 is not reached by mintStartTime + 30 days, only the treasury can call withdrawUnfilled() (selector 0xa65c6326), which sends all USDT held to the treasury and the parked pool tokens to dead; minting continues and the call is repeatable until the pool opens.");
         vm.serializeAddress(t2, "to", mintAddr);
         vm.serializeString(t2, "value", "0");
         string memory tx2 = vm.serializeBytes(t2, "data", unpauseData);
@@ -49,6 +50,25 @@ contract BuildPlan is Script {
         console2.log("mint (CREATE2):", mintAddr);
         console2.log("token (CREATE from mint, nonce 1):", tokenAddr);
         console2.log("initcode bytes:", init.length);
+    }
+
+    /// @dev PancakeSwap V2 pair address (CREATE2 by the factory, init code hash of the Pancake V2 pair).
+    function _pancakePair(address a, address b) private pure returns (address) {
+        (address t0, address t1) = a < b ? (a, b) : (b, a);
+        return address(
+            uint160(
+                uint256(
+                    keccak256(
+                        abi.encodePacked(
+                            hex"ff",
+                            BscConfig.PANCAKE_V2_FACTORY,
+                            keccak256(abi.encodePacked(t0, t1)),
+                            hex"00fb7f630766e6a796048ea87d01acd3068e8ff67d078148a3fa3f4a84f69bd5"
+                        )
+                    )
+                )
+            )
+        );
     }
 
     function _trimLastBrace(string memory s) private pure returns (string memory) {

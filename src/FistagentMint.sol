@@ -9,13 +9,16 @@ import {FistagentToken} from "./FistagentToken.sol";
 import {IV2Factory, IV2Pair, IWrappedNative, IAgentIdRegistry, IPriceFeed, V2Math} from "./interfaces/IExternal.sol";
 
 /// @title FISTAGENT mint
-/// @notice Same mechanism and public interface as the $JAGENT mint (BSC 0x3643…2aB8), with only these
+/// @notice FISTAGENT = the BNAGENT mint with ONE change: after the pool has opened (share 10,000), 100% of each
+///         mint payment goes to the treasury and mints add no liquidity (BNAGENT paired 80% into the pool).
+///         Before the open the split is unchanged (20% treasury / 80% parked for the opening pool).
+///         Same mechanism and public interface as the $JAGENT mint (BSC 0x3643…2aB8), with only these
 ///         intended differences (docs/JAGER-DIFF.md):
 ///         (a) 100,000,000 shares; the reference price table (353 tiers to 8.07 USDT at 4,440,000) continued by its
 ///             last rule (+0.015 USDT every 20,000 shares, rounded to the cent): 5,131 tiers, 79.74 USDT at 100,000,000.
 ///         (b) 10,000T cap (a full sellout mints ~1,228T); floor line paid x 7,616,686,731 / 4,223,766,600 (reference
 ///             ratio 50,000,000 / 27,727,060 over the sellable shares); pool floor 11,666,666,667 (reference).
-///         (c) name FISTAGENT; treasury 0x49E6…9BCE; own social-task signer.
+///         (c) name FISTAGENT; treasury = constructor argument (immutable); own social-task signer.
 ///         (e) shares #1-#1,100 are burned at deploy (never sold, no tokens, no USDT): selling starts at #1,101
 ///             (table price at that index), 99,998,900 sellable. The pool still opens on the tx reaching share 10,000,
 ///             with the USDT actually parked (80% of 8,900 paid shares = 7,120) and the tokens actually parked at
@@ -29,8 +32,8 @@ import {IV2Factory, IV2Pair, IWrappedNative, IAgentIdRegistry, IPriceFeed, V2Mat
 ///         Money flow = reference: shares up to 10,000 pay 1 USDT, give 50M tokens and park 0.80 USDT plus
 ///         40M tokens for the opening pool (20% to the treasury). Share 10,000 opens the official pair with
 ///         everything parked (7,120 USDT + 356B tokens) in the same transaction, LP to dead. From share 10,001 the buyer gets
-///         tokens at 99% of the pool price, 20% goes to the treasury, 80% is paired into the pool at the pool
-///         price (LP to dead), and pool inventory is sent to dead while the circulating value is below the
+///         tokens at 99% of the pool price and 100% of the payment goes to the treasury (FISTAGENT; no LP is
+///         added by mints), and pool inventory is sent to dead while the circulating value is below the
 ///         floor line, by at most 0.8% per transaction, never below POOL_TOKEN_FLOOR.
 contract FistagentMint is ReentrancyGuard {
     using SafeERC20 for IERC20;
@@ -507,8 +510,6 @@ contract FistagentMint is ReentrancyGuard {
         uint256 startT;
         uint256 circ;
         uint256 supply;
-        uint256 addU;
-        uint256 addT;
         uint256 burnT;
         uint256 userT;
     }
@@ -543,13 +544,16 @@ contract FistagentMint is ReentrancyGuard {
                     _loadPool(p);
                 }
             } else {
-                _curveShare(p, n, pay - cut);
+                // FISTAGENT: once the pool is open, 100% of the payment goes to the treasury
+                // (BNAGENT paired the other 80% into the pool here). No LP is added by mints.
+                toTreasury += pay - cut;
+                _curveShare(p, n);
             }
         }
         totalMinted = first + shares - 1;
 
         if (p.userT > 0) token.mint(msg.sender, p.userT);
-        if (live && p.addU > 0) _settle(p);
+        if (live && p.burnT > 0) _settle(p);
         if (toTreasury > 0) usdt.safeTransfer(treasury, toTreasury);
         emit Minted(msg.sender, id, first, shares, cost);
 
@@ -569,21 +573,16 @@ contract FistagentMint is ReentrancyGuard {
         p.supply = token.totalSupply();
     }
 
-    /// @dev Works on the pool as it will be after this share. All shares of the
-    ///      transaction are settled into the pair together at the end, which leaves
-    ///      the same reserves as adding and burning share by share.
-    function _curveShare(Pool memory p, uint256 n, uint256 lpUsdt) private {
+    /// @dev Works on the pool as it will be after this share. FISTAGENT: no USDT or tokens are added to the
+    ///      pool by mints; only the floor-line burn of pool inventory is applied, for all shares of the
+    ///      transaction together at the end.
+    function _curveShare(Pool memory p, uint256 n) private {
         uint256 pay = priceCents(n) * 1e16;
         uint256 userT = pay * p.t * 10_000 / (p.u * MINT_PRICE_BPS);
-        uint256 lpT = (lpUsdt * p.t + p.u - 1) / p.u;
-        p.supply += userT + lpT;
+        p.supply += userT;
         if (p.supply > MAX_SUPPLY) revert SoldOut();
         p.userT += userT;
         p.circ += userT;
-        p.u += lpUsdt;
-        p.t += lpT;
-        p.addU += lpUsdt;
-        p.addT += lpT;
 
         uint256 line = totalPaid * FLOOR_LINE / LINE_DENOM;
         if (p.circ * p.u / p.t >= line) return;
@@ -598,13 +597,9 @@ contract FistagentMint is ReentrancyGuard {
         emit PoolBurned(n, burn);
     }
 
+    /// @dev FISTAGENT: mints add no liquidity after the open, so settling is only the floor-line burn.
     function _settle(Pool memory p) private {
-        usdt.safeTransfer(address(pair), p.addU);
-        token.mint(address(pair), p.addT);
-        pair.mint(DEAD);
-        if (p.burnT > 0) {
-            token.burnFromPair(p.burnT);
-        }
+        token.burnFromPair(p.burnT);
         pair.sync();
     }
 
