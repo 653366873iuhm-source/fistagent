@@ -174,7 +174,7 @@
       const nt = tierEnd(next) < TOTAL ? priceCents(tierEnd(next) + 1) : 0;
       $("sTotal").innerHTML = `<span class="en">Total shares <span class="tv">${s.minted.toLocaleString()}</span> / 100,000,000${nt ? ` · Rises to ${uFmt(nt)}U at ${tierEnd(next).toLocaleString()}` : ""}</span><span class="zh">总份数 <span class="tv">${s.minted.toLocaleString()}</span> / 100,000,000${nt ? ` · 第 ${tierEnd(next).toLocaleString()} 份后涨至 ${uFmt(nt)}U` : ""}</span>`;
       $("sPool").textContent = s.open ? `${fmt(s.u)} USDT / ${fmt(s.t, 0)} FISTAGENT` : T(`Opens automatically at share 10,000 (${(10000 - s.minted).toLocaleString()} to go)`, `第 10,000 份时自动开池（还差 ${(10000 - s.minted).toLocaleString()} 份）`);
-      $("sPaused").textContent = s.paused ? T("Paused", "暂停中") : s.minted >= TOTAL ? T("Sold out", "已售罄") : T("Open", "开放中");
+      $("sPaused").textContent = s.paused ? T("Paused (not open yet)", "暂停中（尚未开放）") : s.minted >= TOTAL ? T("Sold out", "已售罄") : T("Open", "开放中");
       markTier(next);
     } else {
       // no live read yet: keep the honest static placeholders (— for supply), never claim a state we have not read
@@ -424,7 +424,7 @@
     else if (W.chainId !== BSC) label = T("Switch to BNB Smart Chain", "请切换到 BNB Smart Chain");
     else if (W.handle === "" ) label = T("This wallet has no .ai Agent ID", "该钱包没有 .ai Agent ID");
     else if (!s) label = T("Loading…", "加载中…");
-    else if (s.paused) label = T("Minting is paused", "铸造已暂停");
+    else if (s.paused) label = T("Minting is paused (not open yet)", "铸造暂停中（尚未开放）");
     else if (s.minted >= 100000000) label = T("Sold out", "已售罄");
     else if (s.mintable === 0) label = T("Minting ended", "铸造已结束");
     else if (W.status && W.status.quota - W.status.minted <= 0) label = T("Quota used · Invite or do tasks to earn more", "额度已用完 · 邀请或做任务获得更多");
@@ -689,12 +689,12 @@
 
   // ---------------------------------------------------------------- Invite & tasks · +1 mint (same dialog as jager.live)
   const API = C.api || "https://fistagent-api.onrender.com";
-  const XH = (C.social && C.social.x) || "FISTAGENT_X_TBD";
+  const XH = (C.social && C.social.x) || ""; // empty = no project X account: FOLLOW task hidden, no handle shown
   const SITE_HOST = "fistagent.onrender.com";
   const TASKS = [
-    { id: "FOLLOW", hash: "0xd0da9b1693253fae9e3642967a8d27bb318f84f49ff0596c1d11ecec5bd752f3", title: () => T(`Follow @${XH} on X`, `在 X 关注 @${XH}`), action: () => T("Follow", "关注"), href: `https://x.com/intent/follow?screen_name=${XH}` },
-    { id: "TWEET", hash: "0x93e97387cbdd54fcd2e94ca587c3745ec0fd3255bec4a5a576b02fcd5dcd413e", title: () => T("Post your mint or FISTAGENT content", "发布你的铸造或 FISTAGENT 相关内容"), action: () => T("Post", "发帖"), href: `https://x.com/intent/post?text=${encodeURIComponent(`Minting FISTAGENT with @${XH} on BNB Chain. ${SITE_HOST}`)}` },
-  ];
+    XH && { id: "FOLLOW", hash: "0xd0da9b1693253fae9e3642967a8d27bb318f84f49ff0596c1d11ecec5bd752f3", title: () => T(`Follow @${XH} on X`, `在 X 关注 @${XH}`), action: () => T("Follow", "关注"), href: `https://x.com/intent/follow?screen_name=${XH}` },
+    { id: "TWEET", hash: "0x93e97387cbdd54fcd2e94ca587c3745ec0fd3255bec4a5a576b02fcd5dcd413e", title: () => T("Post your mint or FISTAGENT content", "发布你的铸造或 FISTAGENT 相关内容"), action: () => T("Post", "发帖"), href: `https://x.com/intent/post?text=${encodeURIComponent(`Minting FISTAGENT${XH ? ` with @${XH}` : ""} on BNB Chain. ${SITE_HOST}`)}` },
+  ].filter(Boolean);
   const IV = { opened: {}, busy: null, err: {}, url: "", copied: null };
   const ICON_X = '<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>';
   const ICON_USERS = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>';
@@ -723,7 +723,7 @@
         : `<div class="tact"><a class="obtn" href="${esc(t.href)}" target="_blank" rel="noreferrer" data-open="${t.id}">${t.action()} ${ICON_X}</a>` +
           (W.account ? `<button type="button" class="pbtn" data-claim="${t.id}"${!canClaim || !ready || IV.busy ? " disabled" : ""}>${IV.busy === t.id ? "… " : ""}${T("Claim +1", "领取 +1")}</button>` : `<button type="button" class="pbtn" data-connect="1">${T("Connect to claim", "连接后领取")}</button>`) + `</div>`;
       const extra = t.id === "TWEET" && !done
-        ? `<p class="ivp">${T("Post your mint (or any post about FISTAGENT) and paste its link. Reposted one from", "发布你的铸造（或任何关于 FISTAGENT 的帖子）并粘贴帖子链接。转发了")} <a href="https://x.com/${XH}" target="_blank" rel="noreferrer" data-open="TWEET">@${XH}</a>${T("? Paste that post's link.", " 的帖子？粘贴那条帖子的链接。")}</p>
+        ? `<p class="ivp">${XH ? `${T("Post your mint (or any post about FISTAGENT) and paste its link. Reposted one from", "发布你的铸造（或任何关于 FISTAGENT 的帖子）并粘贴帖子链接。转发了")} <a href="https://x.com/${XH}" target="_blank" rel="noreferrer" data-open="TWEET">@${XH}</a>${T("? Paste that post's link.", " 的帖子？粘贴那条帖子的链接。")}` : T("Post your mint (or any post about FISTAGENT) and paste its link.", "发布你的铸造（或任何关于 FISTAGENT 的帖子）并粘贴帖子链接。")}</p>
            <input type="url" inputmode="url" id="ivUrl" value="${esc(IV.url)}" placeholder="https://x.com/…/status/…" aria-label="Post link">` : "";
       return `<li data-task="${t.id}"><div class="trow"><span class="tt${done ? " done" : ""}">${t.title()}</span>${act}</div>${extra}${IV.err[t.id] ? `<span class="terr">${esc(IV.err[t.id])}</span>` : ""}</li>`;
     }).join("");

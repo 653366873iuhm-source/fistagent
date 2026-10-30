@@ -1,4 +1,4 @@
-// FISTAGENT site configuration. NOT DEPLOYED YET: mint/token/pair are the planned CREATE2 addresses from deploy/bsc-mainnet-plan.json
+// FISTAGENT site configuration. DEPLOYED on BSC mainnet (tx 0x371fe25e…30f3, block 130677714); mint/token/pair below are live (minting paused until the treasury unpauses)
 // (salt keccak256("FISTAGENT.mint.v1"), social signer 0x66EC…C199, treasury 0x49E6…9BCE). The site reads paused/supply live from the mint contract.
 window.FISTAGENT_CONFIG = {
   chainId: 56,
@@ -17,8 +17,8 @@ window.FISTAGENT_CONFIG = {
   agentApi: "https://fistagent-api.onrender.com/api/agent-wallet",
   // Same API service: /api/social (task vouchers), /api/leaderboard; pinged on page load to wake the free instance.
   api: "https://fistagent-api.onrender.com",
-  // Social tasks: handles are placeholders until decided.
+  // Social: no project X account yet (user 2026-10-30) -> no X link/handle and no FOLLOW task on the site. Set x: "<handle>" to add them.
   social: {
-    x: "FISTAGENT_X_TBD", // https://x.com/FISTAGENT_X_TBD (without @)
+    x: "",
   },
 };

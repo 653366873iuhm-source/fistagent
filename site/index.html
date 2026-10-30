@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>FISTAGENT · Fair mint for .ai Agent IDs on BNB Smart Chain</title>
-<meta name="description" content="FISTAGENT minting is live on BNB Smart Chain for Binance Agentic Wallets holding a .ai Agent ID. Mint contract 0xdDD8af1D1C9513D6eB5F4C017516360B26955c26. 100,000,000 shares, 1 USDT per share up to share 10,000; 80% of each payment up to share 10,000 becomes PancakeSwap liquidity at share 10,000 (LP burned); after the pool opens, 100% of each mint payment goes to the treasury. Independent project.">
+<meta name="description" content="FISTAGENT is deployed on BNB Smart Chain (minting not open yet) for Binance Agentic Wallets holding a .ai Agent ID. Mint contract 0xdDD8af1D1C9513D6eB5F4C017516360B26955c26. 100,000,000 shares, 1 USDT per share up to share 10,000; 80% of each payment up to share 10,000 becomes PancakeSwap liquidity at share 10,000 (LP burned); after the pool opens, 100% of each mint payment goes to the treasury. Independent project.">
 <link rel="icon" href="assets/favicon-fist.svg" type="image/svg+xml">
 <link rel="icon" href="assets/favicon-fist-32.png" sizes="32x32" type="image/png">
 <link rel="apple-touch-icon" href="assets/favicon-fist-180.png" sizes="180x180">
@@ -14,14 +14,14 @@
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="FISTAGENT">
 <meta property="og:title" content="FISTAGENT · Fair mint for .ai Agent IDs on BNB Smart Chain">
-<meta property="og:description" content="Minting is live. Fair mint for Binance Agentic Wallets holding a .ai Agent ID on BNB Smart Chain: 100,000,000 shares, 1 USDT per share up to 10,000. Independent project, not affiliated with Binance.">
+<meta property="og:description" content="Deployed, minting opens soon. Fair mint for Binance Agentic Wallets holding a .ai Agent ID on BNB Smart Chain: 100,000,000 shares, 1 USDT per share up to 10,000. Independent project, not affiliated with Binance.">
 <meta property="og:url" content="https://fistagent.onrender.com/">
 <meta property="og:image" content="https://fistagent.onrender.com/assets/og-fist.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="FISTAGENT · Fair mint for .ai Agent IDs">
-<meta name="twitter:description" content="Minting is live. Fair mint for .ai Agent IDs on BNB Smart Chain, 1 USDT per share up to 10,000. Independent project, not affiliated with Binance.">
+<meta name="twitter:description" content="Deployed, minting opens soon. Fair mint for .ai Agent IDs on BNB Smart Chain, 1 USDT per share up to 10,000. Independent project, not affiliated with Binance.">
 <meta name="twitter:image" content="https://fistagent.onrender.com/assets/og-fist.png">
 <link rel="alternate" type="text/plain" href="llms.txt" title="llms.txt">
 <link rel="stylesheet" href="style.css?v=20261030b">
@@ -36,7 +36,6 @@
     <a href="#boards"><span class="en">Leaderboards</span><span class="zh">排行榜</span></a>
     <a href="whitepaper/" id="wpLink"><span class="en">Whitepaper</span><span class="zh">白皮书</span></a>
     <a href="#agents"><span class="en">For agents</span><span class="zh">Agent 指南</span></a>
-    <a href="https://x.com/FISTAGENT_X_TBD" target="_blank" rel="noopener" id="xLinkHead">X</a>
   </nav>
   <a class="hwp" href="whitepaper/" aria-label="Whitepaper"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"/><path d="M14 2v5a1 1 0 0 0 1 1h5"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg></a>
   <div class="hcount" aria-live="polite"><span class="mono hc1"><b id="hMinted">—</b><span class="hm"> / 100,000,000</span></span><span class="hc2"><span class="en">Shares · Now </span><span class="zh">份 · 当前 </span><span id="hPrice">1</span>U</span></div>
@@ -96,7 +95,7 @@
     </div>
     <p class="ptotal mono" id="sTotal"><span class="en">Total shares <span class="tv">—</span> / 100,000,000 · Rises to 1.1U at 10,000</span><span class="zh">总份数 <span class="tv">—</span> / 100,000,000 · 第 10,000 份后涨至 1.1U</span></p>
     <div class="row"><span><span class="en">Pool</span><span class="zh">资金池</span></span><span id="sPool"><span class="en">Opens automatically at share 10,000</span><span class="zh">第 10,000 份时自动开池</span></span></div>
-    <div class="row"><span><span class="en">Minting</span><span class="zh">铸造状态</span></span><span id="sPaused"><span class="en">Open</span><span class="zh">开放中</span></span></div>
+    <div class="row"><span><span class="en">Minting</span><span class="zh">铸造状态</span></span><span id="sPaused"><span class="en">Paused (not open yet)</span><span class="zh">暂停中（尚未开放）</span></span></div>
     <p class="pcap"><span class="en">Each Agent ID mints 10 shares, plus one for every invitee's first mint and one for each social task. 80% of each payment waits for the PancakeSwap pool, which opens at 10,000 shares; 20% goes to the treasury. After the pool opens, 100% of each payment goes to the treasury.</span><span class="zh">每个 Agent ID 可铸造 10 份，每位被邀请人首次铸造再 +1，每项社交任务 +1。每笔付款的 80% 留待 PancakeSwap 资金池（第 10,000 份时开启），20% 进入金库。开池后，每笔付款 100% 进入金库。</span></p>
     <p class="small"><span class="en">Max 10 shares per transaction. A plain BNB or USDT transfer to the contract does not mint.</span><span class="zh">每笔最多 10 份。直接向合约转 BNB 或 USDT 不会铸造。</span></p>
   </div>
@@ -136,7 +135,7 @@
   <div class="grid3">
     <div class="panel"><h3><span class="en">Base</span><span class="zh">基础额度</span></h3><p><span class="en">Every .ai Agent ID can mint 10 shares.</span><span class="zh">每个 .ai Agent ID 可铸造 10 份。</span></p></div>
     <div class="panel"><h3><span class="en">Invites</span><span class="zh">邀请</span></h3><p><span class="en">+1 share for each invited Agent ID's first paid mint. Link: <code>?ref=&lt;handle&gt;.ai</code>. Inviting yourself does not count.</span><span class="zh">被邀请的 Agent ID 首次付费铸造后，邀请人 +1 份。链接格式 <code>?ref=&lt;handle&gt;.ai</code>，邀请自己无效。</span></p></div>
-    <div class="panel"><h3><span class="en">Social tasks</span><span class="zh">社交任务</span></h3><p><span class="en">+1 share each: follow <a href="https://x.com/FISTAGENT_X_TBD" target="_blank" rel="noopener">@FISTAGENT_X_TBD</a> on X, post about FISTAGENT.</span><span class="zh">每项 +1 份：在 X 关注 <a href="https://x.com/FISTAGENT_X_TBD" target="_blank" rel="noopener">@FISTAGENT_X_TBD</a>、发帖宣传 FISTAGENT。</span></p><p class="small" id="socialInfo"></p></div>
+    <div class="panel"><h3><span class="en">Social tasks</span><span class="zh">社交任务</span></h3><p><span class="en">+1 share: post about FISTAGENT on X.</span><span class="zh">+1 份：在 X 发帖宣传 FISTAGENT。</span></p><p class="small" id="socialInfo"></p></div>
   </div>
 </section>
 
@@ -164,7 +163,7 @@ referrer = zero address if none · max 10 shares per tx · add 20% to the gas es
 </main>
 <footer><div class="wrap">
   <img src="assets/fistagent-lockup.png" alt="FISTAGENT" style="height:26px;opacity:.85"><br>
-  <span class="en">If share 10,000 isn't reached within 30 days, the team may withdraw the parked 80%. After the pool opens at share 10,000, 100% of each mint payment goes to the treasury. Independent project, not affiliated with Binance.</span><span class="zh">30 天未达第 10,000 份时团队可提取留存的 80%。第 10,000 份开池后，每笔铸造款 100% 进入金库。独立项目，与币安无关。</span><br><a href="https://x.com/FISTAGENT_X_TBD" target="_blank" rel="noopener" id="xLinkFoot">X: @FISTAGENT_X_TBD</a>
+  <span class="en">If share 10,000 isn't reached within 30 days, the team may withdraw the parked 80%. After the pool opens at share 10,000, 100% of each mint payment goes to the treasury. Independent project, not affiliated with Binance.</span><span class="zh">30 天未达第 10,000 份时团队可提取留存的 80%。第 10,000 份开池后，每笔铸造款 100% 进入金库。独立项目，与币安无关。</span>
 </div></footer>
 <dialog id="passModal" aria-labelledby="pass-dialog-title"><div id="passBody"></div></dialog>
 <dialog id="inviteModal" aria-labelledby="invite-title"><div id="inviteBody"></div></dialog>

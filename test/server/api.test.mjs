@@ -79,7 +79,7 @@ try {
     JSON.stringify(j).slice(0, 300));
   ok("GET /api/stats: sendBnb = quote × 1.02, costUsdt follows the price table", j && Math.abs(Number(j.bnb[1].sendBnb) / Number(j.bnb[1].quoteBnb) - 1.02) < 1e-9 && (j.totalMinted >= 10000 || j.bnb[2].costUsdt === "3"));
   [c, j] = await get("/api/verify?address=0x49E6fb3812fdfD67eDfE17259f03CcbE59f39BCE");
-  ok("GET /api/verify: Agent ID wallet -> {address, agentId: iuhm.ai, verified: true}", c === 200 && j.agentId === "iuhm.ai" && j.verified === true && j.address === "0x49E6fb3812fdfD67eDfE17259f03CcbE59f39BCE", JSON.stringify(j));
+  ok("GET /api/verify: Agent ID wallet -> {address, agentId: allin168.ai, verified: true}", c === 200 && j.agentId === "allin168.ai" && j.verified === true && j.address === "0x49E6fb3812fdfD67eDfE17259f03CcbE59f39BCE", JSON.stringify(j));
   [c, j] = await get("/api/verify?address=0x0000000000000000000000000000000000000001");
   ok("GET /api/verify: no Agent ID -> agentId null, verified false", c === 200 && j.agentId === null && j.verified === false);
   [c, j] = await get("/api/verify?address=bad");

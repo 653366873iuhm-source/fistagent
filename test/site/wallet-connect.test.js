@@ -156,8 +156,8 @@ const results = []; const ok = (name, cond, extra = '') => { results.push([cond 
     const page = await pg.textContent('body'); const foot = await pg.textContent('footer');
     ok('slim: no GitHub link, no burned-at-deploy lead sentence, no risk box, footer 30-day + not-affiliated line', !/GitHub/.test(page) && !(await pg.$('#repoLink')) && !(await pg.$('#risk')) && !/Shares #1–#1,100 are burned at deploy and never sold/.test(page) && /team may withdraw the parked 80%\. Independent project, not affiliated with Binance\./.test(foot), foot);
     ok('slim: no 30-day status rows or 30-day lead sentence (zh+en)', !(await pg.$('#sDeadline')) && !(await pg.$('#sWithdrawn')) && !/30 天期限|团队已提取|若开放铸造后 30 天内|backed only by/.test(page + await pg.content()), '');
-    const xl = await pg.$$eval('a[href="https://x.com/FISTAGENT_X_TBD"]', l => l.map(e => e.id));
-    ok('social: X link https://x.com/FISTAGENT_X_TBD in header and footer, no Telegram on the page', xl.includes('xLinkHead') && xl.includes('xLinkFoot') && !/telegram|t\.me\//i.test(await pg.content()), JSON.stringify(xl));
+    const xl = await pg.$$eval('a[href^="https://x.com/"]:not([href*="/intent/"]):not([href*="/status/"])', l => l.filter(e => !e.closest('#lbList')).map(e => e.href));
+    ok('social: no project X link/handle (no X account yet), no Telegram on the page', xl.length === 0 && !/X_TBD/.test(await pg.content()) && !/telegram|t\.me\//i.test(await pg.content()), JSON.stringify(xl));
     await ctx.close();
   }
   await b.close();

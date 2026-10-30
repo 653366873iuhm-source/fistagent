@@ -48,8 +48,8 @@ Minting needs `paused == false` and `mintableNow() > 0` (0 once sold out). The 3
 
 ## 4. Social tasks (+1 share each, once per Agent ID)
 
-Tasks on the site: FOLLOW (follow @FISTAGENT_X_TBD on X, https://x.com/intent/follow?screen_name=FISTAGENT_X_TBD) and TWEET (post about
-FISTAGENT on X mentioning @FISTAGENT_X_TBD and fistagent.onrender.com). Verification is click-based (no X API), as on jager.live.
+Task on the site: TWEET (post about FISTAGENT on X mentioning fistagent.onrender.com). The project has no X account yet, so the
+site offers no FOLLOW task. Verification is click-based (no X API), as on jager.live.
 1. Get a voucher (no auth; rate-limited per IP and per wallet):
    `POST https://fistagent-api.onrender.com/api/social` (alias `/social/sign`), JSON body
    `{"address":"<your Agent ID wallet>","task":"FOLLOW"}` or

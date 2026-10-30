@@ -4,12 +4,13 @@ FISTAGENT = exact clone of BNAGENT v2 (bnagent repo @ ea0c4c0) with ONE mechanis
 **after the pool opens at share 10,000, 100% of each mint payment goes to the treasury** (no LP added by mints; buyer still gets
 its tokens at 99% of the pool price). Before 10,000: 20% treasury / 80% parked → pool at 10,000, unchanged. Details: docs/JAGER-DIFF.md (top).
 
-## State: BUILT LOCALLY, NOT DEPLOYED, NOT PUBLISHED
-- No mainnet tx, nothing signed, no Render service, no GitHub repo/push, no X account.
-- Planned (CREATE2, salt keccak256("FISTAGENT.mint.v1"), treasury 0x49E6…9BCE, social signer 0x66EC…C199):
-  mint 0xdDD8af1D1C9513D6eB5F4C017516360B26955c26 · token 0x7acDcE948Dc6F9185D96b8D1af80284C9a3c71c3 · pair 0xf375Def1f8f60Bf52A2a8D4309498B1FCE45C01B.
-- Deploy gas (eth_estimateGas, mainnet, 2026-10-30): 8,710,108 (≈0.00044 BNB at 0.05 gwei). Plan: deploy/bsc-mainnet-plan.json, docs/DEPLOY.md.
-- Treasury/admin defaults to the BNAGENT treasury (iuhm.ai) — the user must confirm before deploy.
+## State: DEPLOYED ON BSC MAINNET, MINTING PAUSED (2026-10-30)
+- Deploy tx 0x371fe25ef197a25fffde067060d6f818700555d2f4fd5ebf2fe70665a26030f3, block 130677714, status 1.
+- Mint 0xdDD8af1D1C9513D6eB5F4C017516360B26955c26 · Token 0x7acDcE948Dc6F9185D96b8D1af80284C9a3c71c3 · Pair 0xf375Def1f8f60Bf52A2a8D4309498B1FCE45C01B.
+- Treasury allin168.ai 0x49E6fb3812fdfD67eDfE17259f03CcbE59f39BCE. paused() = true. setPaused(false) only on the user's explicit command.
+- Source verified on Sourcify (full match, mint + token, 2026-10-30 22:07 CST).
+- No project X account: site shows no X link/handle and no FOLLOW task (user 2026-10-30).
+- GitHub: https://github.com/653366873iuhm-source/fistagent (main). Render: static `fistagent`, API `fistagent-api`.
 
 ## Tests (docs/test-results.txt)
 - Forge fork tests: 29/29 (26 ported from BNAGENT + 3 new test_Fist*).

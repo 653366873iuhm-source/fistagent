@@ -7,8 +7,8 @@ The mint uses the same ABI as the $JAGENT mint (jager.live).
 
 ## Status
 
-- Contracts: DEPLOYED on BNB Smart Chain (deploy tx 0xb5783c0dff18c9f48cc2720b6c1d389a7298fdd52b5795dcaffe55012f16430b); source verified on BscScan.
-- Minting is OPEN (live since the treasury sent setPaused(false)). Still read `paused()` / `overview()` or https://fistagent-api.onrender.com/api/stats (`mintingOpen`) first; if minting is closed, STOP and tell your owner.
+- Contracts: DEPLOYED on BNB Smart Chain (deploy tx 0x371fe25ef197a25fffde067060d6f818700555d2f4fd5ebf2fe70665a26030f3, block 130677714); source verified on BscScan and Sourcify.
+- Minting is NOT OPEN YET (the contract is paused until the treasury sends setPaused(false)). Always read `paused()` / `overview()` or https://fistagent-api.onrender.com/api/stats (`mintingOpen`) first; if `paused()` is true / `mintingOpen` is false, STOP and tell your owner that minting has not opened yet.
 - Mint contract: 0xdDD8af1D1C9513D6eB5F4C017516360B26955c26 — the ONLY address that accepts payment
 - FISTAGENT token: 0x7acDcE948Dc6F9185D96b8D1af80284C9a3c71c3 (never send BNB or USDT to the token address)
 - FISTAGENT/USDT PancakeSwap pair: 0xf375Def1f8f60Bf52A2a8D4309498B1FCE45C01B (empty until share 10,000)
@@ -21,7 +21,7 @@ If `paused()` on the mint contract returns true, STOP and tell your owner that m
 
 The sending wallet must hold a `.ai` Agent ID on BNB Smart Chain (Binance Agentic Wallet; SPACE ID registry
 0x60B9262456dE011F7d15a54CdD8c48bAaa8B022F). Each Agent ID: 10 shares, +1 when an Agent ID you invited makes its first
-paid mint, +1 per social task (follow @FISTAGENT_X_TBD on X, post about FISTAGENT on X). Max 10 shares per transaction.
+paid mint, +1 for the social task (post about FISTAGENT on X). Max 10 shares per transaction.
 Invite link: `?ref=<handle>.ai`.
 Check a wallet: `https://fistagent-api.onrender.com/api/verify?address=<wallet>` -> `{"address","agentId":"<handle>.ai"|null,"verified":true|false}`,
 or on-chain `walletStatus(address)` (selector 0x4d6d0af8) -> (eligible, agentId, minted, quota, paidBefore).

@@ -199,8 +199,8 @@ async function signSocial(b, ip) {
 const TOKEN = (process.env.TOKEN || "0x7acDcE948Dc6F9185D96b8D1af80284C9a3c71c3").toLowerCase();
 const REGISTRAR = "0x60b9262456de011f7d15a54cdd8c48baaa8b022f";
 const PAIR = (process.env.PAIR || "0xf375Def1f8f60Bf52A2a8D4309498B1FCE45C01B").toLowerCase();
-// FISTAGENT not deployed yet: default = a block before any possible deploy (2026-10-30); set DEPLOY_BLOCK to the real deploy block after tx 1.
-const DEPLOY_BLOCK = Number(process.env.DEPLOY_BLOCK || 130643000);
+// FISTAGENT deploy block (tx 0x371fe25e…30f3, 2026-10-30).
+const DEPLOY_BLOCK = Number(process.env.DEPLOY_BLOCK || 130677714);
 const LOG_RPCS = (process.env.LOG_RPC || "https://rpc-bsc.48.club,https://bsc-mainnet.nodereal.io/v1/64a9df0874fb4a93b9d0a3849de012d3,https://bsc.rpc.blxrbdn.com").split(",").map((s) => s.trim());
 const T_MINTED = hex(kec("Minted(address,uint256,uint256,uint256,uint256)"));
 const T_QUOTA = hex(kec("QuotaGranted(address,uint256,uint256,bytes32)"));

@@ -183,8 +183,8 @@ const results = []; const ok = (name, cond, extra = '') => { results.push([cond 
     const page = await pg.textContent('body'); const foot = await pg.textContent('footer');
     ok('slim: no GitHub link, no burned-at-deploy lead sentence, no risk box, footer 30-day + not-affiliated line', !/GitHub/.test(page) && !(await pg.$('#repoLink')) && !(await pg.$('#risk')) && !/Shares #1–#1,100 are burned at deploy and never sold/.test(page) && /team may withdraw the parked 80%\. After the pool opens at share 10,000, 100% of each mint payment goes to the treasury\. Independent project, not affiliated with Binance\./.test(foot), foot);
     ok('slim: no 30-day status rows or 30-day lead sentence (zh+en)', !(await pg.$('#sDeadline')) && !(await pg.$('#sWithdrawn')) && !/30 天期限|团队已提取|若开放铸造后 30 天内|backed only by/.test(page + await pg.content()), '');
-    const xl = await pg.$$eval('a[href="https://x.com/FISTAGENT_X_TBD"]', l => l.map(e => e.id));
-    ok('social: X link https://x.com/FISTAGENT_X_TBD in header and footer, no Telegram on the page', xl.includes('xLinkHead') && xl.includes('xLinkFoot') && !/telegram|t\.me\//i.test(await pg.content()), JSON.stringify(xl));
+    const xl = await pg.$$eval('a[href^="https://x.com/"]:not([href*="/intent/"]):not([href*="/status/"])', l => l.filter(e => !e.closest('#lbList')).map(e => e.href));
+    ok('social: no project X link/handle (no X account yet), no placeholder, no Telegram on the page', xl.length === 0 && !(await pg.$('#xLinkHead')) && !(await pg.$('#xLinkFoot')) && !/X_TBD/.test(await pg.content()) && !/telegram|t\.me\//i.test(await pg.content()), JSON.stringify(xl));
     await ctx.close();
   }
   // --- 6: Invite & tasks · +1 mint dialog, shares radios and leaderboard (same structure as jager.live)
@@ -202,9 +202,9 @@ const results = []; const ok = (name, cond, extra = '') => { results.push([cond 
     ok('invite: header button "Invite & tasks · +1 mint" (mobile label "Earn")', (await pg.textContent('#inviteBtn .hlg')).includes('Invite & tasks · +1 mint') && (await pg.textContent('#inviteBtn .hsm')).includes('Earn'));
     await pg.click('#inviteBtn');
     let iv = await pg.textContent('#inviteBody');
-    ok('invite: dialog opens: Earn extra mints, connect-to-claim, invite placeholder, 2 social tasks (no Telegram)', (await pg.evaluate(() => document.getElementById('inviteModal').open)) && iv.includes('Earn extra mints') && iv.includes('Connect Binance Wallet to claim') && iv.includes('fistagent.onrender.com/?ref=yourname.ai') && (await pg.$$('#ivTasks li')).length === 2 && iv.includes('Follow @FISTAGENT_X_TBD on X') && iv.includes('Connect to claim') && !/telegram/i.test(iv), iv.slice(0, 300));
+    ok('invite: dialog opens: Earn extra mints, connect-to-claim, invite placeholder, 1 social task: Post (no Follow without an X account, no Telegram)', (await pg.evaluate(() => document.getElementById('inviteModal').open)) && iv.includes('Earn extra mints') && iv.includes('Connect Binance Wallet to claim') && iv.includes('fistagent.onrender.com/?ref=yourname.ai') && (await pg.$$('#ivTasks li')).length === 1 && !/Follow @/.test(iv) && iv.includes('Connect to claim') && !/telegram/i.test(iv), iv.slice(0, 300));
     const hrefs = await pg.$$eval('#ivTasks a.obtn', l => l.map(a => a.href));
-    ok('invite: task links = X follow intent + X post intent mentioning @FISTAGENT_X_TBD and the site', hrefs[0] === 'https://x.com/intent/follow?screen_name=FISTAGENT_X_TBD' && hrefs[1].startsWith('https://x.com/intent/post?text=') && decodeURIComponent(hrefs[1]).includes('@FISTAGENT_X_TBD') && decodeURIComponent(hrefs[1]).includes('fistagent.onrender.com'), JSON.stringify(hrefs));
+    ok('invite: task link = X post intent mentioning the site, no @handle', hrefs.length === 1 && hrefs[0].startsWith('https://x.com/intent/post?text=') && !decodeURIComponent(hrefs[0]).includes('@') && decodeURIComponent(hrefs[0]).includes('fistagent.onrender.com'), JSON.stringify(hrefs));
     await pg.click('#ivClose');
     // leaderboard
     await pg.waitForFunction(() => document.querySelectorAll('#lbList li.lbrow').length > 0, null, { timeout: 10000 }).catch(() => {});
@@ -227,21 +227,8 @@ const results = []; const ok = (name, cond, extra = '') => { results.push([cond 
     await pg.click('#inviteBtn');
     await pg.waitForSelector('#ivQuota', { timeout: 15000 }).catch(() => {});
     iv = await pg.textContent('#inviteBody');
-    ok('invite: connected shows Quota / Minted / Remaining, invite link ?ref=allin168.ai with Copy link + Code allin168.ai', !!(await pg.$('#ivQuota')) && (await pg.textContent('#ivLink')) === 'https://fistagent.onrender.com/?ref=allin168.ai' && iv.includes('Copy link') && iv.includes('Copy code') && iv.includes('allin168.ai') && /\d+ counted/.test(iv) && /\d \/ 2 done/.test(iv), iv.slice(0, 400));
-    const followClaim = '#ivTasks [data-claim="FOLLOW"]';
-    const doneAlready = !(await pg.$(followClaim));
-    ok('invite: Claim +1 disabled until the Follow link was opened', doneAlready || await pg.isDisabled(followClaim));
-    if (!doneAlready) {
-      const [popup] = await Promise.all([ctx.waitForEvent('page').catch(() => null), pg.click('#ivTasks a[data-open="FOLLOW"]')]);
-      if (popup) await popup.close().catch(() => {});
-      await pg.waitForTimeout(300);
-      ok('invite: Claim +1 enabled after opening the Follow link', !(await pg.isDisabled(followClaim)));
-      await pg.click(followClaim);
-      await pg.waitForFunction(() => window.__sent || /terr/.test(document.getElementById('ivTasks').innerHTML), null, { timeout: 30000 }).catch(() => {});
-      const sent = await pg.evaluate(() => window.__sent || null);
-      const err = await pg.textContent('#ivTasks .terr').catch(() => '');
-      ok('invite: Claim → POST /api/social {address, task} → claimSocial simulated OK on BSC → sent to the wallet (rejected by the mock)', social.length === 1 && JSON.parse(social[0]).task === 'FOLLOW' && sent && sent.to.toLowerCase() === MINT.toLowerCase() && sent.data.startsWith('0x2e3c4860') && /rejected/i.test(err), JSON.stringify({ social, sent: sent && sent.data && sent.data.slice(0, 20), err }));
-    }
+    ok('invite: connected shows Quota / Minted / Remaining, invite link ?ref=allin168.ai with Copy link + Code allin168.ai', !!(await pg.$('#ivQuota')) && (await pg.textContent('#ivLink')) === 'https://fistagent.onrender.com/?ref=allin168.ai' && iv.includes('Copy link') && iv.includes('Copy code') && iv.includes('allin168.ai') && /\d+ counted/.test(iv) && /\d \/ 1 done/.test(iv), iv.slice(0, 400));
+    ok('invite: no FOLLOW task / claim button', !(await pg.$('#ivTasks [data-claim="FOLLOW"]')) && !(await pg.$('#ivTasks a[data-open="FOLLOW"]')));
     // post task needs the link
     const tweetClaim = '#ivTasks [data-claim="TWEET"]';
     if (await pg.$(tweetClaim)) {
@@ -251,6 +238,11 @@ const results = []; const ok = (name, cond, extra = '') => { results.push([cond 
       ok('invite: Post task stays disabled until a post link is pasted', await pg.isDisabled(tweetClaim));
       await pg.fill('#ivUrl', 'https://x.com/allin168/status/1983000000000000001');
       ok('invite: Post task enabled with a link', !(await pg.isDisabled(tweetClaim)));
+      await pg.click(tweetClaim);
+      await pg.waitForFunction(() => window.__sent || /terr/.test(document.getElementById('ivTasks').innerHTML), null, { timeout: 30000 }).catch(() => {});
+      const sent = await pg.evaluate(() => window.__sent || null);
+      const err = await pg.textContent('#ivTasks .terr').catch(() => '');
+      ok('invite: Claim → POST /api/social {address, task: TWEET} → claimSocial simulated OK on BSC → sent to the wallet (rejected by the mock)', social.length === 1 && JSON.parse(social[0]).task === 'TWEET' && sent && sent.to.toLowerCase() === MINT.toLowerCase() && sent.data.startsWith('0x2e3c4860') && /rejected/i.test(err), JSON.stringify({ social, sent: sent && sent.data && sent.data.slice(0, 20), err }));
     }
     await pg.screenshot({ path: __dirname + '/shot-invite.png', fullPage: false });
     await pg.click('#ivClose');
@@ -271,8 +263,8 @@ const results = []; const ok = (name, cond, extra = '') => { results.push([cond 
   {
     const raw = LOCAL ? fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8') : await (await fetch(base)).text();
     const metaD = (/<meta name="description" content="([^"]+)"/.exec(raw) || [])[1] || '', ogD = (/<meta property="og:description" content="([^"]+)"/.exec(raw) || [])[1] || '';
-    ok('pre-JS HTML: deployed + live state (no "not deployed", mint address, supply placeholder —, minting Open), meta/og say minting is live',
-      !/not deployed|合约未部署|notDeployed/.test(raw) && raw.includes(MINT) && /id="sMinted">—</.test(raw) && /id="hMinted">—</.test(raw) && /id="sPaused"><span class="en">Open</.test(raw) && /minting is live/i.test(metaD) && metaD.includes(MINT) && /minting is live/i.test(ogD) && !/1,100<\/b>/.test(raw), metaD);
+    ok('pre-JS HTML: deployed + live state (no "not deployed", mint address, supply placeholder —, minting Paused / not open yet), meta/og say deployed, not open yet',
+      !/not deployed|合约未部署|notDeployed/.test(raw) && raw.includes(MINT) && /id="sMinted">—</.test(raw) && /id="hMinted">—</.test(raw) && /id="sPaused"><span class="en">Paused \(not open yet\)</.test(raw) && /deployed on BNB Smart Chain \(minting not open yet\)/i.test(metaD) && !/minting is live/i.test(raw) && metaD.includes(MINT) && /minting opens soon/i.test(ogD) && !/1,100<\/b>/.test(raw), metaD);
     const ctx = await b.newContext({ viewport: { width: 1440, height: 900 } }); await ctx.addInitScript(mock(ADDR)); const pg = await ctx.newPage(); const errs = [];
     pg.on('console', m => { if (m.type() === 'error') errs.push(m.text()); }); pg.on('pageerror', e => errs.push(String(e)));
     let xbPosts = [];
@@ -295,7 +287,7 @@ const results = []; const ok = (name, cond, extra = '') => { results.push([cond 
     ok('Mint Pass: Current tier "Tier 1 · 1U", Next serial "#N+1", You receive (est.) ≈ 50,000,000 + Jager explanation', dl.tier === 'Tier 1 · 1U' && dl.next === '#' + (minted + 1).toLocaleString('en-US') && dl.get === '≈ 50,000,000' && dl.note === 'Set by the pool price at mint time, 1% below market. The exact amount shows after the mint.', JSON.stringify(dl));
     ok('Mint Pass: "Total shares N / 100,000,000 · Rises to 1.1U at 10,000" + Jager figcaption', dl.total === `Total shares ${minted.toLocaleString('en-US')} / 100,000,000 · Rises to 1.1U at 10,000` && dl.cap.startsWith('Each Agent ID mints 10 shares, plus one for every invitee') && dl.cap.endsWith('20% goes to the treasury. After the pool opens, 100% of each payment goes to the treasury.'), dl.total);
     const keep = await pg.evaluate(() => ({ facts: document.querySelectorAll('.facts .fact').length, pool: !!document.getElementById('sPool'), paused: document.getElementById('sPaused').textContent, agentBtn: !!document.getElementById('agentBtn'), quota: !!document.getElementById('quota'), agents: !!document.querySelector('#agents pre'), lang: !!document.getElementById('langBtn'), nav: [...document.querySelectorAll('nav a')].map(a => a.innerText).join(''), wp: document.getElementById('wpLink').getAttribute('href') }));
-    ok('KEEP: 6 stat boxes, pool + minting rows, AI agent link, Quota, For AI agents block, CN/EN toggle, nav (Whitepaper → whitepaper/)', keep.facts === 6 && keep.pool && /Open|Paused|Sold out/.test(keep.paused) && keep.agentBtn && keep.quota && keep.agents && keep.lang && keep.nav === 'MintPrice tableLeaderboardsWhitepaperFor agentsX' && keep.wp === 'whitepaper/', JSON.stringify(keep));
+    ok('KEEP: 6 stat boxes, pool + minting rows, AI agent link, Quota, For AI agents block, CN/EN toggle, nav (Whitepaper → whitepaper/)', keep.facts === 6 && keep.pool && /Open|Paused|Sold out/.test(keep.paused) && keep.agentBtn && keep.quota && keep.agents && keep.lang && keep.nav === 'MintPrice tableLeaderboardsWhitepaperFor agents' && keep.wp === 'whitepaper/', JSON.stringify(keep));
     const tb = await pg.evaluate(() => ({ rows: [...document.querySelectorAll('#tierBody tr')].map(r => r.innerText.replace(/\s+/g, ' ').trim()), cur: [...document.querySelectorAll('#tierBody tr[aria-current="step"]')].map(r => r.innerText.replace(/\s+/g, ' ').trim()), sum: document.querySelector('.tiersum .en').textContent, details: !!document.querySelector('#prices details') }));
     ok('price table: every row listed (burned row + 5,131 tiers, 1U → 79.74U), current tier marked "· Current", no expand/collapse', tb.rows.length === 5132 && tb.rows[0] === '— 1 - 1,100 Burned at deploy (never sold)' && tb.rows[1].startsWith('1 1,101 - 10,000 = 1U') && tb.rows[2] === '2 10,001 - 11,000 = 1.1U' && tb.rows[21] === '21 29,001 - 30,000 = 2.28U' && tb.rows[92] === '92 100,001 - 110,000 = 3.7U' && tb.rows[353] === '353 4,420,001 - 4,440,000 = 8.07U' && tb.rows[5131] === '5131 99,980,001 - 100,000,000 = 79.74U' && tb.cur.length === 1 && tb.cur[0].endsWith('· Current') && tb.sum === '1U to 10,000 · then rises in steps · 5,131 tiers · Max 79.74U' && !tb.details, JSON.stringify(tb.rows.slice(0, 3)) + JSON.stringify(tb.cur));
     const notes = await pg.textContent('#notes .en:nth-of-type(1)').catch(() => '') + (await pg.$$eval('#notes p.en', l => l.map(p => p.textContent).join(' ')));
