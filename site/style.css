@@ -363,3 +363,5 @@ body.b2 dialog{border-radius:20px!important}
 @media (max-width:860px){.dash{grid-template-columns:1fr;padding:28px 22px;justify-items:center}.dright{border-left:0;padding-left:0;width:100%}.phases{grid-template-columns:1fr;gap:18px}
  .stats{grid-template-columns:1fr 1fr}.steps{grid-template-columns:1fr}.guard{grid-template-columns:1fr;padding:36px 26px!important}.seal{justify-self:center;width:210px;height:210px}
  .xhero{padding:48px 0 24px}.xsub{font-size:17px}.ring{width:200px;height:200px}.stats b{font-size:40px}.crow code{font-size:13px;min-width:0;width:100%}}
+.topbar{position:relative;z-index:11;display:flex;align-items:center;justify-content:center;gap:10px;padding:9px 16px;background:linear-gradient(90deg,#ffc41e,#ffdc6a 50%,#ffc41e);color:#0a0a0c;font:600 14px Inter,"PingFang SC","Microsoft YaHei",sans-serif;text-align:center}
+.topbar .tbdot{width:8px;height:8px;border-radius:50%;background:#0a0a0c;flex-shrink:0}
