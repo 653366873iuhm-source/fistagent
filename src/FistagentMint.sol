@@ -8,54 +8,42 @@ import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import {FistagentToken} from "./FistagentToken.sol";
 import {IV2Factory, IV2Pair, IWrappedNative, IAgentIdRegistry, IPriceFeed, V2Math} from "./interfaces/IExternal.sol";
 
-/// @title FISTAGENT mint
-/// @notice FISTAGENT = the BNAGENT mint with ONE change: after the pool has opened (share 10,000), 100% of each
-///         mint payment goes to the treasury and mints add no liquidity (BNAGENT paired 80% into the pool).
-///         Before the open the split is unchanged (20% treasury / 80% parked for the opening pool).
-///         Same mechanism and public interface as the $JAGENT mint (BSC 0x3643…2aB8), with only these
-///         intended differences (docs/JAGER-DIFF.md):
-///         (a) 100,000,000 shares; the reference price table (353 tiers to 8.07 USDT at 4,440,000) continued by its
-///             last rule (+0.015 USDT every 20,000 shares, rounded to the cent): 5,131 tiers, 79.74 USDT at 100,000,000.
-///         (b) 10,000T cap (a full sellout mints ~1,228T); floor line paid x 7,616,686,731 / 4,223,766,600 (reference
-///             ratio 50,000,000 / 27,727,060 over the sellable shares); pool floor 11,666,666,667 (reference).
-///         (c) name FISTAGENT; treasury = constructor argument (immutable); own social-task signer.
-///         (e) shares #1-#1,100 are burned at deploy (never sold, no tokens, no USDT): selling starts at #1,101
-///             (table price at that index), 99,998,900 sellable. The pool still opens on the tx reaching share 10,000,
-///             with the USDT actually parked (80% of 8,900 paid shares = 7,120) and the tokens actually parked at
-///             the same pre-pool price (40M per 0.80 USDT = 50M per USDT -> 356B).
-///         (d) 30-day safety valve: the clock starts when minting is first unpaused. If share 10,000 (the
-///             automatic pool opening) has not been reached after MINT_WINDOW, only the treasury may call
-///             withdrawUnfilled(): the USDT parked here (the 80%) goes to the treasury, the tokens parked for the
-///             pool are sent to dead, and MINTING CONTINUES. It can be called again and again after the deadline
-///             until the pool opens; a pool that opens later is seeded only with what was parked after the last
-///             withdraw. Never callable before the deadline or once the pool has opened. No other withdraw path.
-///         Money flow = reference: shares up to 10,000 pay 1 USDT, give 50M tokens and park 0.80 USDT plus
-///         40M tokens for the opening pool (20% to the treasury). Share 10,000 opens the official pair with
-///         everything parked (7,120 USDT + 356B tokens) in the same transaction, LP to dead. From share 10,001 the buyer gets
-///         tokens at 99% of the pool price and 100% of the payment goes to the treasury (FISTAGENT; no LP is
-///         added by mints), and pool inventory is sent to dead while the circulating value is below the
-///         floor line, by at most 0.8% per transaction, never below POOL_TOKEN_FLOOR.
+/// @title FISTAGENT mint (v2)
+/// @notice FISTAGENT v2 = the FISTAGENT v1 mint (BNAGENT mint, 100% of post-open payments to the treasury) with these changes:
+///         (1) no burned shares; shares #1-#2,000 are FREE, one per .ai Agent ID (claimFree()); paid minting starts at #2,001.
+///         (2) shares #2,001-#10,000 cost 1 USDT each and 100% of the payment is parked for the pool (v1: 20% treasury).
+///             The tx reaching share 10,000 opens the official PancakeSwap pair with everything parked
+///             (8,000 USDT + 10,000 x 40M = 400B FISTAGENT, i.e. 50M per USDT), LP to dead.
+///         (3) from share 10,001: 100% of each payment to the treasury (unchanged from v1), price table unchanged.
+///         (4) 30-day valve unchanged: if share 10,000 is not reached 30 days after minting first opens, only the
+///             treasury can call withdrawUnfilled() (parked USDT to treasury, parked tokens to dead).
+///         (5) the deployer wallet (operator) can only pause/unpause; every other admin right stays with the treasury.
+///         Everything else (paid quota 10 per Agent ID + invites/social, BNB payment, taxes, floor-line burn) is v1.
 contract FistagentMint is ReentrancyGuard {
     using SafeERC20 for IERC20;
 
     uint256 public constant TOTAL_SHARES = 100_000_000;
     uint256 public constant MAX_SUPPLY = 10_000_000_000_000_000 ether;
     uint256 public constant OPEN_AT = 10_000;
-    /// @notice FISTAGENT: shares #1-#1,100 are burned at deploy (never sold; no tokens, no USDT).
-    uint256 public constant BURNED_SHARES = 1_100;
-    uint256 public constant SELLABLE_SHARES = TOTAL_SHARES - BURNED_SHARES; // 99,998,900
+    /// @notice FISTAGENT v2: no burned shares (v1 burned #1-#1,100). Kept as a constant (0) for interface compatibility.
+    uint256 public constant BURNED_SHARES = 0;
+    uint256 public constant SELLABLE_SHARES = TOTAL_SHARES - BURNED_SHARES; // 100,000,000
+    /// @notice FISTAGENT v2: shares #1-#2,000 are free, at most one per .ai Agent ID (claimFree). Paid minting starts
+    ///         at #2,001 (1 USDT each up to #10,000, then the price table).
+    uint256 public constant FREE_SHARES = 2_000;
     uint256 public constant USER_SHARE = 50_000_000 ether;
     uint256 public constant POOL_SHARE = 40_000_000 ether;
-    uint256 public constant TREASURY_BPS = 2_000;
+    /// @notice FISTAGENT v2: before the pool opens 100% of each payment is parked for the pool (v1: 20% treasury).
+    uint256 public constant TREASURY_BPS = 0;
     uint256 public constant MINT_PRICE_BPS = 9_900;
     /// @notice FISTAGENT safety valve: time after the first unpause before withdrawUnfilled() may be called.
     uint256 public constant MINT_WINDOW = 30 days;
-    /// @dev Reference: 50,000,000 / 27,727,060. LINE_DENOM = price of the 99,998,900 sellable shares
-    ///      (#1,101-#100,000,000: 4,223,767,700 - 1,100 = 4,223,766,600 USDT); FLOOR_LINE = 4,223,766,600 x 50,000,000 /
-    ///      27,727,060 = 7,616,686,731.3 -> 7,616,686,731 (same ratio as the reference).
-    uint256 public constant FLOOR_LINE = 7_616_686_731;
-    uint256 public constant CEIL_LINE = 9_140_024_078; // 4,223,766,600 x 60,000,000 / 27,727,060 (view only)
-    uint256 public constant LINE_DENOM = 4_223_766_600;
+    /// @dev Reference ratio 50,000,000 / 27,727,060. LINE_DENOM = price of all paid shares
+    ///      (#2,001-#100,000,000: 4,223,767,700 - 2,000 free = 4,223,765,700 USDT); FLOOR_LINE = 4,223,765,700 x 50,000,000 /
+    ///      27,727,060 -> 7,616,685,108 (same ratio as the reference).
+    uint256 public constant FLOOR_LINE = 7_616_685_108;
+    uint256 public constant CEIL_LINE = 9_140_022_130; // 4,223,765,700 x 60,000,000 / 27,727,060 (view only)
+    uint256 public constant LINE_DENOM = 4_223_765_700;
     uint256 public constant RISE_NUM = 1_008;
     uint256 public constant RISE_DEN = 1_000;
     /// @dev Reference value (444T cap).
@@ -84,6 +72,9 @@ contract FistagentMint is ReentrancyGuard {
     IPriceFeed public immutable feed;
     address public immutable treasury;
     address public immutable quotaSigner;
+    /// @notice FISTAGENT v2: the deployer wallet. It can only call setPaused() (until renounce()); it has no
+    ///         withdraw, mint, pool or treasury power. Everything else stays with the treasury.
+    address public immutable operator;
     uint256 public immutable swapFeeBps;
     uint256 public immutable feedHeartbeat;
     uint256 public immutable feedMin;
@@ -109,6 +100,9 @@ contract FistagentMint is ReentrancyGuard {
     mapping(uint256 => uint256) public mintedCount;
     mapping(uint256 => uint256) public extraQuota;
     mapping(uint256 => bool) public paidOnce;
+    /// @notice FISTAGENT v2: Agent ID has claimed its one free share.
+    mapping(uint256 => bool) public freeClaimed;
+    uint256 public freeMinted;
     mapping(uint256 => mapping(bytes32 => bool)) public socialDone;
     /// @dev An X or Telegram account counts only for the first Agent ID that uses it.
     mapping(bytes32 => uint256) public accountAgent;
@@ -119,6 +113,7 @@ contract FistagentMint is ReentrancyGuard {
     event Minted(address indexed minter, uint256 indexed agentTokenId, uint256 firstSerial, uint256 shares, uint256 paid);
     event QuotaGranted(address indexed user, uint256 indexed agentTokenId, uint256 extra, bytes32 reason);
     event SharesBurned(uint256 firstSerial, uint256 lastSerial);
+    event FreeClaimed(address indexed minter, uint256 indexed agentTokenId, uint256 serial);
     event MintStarted(uint256 startTime, uint256 deadline);
     event UnfilledWithdrawn(address indexed treasury, uint256 usdtAmount, uint256 tokensToDead, uint256 totalMinted);
     event Opened(uint256 usdtIn, uint256 tokensIn, uint256 lp);
@@ -151,6 +146,9 @@ contract FistagentMint is ReentrancyGuard {
     error SwappedThisBlock();
     error OnlySelf();
     error ZeroAddress();
+    error FreePhase();
+    error FreeOver();
+    error FreeUsed();
 
     struct Params {
         address usdt;
@@ -187,6 +185,7 @@ contract FistagentMint is ReentrancyGuard {
         feed = IPriceFeed(c.bnbUsdFeed);
         treasury = c.treasury;
         quotaSigner = c.socialSigner;
+        operator = msg.sender;
         swapFeeBps = c.v2FeeBps;
         feedHeartbeat = c.feedMaxAge;
         feedMin = c.feedMinAnswer;
@@ -195,7 +194,6 @@ contract FistagentMint is ReentrancyGuard {
         for (uint256 i; i < c.neverBlockable.length; i++) {
             unblockable[c.neverBlockable[i]] = true;
         }
-        emit SharesBurned(1, BURNED_SHARES);
     }
 
     receive() external payable {
@@ -358,7 +356,8 @@ contract FistagentMint is ReentrancyGuard {
     }
 
     function setPaused(bool next) external {
-        _onlyTreasury();
+        if (msg.sender != operator) _onlyTreasury();
+        else if (renounced) revert AdminRenounced();
         if (!next) _startClock();
         paused = next;
         emit PausedSet(next);
@@ -466,6 +465,26 @@ contract FistagentMint is ReentrancyGuard {
 
     // ---------------------------------------------------------------- mint
 
+    /// @notice FISTAGENT v2: shares #1-#2,000 are free, one per .ai Agent ID. Same tokens as a paid share
+    ///         (50M to the minter, 40M parked for the pool), no payment. Does not use the paid quota and
+    ///         does not count as a paid mint for invites.
+    function claimFree() external nonReentrant {
+        if (paused) revert Paused();
+        if (totalMinted >= FREE_SHARES) revert FreeOver();
+        (uint256 id, bool ok) = _agent(msg.sender);
+        if (!ok) revert NoAgent();
+        if (freeClaimed[id]) revert FreeUsed();
+        freeClaimed[id] = true;
+        uint256 n = totalMinted + 1;
+        totalMinted = n;
+        freeMinted += 1;
+        pendingTokens += POOL_SHARE;
+        token.mint(address(this), POOL_SHARE);
+        token.mint(msg.sender, USER_SHARE);
+        emit FreeClaimed(msg.sender, id, n);
+        emit Minted(msg.sender, id, n, 1, 0);
+    }
+
     function mint(uint256 shares, address referrer, uint256 maxCost) external nonReentrant {
         uint256 id = _check(shares);
         uint256 cost = costOf(shares);
@@ -495,6 +514,7 @@ contract FistagentMint is ReentrancyGuard {
 
     function _check(uint256 shares) private view returns (uint256 id) {
         if (paused) revert Paused();
+        if (totalMinted < FREE_SHARES) revert FreePhase();
         if (shares == 0 || shares > MAX_PER_TX) revert BadShares();
         if (totalMinted + shares > TOTAL_SHARES) revert SoldOut();
         bool ok;

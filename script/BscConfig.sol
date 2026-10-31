@@ -17,8 +17,10 @@ library BscConfig {
     address internal constant INFINITY_VAULT = 0x238a358808379702088667322f80aC48bAd5e6c4;
     address internal constant AGENT_ID_REGISTRY = 0x60B9262456dE011F7d15a54CdD8c48bAaa8B022F;
     address internal constant CHAINLINK_BNB_USD = 0x0567F2323251f0Aab15c8dFb1967E4e8A7D42aeE;
-    /// @notice Treasury / tax receiver / admin = the user's Binance Agentic Wallet.
-    address internal constant TREASURY = 0x49E6fb3812fdfD67eDfE17259f03CcbE59f39BCE;
+    /// @notice v2 treasury / tax receiver / admin / withdrawUnfilled() = the user's wallet (given 2026-10-31).
+    address internal constant TREASURY = 0x07Ed634a873D3aFCf7079616262D897C31b19353;
+    /// @notice v2 deployer (plain EOA, not an Agent ID wallet). Becomes `operator`: pause/unpause only.
+    address internal constant DEPLOYER = 0x8d6cdA80e93322fAc57d917BAB1894a3411086f9;
     /// @notice Dedicated social-task EIP-712 signer (like Jager's separate quotaSigner). Generated 2026-10-30;
     ///         the key is kept encrypted outside git (secrets/, gitignored). It has no funds and no other power.
     address internal constant SOCIAL_SIGNER = 0x66ECa9C28e4e4807e37C078b917e527DC85aC199;
