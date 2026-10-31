@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>FISTAGENT · Fair mint for .ai Agent IDs on BNB Smart Chain</title>
-<meta name="description" content="FISTAGENT minting is live on BNB Smart Chain for Binance Agentic Wallets holding a .ai Agent ID. Mint contract 0x4738427479ff49D0f151e9069ceCfaadaEd35B30. 100,000,000 shares: shares 1-2,000 are free (one per Agent ID), shares 2,001-10,000 cost 1 USDT and 100% of each payment becomes PancakeSwap liquidity at share 10,000 (LP burned); after the pool opens, 100% of each mint payment goes to the treasury. Independent project.">
+<meta name="description" content="FISTAGENT minting is live on BNB Smart Chain for Binance Agentic Wallets holding a .ai Agent ID. Mint contract 0x4738427479ff49D0f151e9069ceCfaadaEd35B30. 100,000,000 shares: shares 1-2,000 were free and are sold out; shares 2,001-10,000 cost 1 USDT and 100% of each payment becomes PancakeSwap liquidity at share 10,000 (LP burned); after the pool opens, 100% of each mint payment goes to the treasury. Independent project.">
 <link rel="icon" href="assets/favicon-fist.svg" type="image/svg+xml">
 <link rel="icon" href="assets/favicon-fist-32.png" sizes="32x32" type="image/png">
 <link rel="apple-touch-icon" href="assets/favicon-fist-180.png" sizes="180x180">
@@ -23,7 +23,7 @@
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="FISTAGENT · Fair mint for .ai Agent IDs">
-<meta name="twitter:description" content="Minting is live. Fair mint for .ai Agent IDs on BNB Smart Chain: first 2,000 shares free (one per Agent ID), then 1 USDT up to 10,000. Independent project, not affiliated with Binance.">
+<meta name="twitter:description" content="Minting is live. Fair mint for .ai Agent IDs on BNB Smart Chain: 2,000 free shares sold out, now 1 USDT up to 10,000. Independent project, not affiliated with Binance.">
 <meta name="twitter:image" content="https://fistagent.onrender.com/assets/og-fist.png">
 <link rel="alternate" type="text/plain" href="llms.txt" title="llms.txt">
 <link rel="alternate" type="text/markdown" href="agent.md" title="AI agent guide">
@@ -52,23 +52,23 @@
 
 <main class="wrap" id="top">
 <section class="xhero">
-  <div class="xpill"><i></i><span class="en">Free mint live · <b id="xpClaimed">—</b> / 2,000 claimed · Agents only</span><span class="zh">免费铸造进行中 · 已领 <b id="xpClaimedZh">—</b> / 2,000 · 仅限 Agent</span></div>
+  <div class="xpill"><i></i><span class="en">2,000 free shares SOLD OUT · Paid mint live · 1 USDT / share</span><span class="zh">2,000 份免费已领完 · 付费铸造进行中 · 1 USDT / 份</span></div>
   <h1><span class="en">The fair mint<br><em>only agents can enter.</em></span><span class="zh">公平铸造<br><em>只有 AI Agent 能进场。</em></span></h1>
-  <p class="xsub en">Mint with a Binance Agentic Wallet that holds a <b>.ai Agent ID</b>. The first 2,000 shares are free. At share #10,000 the contract opens the PancakeSwap pool itself and burns the LP.</p>
-  <p class="xsub zh">使用持有 <b>.ai Agent ID</b> 的币安 Agentic Wallet 铸造。前 2,000 份免费。第 #10,000 份时，合约自己在 PancakeSwap 开池并销毁 LP。</p>
-  <div class="xbtns"><a class="xb pri" href="#mint"><span class="en">Claim free share →</span><span class="zh">免费领取 →</span></a><a class="xb" href="llms.txt"><span class="en">Read llms.txt</span><span class="zh">阅读 llms.txt</span></a></div>
+  <p class="xsub en">All 2,000 free shares are gone. Now every share is <b>1 USDT</b>, and 100% of it is locked for the pool. Only <b id="xsLeft">—</b> shares to #10,000, where the contract opens the PancakeSwap pool itself and burns the LP.</p>
+  <p class="xsub zh">2,000 份免费已全部领完。现在每份 <b>1 USDT</b>，付款 100% 锁定用于建池。距第 #10,000 份只剩 <b id="xsLeftZh">—</b> 份，届时合约自己在 PancakeSwap 开池并销毁 LP。</p>
+  <div class="xbtns"><a class="xb pri" href="#mint"><span class="en">Mint for 1 USDT →</span><span class="zh">1 USDT 立即铸造 →</span></a><a class="xb" href="llms.txt"><span class="en">Read llms.txt</span><span class="zh">阅读 llms.txt</span></a></div>
   <div class="xground"><i></i><span class="en">Pangu Community ground team · full operations in ground-push mode</span><span class="zh">盘古社区地推团队 · 全面运营进行地推模式</span></div>
 </section>
 
 <section class="dash" aria-label="Mint progress">
   <div class="ring"><svg viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="60" r="52" class="rbg"/><circle cx="60" cy="60" r="52" class="rfg" id="ringArc" pathLength="100" stroke-dasharray="0 100"/></svg>
-    <div class="rtxt"><b id="dFreeLeft">—</b><span class="en">free shares left</span><span class="zh">剩余免费份数</span></div></div>
+    <div class="rtxt"><b id="dFreeLeft">—</b><span class="en">shares to auto pool</span><span class="zh">距自动开池份数</span></div></div>
   <div class="dright">
     <div class="dhead"><span><span class="en">MINT PROGRESS</span><span class="zh">铸造进度</span></span><span><b id="dMinted">—</b> / 10,000 <span class="en">shares</span><span class="zh">份</span></span></div>
     <div class="dbar"><i id="dBar"></i><s style="left:20%"></s><s class="end" style="left:100%"></s></div>
     <div class="phases">
-      <div class="ph p1" id="ph1"><small id="ph1s"><span class="en">Phase 1 · live</span><span class="zh">阶段 1 · 进行中</span></small><b><span class="en">Free</span><span class="zh">免费</span></b><span class="en">Shares 1 – 2,000</span><span class="zh">第 1–2,000 份</span><em class="en">1 per Agent ID, gas only</em><em class="zh">每个 Agent ID 1 份，只需 gas</em></div>
-      <div class="ph p2" id="ph2"><small><span class="en">Phase 2</span><span class="zh">阶段 2</span></small><b>1 USDT</b><span class="en">Shares 2,001 – 10,000</span><span class="zh">第 2,001–10,000 份</span><em class="en">100% parked for the pool</em><em class="zh">100% 留存用于建池</em></div>
+      <div class="ph p1" id="ph1"><small id="ph1s"><span class="en">Phase 1 · sold out</span><span class="zh">阶段 1 · 已领完</span></small><b><span class="en">Free</span><span class="zh">免费</span></b><span class="en">Shares 1 – 2,000</span><span class="zh">第 1–2,000 份</span><em class="en">1 per Agent ID, gas only</em><em class="zh">每个 Agent ID 1 份，只需 gas</em></div>
+      <div class="ph p2 live" id="ph2"><small><span class="en">Phase 2 · live now</span><span class="zh">阶段 2 · 进行中</span></small><b>1 USDT</b><span class="en">Shares 2,001 – 10,000</span><span class="zh">第 2,001–10,000 份</span><em class="en">100% parked for the pool</em><em class="zh">100% 留存用于建池</em></div>
       <div class="ph p3"><small><span class="en">Phase 3 · #10,000</span><span class="zh">阶段 3 · #10,000</span></small><b><span class="en">Auto pool</span><span class="zh">自动开池</span></b><span>8,000 USDT + 400B FISTAGENT</span><em class="en">LP burned on creation</em><em class="zh">建池即销毁 LP</em></div>
     </div>
   </div>
@@ -131,8 +131,8 @@
   <div class="kick"><span class="en">HOW IT WORKS</span><span class="zh">玩法</span></div>
   <h2 class="big"><span class="en">Three phases. No buttons for the team.</span><span class="zh">三个阶段，团队没有任何按钮。</span></h2>
   <div class="steps">
-    <div class="step"><i>01</i><h3><span class="en">Claim free</span><span class="zh">免费领取</span></h3><p class="en">Connect an Agentic Wallet that holds a .ai Agent ID and claim one free share. You only pay gas.</p><p class="zh">连接持有 .ai Agent ID 的 Agentic Wallet，免费领取 1 份，只需支付 gas。</p></div>
-    <div class="step"><i>02</i><h3><span class="en">Mint for 1 USDT</span><span class="zh">1 USDT 铸造</span></h3><p class="en">After 2,000 free shares, each share costs 1 USDT. Base quota is 10 per Agent ID, more with invites and social tasks.</p><p class="zh">2,000 份免费领完后，每份 1 USDT。每个 Agent ID 基础额度 10 份，邀请和社交任务可加额。</p></div>
+    <div class="step"><i>01</i><h3><span class="en">Free phase: sold out</span><span class="zh">免费阶段：已领完</span></h3><p class="en">All 2,000 free shares (one per Agent ID) have been claimed. Connect an Agentic Wallet that holds a .ai Agent ID to mint paid shares.</p><p class="zh">2,000 份免费份额（每个 Agent ID 1 份）已全部领完。连接持有 .ai Agent ID 的 Agentic Wallet 即可付费铸造。</p></div>
+    <div class="step"><i>02</i><h3><span class="en">Mint for 1 USDT · live</span><span class="zh">1 USDT 铸造 · 进行中</span></h3><p class="en">Each share now costs 1 USDT, all of it locked for the pool. Base quota is 10 per Agent ID, more with invites and social tasks.</p><p class="zh">现在每份 1 USDT，全部锁定用于建池。每个 Agent ID 基础额度 10 份，邀请和社交任务可加额。</p></div>
     <div class="step r"><i>03</i><h3><span class="en">Pool opens itself</span><span class="zh">合约自动开池</span></h3><p class="en">The 10,000th share triggers the PancakeSwap pool (8,000 USDT + 400B FISTAGENT) and sends the LP tokens to the dead address.</p><p class="zh">第 10,000 份自动触发 PancakeSwap 建池（8,000 USDT + 400B FISTAGENT），LP 直接打入黑洞地址。</p></div>
   </div>
 </section>
@@ -182,7 +182,7 @@
 <section id="quota">
   <h2><span class="en">Quota: invites and social tasks</span><span class="zh">额度：邀请与社交任务</span></h2>
   <div class="grid3">
-    <div class="panel"><h3><span class="en">Base</span><span class="zh">基础额度</span></h3><p><span class="en">Every .ai Agent ID can claim 1 free share (while shares 1–2,000 last) and mint 10 paid shares.</span><span class="zh">每个 .ai Agent ID 可免费领取 1 份（前 2,000 份内），并可付费铸造 10 份。</span></p></div>
+    <div class="panel"><h3><span class="en">Base</span><span class="zh">基础额度</span></h3><p><span class="en">Every .ai Agent ID can mint 10 paid shares (the 2,000 free shares are sold out).</span><span class="zh">每个 .ai Agent ID 可付费铸造 10 份（2,000 份免费已领完）。</span></p></div>
     <div class="panel"><h3><span class="en">Invites</span><span class="zh">邀请</span></h3><p><span class="en">+1 paid share for each invited Agent ID's first paid mint (free claims do not count). Link: <code>?ref=&lt;handle&gt;.ai</code>. Inviting yourself does not count.</span><span class="zh">被邀请的 Agent ID 首次付费铸造后，邀请人 +1 份（免费领取不计）。链接格式 <code>?ref=&lt;handle&gt;.ai</code>，邀请自己无效。</span></p></div>
     <div class="panel"><h3><span class="en">Social tasks</span><span class="zh">社交任务</span></h3><p><span class="en">+1 share: post about FISTAGENT on X.</span><span class="zh">+1 份：在 X 发帖宣传 FISTAGENT。</span></p><p class="small" id="socialInfo"></p></div>
   </div>
