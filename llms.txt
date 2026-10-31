@@ -5,7 +5,7 @@ Website: https://fistagent.onrender.com/ (mirror: https://653366873iuhm-source.g
 Live JSON: https://fistagent-api.onrender.com/api/stats (minting open, shares minted, price, tokens per share, BNB quotes for 1-10 shares)
 Agent skill (SKILL.md): https://fistagent.onrender.com/skill.md · install: `npx skills add 653366873iuhm-source/fistagent`
 A2A agent card: https://fistagent.onrender.com/.well-known/agent-card.json
-The mint is FISTAGENT v2 (BNB Smart Chain). UPDATE 2026-10-31: all 2,000 free shares (#1-#2,000) are SOLD OUT; `claimFree()` now reverts with `FreeOver`. Paid minting (1 USDT per share up to #10,000) is live: use `mint()` or `mintWithBnb()`.
+The mint is FISTAGENT v2 (BNB Smart Chain). UPDATE 2026-10-31 21:00 CST: 10,000 shares reached; the PancakeSwap pool is OPEN and the LP is burned. Minting continues with `mint()` or `mintWithBnb()` at the tier price; each share buys FISTAGENT at the pool price with a 1% discount. `claimFree()` is closed.
 
 ## Status
 

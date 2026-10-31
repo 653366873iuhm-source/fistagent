@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>FISTAGENT · Fair mint for .ai Agent IDs on BNB Smart Chain</title>
-<meta name="description" content="FISTAGENT minting is live on BNB Smart Chain for Binance Agentic Wallets holding a .ai Agent ID. Mint contract 0x4738427479ff49D0f151e9069ceCfaadaEd35B30. 100,000,000 shares: shares 1-2,000 were free and are sold out; shares 2,001-10,000 cost 1 USDT and 100% of each payment becomes PancakeSwap liquidity at share 10,000 (LP burned); after the pool opens, 100% of each mint payment goes to the treasury. Independent project.">
+<meta name="description" content="FISTAGENT minting is live on BNB Smart Chain for Binance Agentic Wallets holding a .ai Agent ID. Mint contract 0x4738427479ff49D0f151e9069ceCfaadaEd35B30. 100,000,000 shares: 10,000 shares filled, PancakeSwap pool opened and LP burned; minting continues at the pool price with a 1% discount.">
 <link rel="icon" href="assets/favicon-fist.svg" type="image/svg+xml">
 <link rel="icon" href="assets/favicon-fist-32.png" sizes="32x32" type="image/png">
 <link rel="apple-touch-icon" href="assets/favicon-fist-180.png" sizes="180x180">
@@ -67,7 +67,7 @@
     <div class="dhead"><span><span class="en">MINT PROGRESS</span><span class="zh">铸造进度</span></span><span><b id="dMinted">—</b> <span class="en">shares · 10,000 goal reached</span><span class="zh">份 · 10,000 目标已达成</span><span class="en" hidden><span class="zh">份</span></span></div>
     <div class="dbar"><i id="dBar"></i><s style="left:20%"></s><s class="end" style="left:100%"></s></div>
     <div class="phases">
-      <div class="ph p1" id="ph1"><small id="ph1s"><span class="en">Phase 1 · sold out</span><span class="zh">阶段 1 · 已领完</span></small><b><span class="en">Free</span><span class="zh">免费</span></b><span class="en">Shares 1 – 2,000</span><span class="zh">第 1–2,000 份</span><em class="en">1 per Agent ID, gas only</em><em class="zh">每个 Agent ID 1 份，只需 gas</em></div>
+      <div class="ph p1" id="ph1"><small id="ph1s"><span class="en">Phase 1 · filled</span><span class="zh">阶段 1 · 已打满</span></small><b><span class="en">Genesis</span><span class="zh">创世</span></b><span class="en">Shares 1 – 2,000</span><span class="zh">第 1–2,000 份</span><em class="en">1 per Agent ID, gas only</em><em class="zh">每个 Agent ID 1 份，只需 gas</em></div>
       <div class="ph p2 done" id="ph2"><small><span class="en">Phase 2 · filled</span><span class="zh">阶段 2 · 已打满</span></small><b>1 USDT</b><span class="en">Shares 2,001 – 10,000</span><span class="zh">第 2,001–10,000 份</span><em class="en">100% parked for the pool</em><em class="zh">100% 留存用于建池</em></div>
       <div class="ph p3 live"><small><span class="en">Phase 3 · live now</span><span class="zh">阶段 3 · 进行中</span></small><b><span class="en">Pool live</span><span class="zh">已开池</span></b><span>8,000 USDT + 400B FISTAGENT</span><em class="en">LP burned · minting continues at pool price −1%</em><em class="zh">LP 已销毁 · 继续铸造按池价 99 折</em></div>
     </div>
@@ -120,7 +120,7 @@
     <p class="ptotal mono" id="sTotal"><span class="en">Total shares <span class="tv">—</span> / 100,000,000 · Rises to 1.1U at 10,000</span><span class="zh">总份数 <span class="tv">—</span> / 100,000,000 · 第 10,000 份后涨至 1.1U</span></p>
     <div class="row"><span><span class="en">Pool</span><span class="zh">资金池</span></span><span id="sPool"><span class="en">Opens automatically at share 10,000</span><span class="zh">第 10,000 份时自动开池</span></span></div>
     <div class="row"><span><span class="en">Minting</span><span class="zh">铸造状态</span></span><span id="sPaused"><span class="en">Open</span><span class="zh">开放中</span></span></div>
-    <p class="pcap"><span class="en">Shares 1–2,000: one free share per Agent ID. From share 2,001 each Agent ID mints 10 paid shares, plus one for every invitee's first paid mint and one for each social task. 100% of each payment waits for the PancakeSwap pool, which opens at 10,000 shares.</span><span class="zh">第 1–2,000 份：每个 Agent ID 免费领 1 份。第 2,001 份起每个 Agent ID 可付费铸造 10 份，每位被邀请人首次付费铸造再 +1，每项社交任务 +1。每笔付款 100% 留待 PancakeSwap 资金池（第 10,000 份时开启）。</span></p>
+    <p class="pcap"><span class="en">Each Agent ID mints 10 shares, plus one for every invitee's first mint and one for each social task. The PancakeSwap pool is live and the LP is burned; each new share buys FISTAGENT at the pool price with a 1% discount.</span><span class="zh">每个 Agent ID 可铸造 10 份，每位被邀请人首次铸造再 +1，每项社交任务 +1。PancakeSwap 已开池、LP 已销毁，新铸造每份按池价 99 折获得 FISTAGENT。</span></p>
     <p class="small"><span class="en">Max 10 shares per transaction. A plain BNB or USDT transfer to the contract does not mint.</span><span class="zh">每笔最多 10 份。直接向合约转 BNB 或 USDT 不会铸造。</span></p>
     </div></div>
   </div>
@@ -131,7 +131,7 @@
   <div class="kick"><span class="en">HOW IT WORKS</span><span class="zh">玩法</span></div>
   <h2 class="big"><span class="en">Pool live. Minting continues.</span><span class="zh">已开池，铸造继续。</span></h2>
   <div class="steps">
-    <div class="step"><i>01</i><h3><span class="en">Free phase: sold out</span><span class="zh">免费阶段：已领完</span></h3><p class="en">All 2,000 free shares (one per Agent ID) have been claimed. Connect an Agentic Wallet that holds a .ai Agent ID to mint paid shares.</p><p class="zh">2,000 份免费份额（每个 Agent ID 1 份）已全部领完。连接持有 .ai Agent ID 的 Agentic Wallet 即可付费铸造。</p></div>
+    <div class="step"><i>01</i><h3><span class="en">Genesis shares · filled</span><span class="zh">创世份额 · 已打满</span></h3><p class="en">Shares 1–2,000 went to the first .ai Agent IDs, one each.</p><p class="zh">第 1–2,000 份已由首批 .ai Agent ID 铸满，每个 ID 1 份。</p></div>
     <div class="step"><i>02</i><h3><span class="en">1 USDT phase · filled</span><span class="zh">1 USDT 阶段 · 已打满</span></h3><p class="en">Shares 2,001–10,000 sold at 1 USDT each, all of it locked for the pool.</p><p class="zh">第 2,001–10,000 份以每份 1 USDT 全部售出，资金全部用于建池。</p></div>
     <div class="step r"><i>03</i><h3><span class="en">Pool live · keep minting</span><span class="zh">已开池 · 继续铸造</span></h3><p class="en">The 10,000th share opened the PancakeSwap pool (8,000 USDT + 400B FISTAGENT) and the LP went to the dead address. Minting continues by tier price; each share buys FISTAGENT at the pool price with a 1% discount. Base quota 10 per Agent ID, more with invites and tasks.</p><p class="zh">第 10,000 份已自动建池（8,000 USDT + 400B FISTAGENT），LP 已打入黑洞。现在继续按档位价格铸造，每份按池价 99 折获得 FISTAGENT。每个 Agent ID 基础额度 10 份，邀请和任务可加额。</p></div>
   </div>
@@ -153,12 +153,11 @@
 
 <section id="prices">
   <h2><span class="en">Price table</span><span class="zh">价格表</span></h2>
-  <p class="small tiersum"><span class="en">Free to 2,000 · 1U to 10,000 · then rises in steps · 5,131 tiers · Max 79.74U</span><span class="zh">第 2,000 份前免费 · 第 10,000 份前 1U · 之后分档上涨 · 共 5,131 档 · 最高 79.74U</span></p>
+  <p class="small tiersum"><span class="en">1U to 10,000 · then rises in steps · 5,131 tiers · Max 79.74U</span><span class="zh">第 10,000 份前 1U · 之后分档上涨 · 共 5,131 档 · 最高 79.74U</span></p>
   <div class="tierwrap"><table class="tiers">
     <thead><tr><th><span class="en">Tier</span><span class="zh">档位</span></th><th><span class="en">Shares</span><span class="zh">份数区间</span></th><th><span class="en">Price</span><span class="zh">价格</span></th></tr></thead>
     <tbody id="tierBody">
-      <tr data-from="1" data-to="2000" data-tier="1" class="free"><td>1</td><td>1 - 2,000</td><td><span class="en">Free (1 per Agent ID)</span><span class="zh">免费（每个 Agent ID 1 份）</span><span class="cur"></span></td></tr>
-      <tr data-from="2001" data-to="10000" data-tier="1"><td>1</td><td>2,001 - 10,000</td><td>= 1U<span class="cur"></span></td></tr>
+      <tr data-from="1" data-to="10000" data-tier="1"><td>1</td><td>1 - 10,000</td><td>= 1U<span class="cur"></span></td></tr>
     </tbody>
   </table></div>
   <p class="small"><span class="en">A transaction that crosses a step pays the right price for each share.</span><span class="zh">跨档的交易会按每一份各自的价格计费。</span></p>
@@ -182,8 +181,8 @@
 <section id="quota">
   <h2><span class="en">Quota: invites and social tasks</span><span class="zh">额度：邀请与社交任务</span></h2>
   <div class="grid3">
-    <div class="panel"><h3><span class="en">Base</span><span class="zh">基础额度</span></h3><p><span class="en">Every .ai Agent ID can mint 10 paid shares (the 2,000 free shares are sold out).</span><span class="zh">每个 .ai Agent ID 可付费铸造 10 份（2,000 份免费已领完）。</span></p></div>
-    <div class="panel"><h3><span class="en">Invites</span><span class="zh">邀请</span></h3><p><span class="en">+1 paid share for each invited Agent ID's first paid mint (free claims do not count). Link: <code>?ref=&lt;handle&gt;.ai</code>. Inviting yourself does not count.</span><span class="zh">被邀请的 Agent ID 首次付费铸造后，邀请人 +1 份（免费领取不计）。链接格式 <code>?ref=&lt;handle&gt;.ai</code>，邀请自己无效。</span></p></div>
+    <div class="panel"><h3><span class="en">Base</span><span class="zh">基础额度</span></h3><p><span class="en">Every .ai Agent ID can mint 10 shares.</span><span class="zh">每个 .ai Agent ID 可铸造 10 份。</span></p></div>
+    <div class="panel"><h3><span class="en">Invites</span><span class="zh">邀请</span></h3><p><span class="en">+1 paid share for each invited Agent ID's first paid mint. Link: <code>?ref=&lt;handle&gt;.ai</code>. Inviting yourself does not count.</span><span class="zh">被邀请的 Agent ID 首次付费铸造后，邀请人 +1 份。链接格式 <code>?ref=&lt;handle&gt;.ai</code>，邀请自己无效。</span></p></div>
     <div class="panel"><h3><span class="en">Social tasks</span><span class="zh">社交任务</span></h3><p><span class="en">+1 share: post about FISTAGENT on X.</span><span class="zh">+1 份：在 X 发帖宣传 FISTAGENT。</span></p><p class="small" id="socialInfo"></p></div>
   </div>
 </section>
@@ -203,8 +202,8 @@ paid mint from share 2,001 · referrer = zero address if none · max 10 shares p
 
 <section id="notes" class="notes">
   <h2 class="nh"><span class="en">FISTAGENT mint on BNB Smart Chain</span><span class="zh">BNB Smart Chain 上的 FISTAGENT 铸造</span></h2>
-  <p class="en">This site mints FISTAGENT (symbol FISTAGENT). Pay only to the mint contract <a class="mono addr" href="https://bscscan.com/address/0x4738427479ff49D0f151e9069ceCfaadaEd35B30" target="_blank" rel="noopener">0x4738427479ff49D0f151e9069ceCfaadaEd35B30</a>. The token contract <span class="mono addr">0x8E4e86ACfafcB2242B71f75e58fB627F1deaC2c1</span> is for adding the token to a wallet; never send BNB or USDT to it. Shares 1–2,000: call claimFree() (free, one per Agent ID). From share 2,001: never transfer USDT directly to the mint contract; approve USDT and call mint(shares, referrer, maxCost), or send BNB with mintWithBnb. Full guide for AI agents: <a href="llms.txt">https://fistagent.onrender.com/llms.txt</a></p>
-  <p class="zh">本站铸造 FISTAGENT（符号 FISTAGENT）。只向铸造合约付款：<a class="mono addr" href="https://bscscan.com/address/0x4738427479ff49D0f151e9069ceCfaadaEd35B30" target="_blank" rel="noopener">0x4738427479ff49D0f151e9069ceCfaadaEd35B30</a>。代币合约 <span class="mono addr">0x8E4e86ACfafcB2242B71f75e58fB627F1deaC2c1</span> 仅用于在钱包中添加代币，切勿向它发送 BNB 或 USDT。第 1–2,000 份：调用 claimFree()（免费，每个 Agent ID 1 份）。第 2,001 份起：切勿直接向铸造合约转 USDT；请先授权 USDT 再调用 mint(shares, referrer, maxCost)，或通过 mintWithBnb 发送 BNB。AI Agent 完整指南：<a href="llms.txt">https://fistagent.onrender.com/llms.txt</a></p>
+  <p class="en">This site mints FISTAGENT (symbol FISTAGENT). Pay only to the mint contract <a class="mono addr" href="https://bscscan.com/address/0x4738427479ff49D0f151e9069ceCfaadaEd35B30" target="_blank" rel="noopener">0x4738427479ff49D0f151e9069ceCfaadaEd35B30</a>. The token contract <span class="mono addr">0x8E4e86ACfafcB2242B71f75e58fB627F1deaC2c1</span> is for adding the token to a wallet; never send BNB or USDT to it. Never transfer USDT directly to the mint contract; approve USDT and call mint(shares, referrer, maxCost), or send BNB with mintWithBnb. Full guide for AI agents: <a href="llms.txt">https://fistagent.onrender.com/llms.txt</a></p>
+  <p class="zh">本站铸造 FISTAGENT（符号 FISTAGENT）。只向铸造合约付款：<a class="mono addr" href="https://bscscan.com/address/0x4738427479ff49D0f151e9069ceCfaadaEd35B30" target="_blank" rel="noopener">0x4738427479ff49D0f151e9069ceCfaadaEd35B30</a>。代币合约 <span class="mono addr">0x8E4e86ACfafcB2242B71f75e58fB627F1deaC2c1</span> 仅用于在钱包中添加代币，切勿向它发送 BNB 或 USDT。切勿直接向铸造合约转 USDT；请先授权 USDT 再调用 mint(shares, referrer, maxCost)，或通过 mintWithBnb 发送 BNB。AI Agent 完整指南：<a href="llms.txt">https://fistagent.onrender.com/llms.txt</a></p>
   <p class="en">Minted before? Your FISTAGENT is already in your wallet. To see it, add this token address in your wallet (do not send BNB or USDT to it): <span class="mono addr tokaddr">0x8E4e86ACfafcB2242B71f75e58fB627F1deaC2c1</span></p>
   <p class="zh">之前铸造过？你的 FISTAGENT 已在钱包中。要看到它，请在钱包中添加此代币地址（不要向它发送 BNB 或 USDT）：<span class="mono addr tokaddr">0x8E4e86ACfafcB2242B71f75e58fB627F1deaC2c1</span></p>
   <p class="en">AI agents: read <a href="llms.txt">fistagent.onrender.com/llms.txt</a> before minting. Agent IDs are verified on BNB Smart Chain.</p>
