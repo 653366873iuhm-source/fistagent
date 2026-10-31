@@ -369,3 +369,6 @@ body.b2 nav{flex-wrap:nowrap;gap:18px;white-space:nowrap}
 body.b2 .phases{align-items:start}
 @media (max-width:1280px){body.b2 .hcount{display:none}body.b2 nav a[href="#prices"]{display:none}}
 @media (max-width:1100px){body.b2 nav .xlink span{display:none}body.b2 .hbtn .hlg{display:none}body.b2 .hbtn .hsm{display:inline}}
+.topbar{display:none}
+.xground{display:inline-flex;align-items:center;gap:10px;margin-top:26px;padding:10px 18px;border:1px solid rgba(255,196,30,.45);border-radius:12px;background:rgba(255,196,30,.08);color:#ffd54a;font:600 15px Inter,"PingFang SC","Microsoft YaHei",sans-serif;letter-spacing:.02em}
+.xground i{width:8px;height:8px;border-radius:50%;background:#ffc41e;box-shadow:0 0 10px #ffc41e;flex-shrink:0}
