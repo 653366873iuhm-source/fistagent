@@ -163,10 +163,10 @@
       const setT = (id, v) => { const e = $(id); if (e) e.textContent = v; };
       const fc = Math.min(m, FREE);
       setT("xpClaimed", fc.toLocaleString()); setT("xpClaimedZh", fc.toLocaleString());
-      setT("dFreeLeft", Math.max(0, FREE - m).toLocaleString());
+      setT("dFreeLeft", Math.max(0, 10000 - m).toLocaleString()); setT("xsLeft", Math.max(0, 10000 - m).toLocaleString()); setT("xsLeftZh", Math.max(0, 10000 - m).toLocaleString());
       setT("dMinted", m.toLocaleString()); setT("stMinted", m.toLocaleString());
       setT("stToPool", Math.max(0, 10000 - m).toLocaleString());
-      const ra = $("ringArc"); if (ra) { const p = Math.min(100, (fc / FREE) * 100); ra.setAttribute("stroke-dasharray", p.toFixed(2) + " " + (100 - p).toFixed(2)); }
+      const ra = $("ringArc"); if (ra) { const p = Math.min(100, (m / 10000) * 100); ra.setAttribute("stroke-dasharray", p.toFixed(2) + " " + (100 - p).toFixed(2)); }
       const db = $("dBar"); if (db) db.style.width = Math.min(100, (m / 10000) * 100).toFixed(3) + "%";
       const p1 = $("ph1"), p2 = $("ph2");
       if (p1 && p2 && m >= FREE) { p1.classList.add("done"); p2.classList.add("live"); $("ph1s").innerHTML = '<span class="en">Phase 1 · done</span><span class="zh">阶段 1 · 已结束</span>'; }
