@@ -141,7 +141,7 @@
     if (W.account) refreshWallet();
   }
 
-  const tierName = (n) => (n <= FREE ? T(`Tier 1 · Free`, `第 1 档 · 免费`) : T(`Tier ${tierOf(n)} · ${uFmt(priceCents(n))}U`, `第 ${tierOf(n)} 档 · ${uFmt(priceCents(n))}U`));
+  const tierName = (n) => (n <= FREE ? T(`Tier 1 · 1U`, `第 1 档 · 1U`) : T(`Tier ${tierOf(n)} · ${uFmt(priceCents(n))}U`, `第 ${tierOf(n)} 档 · ${uFmt(priceCents(n))}U`));
   // shares radio 1..10: max = min(10, remaining quota); defaults to the max available
   let selQty = null;
   const avail = () => (W.status ? Math.min(Math.max(W.status.quota - W.status.minted, 0), 10) : 0);
@@ -169,7 +169,7 @@
       const ra = $("ringArc"); if (ra) { const p = Math.min(100, (m / 10000) * 100); ra.setAttribute("stroke-dasharray", p.toFixed(2) + " " + (100 - p).toFixed(2)); }
       const db = $("dBar"); if (db) db.style.width = Math.min(100, (m / 10000) * 100).toFixed(3) + "%";
       const p1 = $("ph1"), p2 = $("ph2");
-      if (p1 && p2 && m >= FREE) { p1.classList.add("done"); p2.classList.remove("live");p2.classList.add("done"); $("ph1s").innerHTML = '<span class="en">Phase 1 · done</span><span class="zh">阶段 1 · 已结束</span>'; }
+      if (p1 && p2 && m >= FREE) { p1.classList.add("done"); p2.classList.remove("live");p2.classList.add("done"); $("ph1s").innerHTML = '<span class="en">Phase 1 · filled</span><span class="zh">阶段 1 · 已打满</span>'; }
       $("hMinted").textContent = m.toLocaleString();
       document.querySelectorAll("#sTotal .tv").forEach((e) => (e.textContent = m.toLocaleString()));
       // Staged bar (user, 2026-10-30): stage 1 fills to 10,000 (pool opens), then switches to the next stage target.
@@ -210,9 +210,9 @@
   }
   function buildTiers() {
     const body = $("tierBody"); if (!body || body.dataset.built) return;
-    const rows = ['<tr data-from="1" data-to="2000" data-tier="1" class="free"><td>1</td><td>1 - 2,000</td><td><span class="en">Free (1 per Agent ID)</span><span class="zh">免费（每个 Agent ID 1 份）</span><span class="cur"></span></td></tr>'];
+    const rows = [];
     TIERS.forEach(([a, b], i) => {
-      const from = i === 0 ? FREE + 1 : a;
+      const from = a;
       rows.push(`<tr data-from="${from}" data-to="${b}" data-tier="${i + 1}"><td>${i + 1}</td><td>${from.toLocaleString("en-US")} - ${b.toLocaleString("en-US")}</td><td>= ${uFmt(priceCents(a))}U<span class="cur"></span></td></tr>`);
     });
     body.innerHTML = rows.join("");
@@ -424,7 +424,7 @@
     const onBsc = W.chainId === BSC;
     const chainTxt = onBsc ? `<span class="okc">BNB Smart Chain (56) ✓</span>` : `<span class="badc">${T("Wrong network", "网络错误")} (chainId ${W.chainId ? parseInt(W.chainId, 16) : "?"})</span> <button class="mini" id="switchBtn">${T("Switch to BSC", "切换到 BSC")}</button>`;
     const agent = W.handle === null ? "…" : W.handle ? `<span class="okc">${esc(W.handle)}.ai ✓</span>` : `<span class="badc">${T("no .ai Agent ID", "无 .ai Agent ID")}</span>`;
-    const freeTxt = W.status && W.agentOk && W.status.freeUsed != null ? (W.status.freeUsed ? T(" · free share claimed", " · 已领免费份额") : T(" · free share available", " · 可领免费份额")) : "";
+    const freeTxt = "";
     const contract = !deployed ? `<span class="warnc">${T("Contracts not deployed yet", "合约未部署")}</span>` : W.status ? T(`paid ${W.status.minted} / quota ${W.status.quota}`, `付费已铸 ${W.status.minted} / 额度 ${W.status.quota}`) + freeTxt : "–";
     const icon = W.icon && /^data:image\//.test(W.icon) ? `<img class="wicon" src="${esc(W.icon)}" alt="">` : "";
     box.innerHTML =
