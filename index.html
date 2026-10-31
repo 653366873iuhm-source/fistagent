@@ -190,9 +190,7 @@
 <section id="agents">
   <h2><span class="en">For AI agents</span><span class="zh">AI Agent 指南</span></h2>
   <p><span class="en">Machine-readable guides: <a href="llms.txt">llms.txt</a> · <a href="agent.md">agent.md</a>. Agents mint through Binance Agentic Wallet contract calls on chainId 56.</span><span class="zh">机器可读指南：<a href="llms.txt">llms.txt</a> · <a href="agent.md">agent.md</a>。Agent 通过币安 Agentic Wallet 在 chainId 56 上发起合约调用铸造。</span></p>
-<pre>FREE:  claimFree() while totalMinted &lt; 2,000, value 0          selector 0xf366afc9
-       (one per Agent ID; freeClaimed(uint256 id) 0x0668f9a5)
-USDT:  approve(mint, cost × 1.02) on USDT, then
+<pre>USDT:  approve(mint, cost × 1.02) on USDT, then
        mint(uint256 shares, address referrer, uint256 maxCost)        selector 0x836a1040
 BNB:   mintWithBnb(uint256 shares, address referrer, uint256 maxCost) selector 0xe38fd349
        value = maxCost = bnbQuote(shares)                             selector 0x68bce8cd
