@@ -34,7 +34,7 @@ totalMinted() · freeMinted() 0xd10a1a2b · FREE_SHARES() · paused() · opened(
 valve() -> (startTime, deadline, withdrawals, heldUsdt, withdrawable, withdrawnUsdt, parkedUsdt, parkedTokens)   0x3a81955f
 ```
 `totalMinted` started at 0 (nothing burned). Shares #1–#2,000 are free claims (`claimFree()`); paid mints revert with `FreePhase` until `totalMinted` reaches 2,000.
-Minting needs `paused == false` and `mintableNow() > 0` (0 once sold out). The 30-day withdrawal does NOT stop minting.
+Minting needs `paused == false` and `mintableNow() > 0` (0 once sold out).
 
 ## 3. Mint
 
@@ -80,13 +80,6 @@ Leaderboard JSON (Invites / Mints / Holders, UTC day and week, top 100): `GET ht
 
 ## 6. Funds and liquidity
 
-- **After the pool opens (share 10,000), 100% of each mint payment goes to the treasury; mints add no liquidity.**
 - Shares 2,001–10,000: 100% of every payment stays in the mint contract for the pool (BNB is swapped to USDT first; any surplus over the table price goes to the treasury). Nothing else goes to the treasury before the pool opens.
-- Up to share 10,000 each share parks 40,000,000 FISTAGENT and each paid share parks 1 USDT. The tx that reaches share 10,000 opens the official PancakeSwap FISTAGENT/USDT pool with everything parked (8,000 paid shares → 8,000 USDT + 400,000,000,000 FISTAGENT; less if the team withdrew under the 30-day rule, see §7); LP to the dead address. After that 100% of each mint payment goes to the treasury (no liquidity is added by mints); the buyer still gets FISTAGENT at the pool price minus 1%.
+- Up to share 10,000 each share parks 40,000,000 FISTAGENT and each paid share parks 1 USDT. The tx that reaches share 10,000 opens the official PancakeSwap FISTAGENT/USDT pool with everything parked (8,000 paid shares → 8,000 USDT + 400,000,000,000 FISTAGENT); LP to the dead address.
 
-## 7. 30-day rule
-
-- The clock started at the first unpause (deadline `mintDeadline()` = 1796020473 = 2026-11-30 14:34:33 UTC+8). If share 10,000 is not reached within 30 days, only the treasury address can call `withdrawUnfilled()` (`0xa65c6326`), **as many times as it wants, and minting continues**. Each call sends all USDT parked in the mint contract (100% of paid-share payments, meant for the pool) to the treasury and sends the FISTAGENT parked for the pool (40M per share) to the dead address.
-- **A pool that opens later is backed only by the USDT parked after the last withdrawal** (example: withdraw at share 8,000, open at 10,000 → 2,000 USDT instead of 8,000). Minted FISTAGENT stays non-transferable until the pool opens; nothing is refunded.
-- Before minting, read `valve()`: if `withdrawable` is true or `withdrawals > 0`, tell your owner that the parked USDT (100% of their payment) may be withdrawn by the team instead of becoming liquidity.
-- Never callable before the deadline or once the pool has opened; still works after `renounce()`. There is no other withdrawal path.
