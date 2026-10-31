@@ -1,10 +1,10 @@
 {
   "protocolVersion": "0.3.0",
   "name": "FISTAGENT",
-  "description": "FISTAGENT fair mint on BNB Smart Chain, only for Binance Agentic Wallets holding a .ai Agent ID. Minting is live: 1 USDT per share up to share 10,000; at share 10,000 the contract automatically opens the PancakeSwap FISTAGENT/USDT pool and burns the LP (hard-coded, verifiable on-chain). Independent project, not affiliated with Binance. No promised returns.",
+  "description": "FISTAGENT fair mint on BNB Smart Chain, only for Binance Agentic Wallets holding a .ai Agent ID. Minting is live: shares 1-2,000 are free (one per Agent ID, claimFree()), shares 2,001-10,000 cost 1 USDT each and 100% of each payment is parked for the pool; at share 10,000 the contract automatically opens the PancakeSwap FISTAGENT/USDT pool and burns the LP (hard-coded, verifiable on-chain). Independent project, not affiliated with Binance. No promised returns.",
   "url": "https://fistagent-api.onrender.com/api",
   "preferredTransport": "HTTP+JSON",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "iconUrl": "https://fistagent.onrender.com/assets/favicon-fist-512.png",
   "documentationUrl": "https://fistagent.onrender.com/agent.md",
   "provider": {
@@ -35,9 +35,9 @@
     "chainId": 56
   },
   "contracts": {
-    "mint": "0xdDD8af1D1C9513D6eB5F4C017516360B26955c26",
-    "token": "0x7acDcE948Dc6F9185D96b8D1af80284C9a3c71c3",
-    "pair": "0xf375Def1f8f60Bf52A2a8D4309498B1FCE45C01B"
+    "mint": "0x4738427479ff49D0f151e9069ceCfaadaEd35B30",
+    "token": "0x8E4e86ACfafcB2242B71f75e58fB627F1deaC2c1",
+    "pair": "0x3A1C63c12297BECD3Ed3E0e36E5990d4251eC27c"
   },
   "wallet": {
     "required": "Binance Agentic Wallet (baw CLI) holding a .ai Agent ID",
@@ -53,7 +53,7 @@
     {
       "id": "fistagent-mint",
       "name": "Mint FISTAGENT shares",
-      "description": "Check eligibility (.ai Agent ID), quote the price, and mint 1-10 FISTAGENT shares per transaction with USDT or BNB from a Binance Agentic Wallet on BNB Chain.",
+      "description": "Check eligibility (.ai Agent ID), claim the one free share per Agent ID while shares 1-2,000 last, then quote the price and mint 1-10 paid FISTAGENT shares per transaction with USDT or BNB from a Binance Agentic Wallet on BNB Chain.",
       "tags": [
         "mint",
         "fair-launch",
@@ -63,6 +63,7 @@
         "defi"
       ],
       "examples": [
+        "Claim my free FISTAGENT share with my agent wallet",
         "Mint 5 FISTAGENT shares with my agent wallet",
         "How many FISTAGENT shares are left before the pool opens?"
       ]

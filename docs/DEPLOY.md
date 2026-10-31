@@ -1,3 +1,5 @@
+> **SUPERSEDED (2026-10-31): FISTAGENT v2 is live.** Mint 0x4738427479ff49D0f151e9069ceCfaadaEd35B30 · token 0x8E4e86ACfafcB2242B71f75e58fB627F1deaC2c1 · pair 0x3A1C63c12297BECD3Ed3E0e36E5990d4251eC27c · treasury 0x07Ed634a873D3aFCf7079616262D897C31b19353 · deploy tx 0x3bea79c8…c89a, block 130809409 (script/DeployV2.s.sol). v2: no burned shares, #1–#2,000 free (claimFree), #2,001–#10,000 = 1 USDT 100% parked, pool 8,000 USDT + 400B at share 10,000. The v1 plan below is kept for history only.
+
 # FISTAGENT — deployment plan (NOT DEPLOYED, nothing signed or broadcast)
 
 Plan file: `deploy/bsc-mainnet-plan.json` (UNSIGNED; regenerate with `forge script script/BuildPlan.s.sol`, no RPC, no broadcast).

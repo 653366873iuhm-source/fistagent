@@ -1,31 +1,22 @@
-# FISTAGENT — STATUS (2026-10-30 ~18:45 CST)
+# FISTAGENT — STATUS (2026-10-31 CST)
 
-FISTAGENT = exact clone of BNAGENT v2 (bnagent repo @ ea0c4c0) with ONE mechanism change (user 2026-10-30 17:39 CST):
-**after the pool opens at share 10,000, 100% of each mint payment goes to the treasury** (no LP added by mints; buyer still gets
-its tokens at 99% of the pool price). Before 10,000: 20% treasury / 80% parked → pool at 10,000, unchanged. Details: docs/JAGER-DIFF.md (top).
+## State: v2 DEPLOYED ON BSC MAINNET, MINTING OPEN since 2026-10-31 14:34 CST
+- Deploy tx 0x3bea79c84ca26250d6c58ddb605c31827bece03552c06e36aa23ed4c6cd5c89a, block 130809409.
+- Mint 0x4738427479ff49D0f151e9069ceCfaadaEd35B30 · Token 0x8E4e86ACfafcB2242B71f75e58fB627F1deaC2c1 · Pair 0x3A1C63c12297BECD3Ed3E0e36E5990d4251eC27c.
+- Treasury 0x07Ed634a873D3aFCf7079616262D897C31b19353 (user's wallet; tax receiver; only address that can call withdrawUnfilled()).
+- Operator (deployer) 0x8d6cdA80e93322fAc57d917BAB1894a3411086f9: pause/unpause only. Social signer 0x66ECa9C28e4e4807e37C078b917e527DC85aC199 (unchanged).
+- mintDeadline() = 1796020473 = 2026-11-30 14:34:33 CST.
+- Source verified on BscScan and Sourcify (match), mint + token, 2026-10-31.
+- v2 rules: #1–#2,000 free (claimFree, 1 per Agent ID); #2,001–#10,000 = 1 USDT, 100% parked; pool at 10,000 (8,000 USDT + 400B); then 100% to treasury.
+- v1 mint (0xdDD8…5c26) is superseded; site, API, agent docs all point at v2.
+- GitHub: https://github.com/653366873iuhm-source/fistagent (main). Render: static `fistagent`, API `fistagent-api`
+  (env ALLOW_TO = v2 mint, DEPLOY_BLOCK = 130809409; MINT/TOKEN/PAIR default to v2 in code).
 
-## State: DEPLOYED ON BSC MAINNET, MINTING LIVE since 2026-10-30 23:17 CST (setPaused(false) tx 0xe79ebb99c7a1e30b6b745271b8c03c530773d77d813b759cb47e6d40af4e5757)
-- Deploy tx 0x371fe25ef197a25fffde067060d6f818700555d2f4fd5ebf2fe70665a26030f3, block 130677714, status 1.
-- Mint 0xdDD8af1D1C9513D6eB5F4C017516360B26955c26 · Token 0x7acDcE948Dc6F9185D96b8D1af80284C9a3c71c3 · Pair 0xf375Def1f8f60Bf52A2a8D4309498B1FCE45C01B.
-- Treasury allin168.ai 0x49E6fb3812fdfD67eDfE17259f03CcbE59f39BCE. paused() = false (opened on the user's command 2026-10-30 23:11 CST).
-- Source verified on Sourcify (full match, mint + token, 2026-10-30 22:07 CST).
-- No project X account: site shows no X link/handle and no FOLLOW task (user 2026-10-30).
-- GitHub: https://github.com/653366873iuhm-source/fistagent (main). Render: static `fistagent`, API `fistagent-api`.
+## Site
+- While totalMinted < 2,000 the mint card shows "Claim free share" (claimFree(), value 0; disabled if no Agent ID or freeClaimed[id]);
+  from 2,000 on the normal paid UI (1–10 shares, USDT/BNB).
+- Agentic Wallet proxy preview accepts any calldata to the mint (incl. claimFree) with value 0.
 
-## Tests (docs/test-results.txt)
-- Forge fork tests: 29/29 (26 ported from BNAGENT + 3 new test_Fist*).
-- API: 39/39 against a local anvil fork with the plan replayed (test/local-fork/deploy-local.sh).
-- Site: headless (test/site/site.test.js), SITE_RPC pointed at the same anvil fork.
-
-## Brand
-- Logo traced from the user's reference (gold #F5B21B circle, white glyph), made symmetric and de-wobbled, dot = exact circle
-  (tools/make_logo_fist.py): site/assets/fistagent-mark.svg/.png, favicon-fist.svg + favicon-fist-32/180/512.png, fistagent-lockup.png
-  (Space Grotesk Bold cream wordmark, same layout as BNAGENT), og-fist.png, logo-fist-preview.png; mark.svg = same mark (wallet button icon).
-- Site CSS/palette unchanged from BNAGENT.
-
-## Before publishing (open items)
-1. Confirm treasury (and social signer reuse vs a fresh signer) → rebuild plan if either changes (addresses change).
-2. X handle: placeholder `FISTAGENT_X_TBD` in site/config.js, index.html, whitepaper, llms.txt, agent.md, tests.
-3. Site/llms/agent copy says "minting is live / deployed, source verified" (BNAGENT wording) — true only after tx 1 + verify + tx 2.
-4. Create Render static + API services (API env: SOCIAL_SIGNER_KEY, ALLOW_TO=mint, DEPLOY_BLOCK, BINDX_EXPORT_KEY), GitHub repo, workflows
-   (.github/workflows/deploy.yml has a `$RENDER_SERVICE_IDS_FISTAGENT_TBD` placeholder instead of BNAGENT's service ids).
+## Tests
+- API: node test/server/api.test.mjs (40/40 on 2026-10-31, live BSC reads).
+- test/site/site.test.js still asserts v1 numbers (1,100 burned) and needs updating before reuse.

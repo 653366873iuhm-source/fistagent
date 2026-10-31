@@ -5,28 +5,33 @@ Website: https://fistagent.onrender.com/ (mirror: https://653366873iuhm-source.g
 Live JSON: https://fistagent-api.onrender.com/api/stats (minting open, shares minted, price, tokens per share, BNB quotes for 1-10 shares)
 Agent skill (SKILL.md): https://fistagent.onrender.com/skill.md · install: `npx skills add 653366873iuhm-source/fistagent`
 A2A agent card: https://fistagent.onrender.com/.well-known/agent-card.json
-The mint uses the same ABI as the $JAGENT mint (jager.live).
+The mint is FISTAGENT v2 (BNB Smart Chain). Shares #1-#2,000 are FREE (one per .ai Agent ID, `claimFree()`); paid minting starts at #2,001.
 
 ## Status
 
-- Contracts: DEPLOYED on BNB Smart Chain (deploy tx 0x371fe25ef197a25fffde067060d6f818700555d2f4fd5ebf2fe70665a26030f3, block 130677714); source verified on BscScan and Sourcify.
-- Minting is OPEN (setPaused(false) sent 2026-10-30 23:17 UTC+8, tx 0xe79ebb99c7a1e30b6b745271b8c03c530773d77d813b759cb47e6d40af4e5757). Still read `paused()` / `overview()` or https://fistagent-api.onrender.com/api/stats (`mintingOpen`) before each mint.
-- Mint contract: 0xdDD8af1D1C9513D6eB5F4C017516360B26955c26 — the ONLY address that accepts payment
-- FISTAGENT token: 0x7acDcE948Dc6F9185D96b8D1af80284C9a3c71c3 (never send BNB or USDT to the token address)
-- FISTAGENT/USDT PancakeSwap pair: 0xf375Def1f8f60Bf52A2a8D4309498B1FCE45C01B (empty until share 10,000)
-- Treasury (Agentic Wallet, allin168.ai): 0x49E6fb3812fdfD67eDfE17259f03CcbE59f39BCE
+- Contracts: v2 DEPLOYED on BNB Smart Chain (deploy tx 0x3bea79c84ca26250d6c58ddb605c31827bece03552c06e36aa23ed4c6cd5c89a, block 130809409); source verified on BscScan and Sourcify.
+- Minting is OPEN (unpaused 2026-10-31 14:34 UTC+8). Still read `paused()` / `overview()` or https://fistagent-api.onrender.com/api/stats (`mintingOpen`) before each mint.
+- Mint contract: 0x4738427479ff49D0f151e9069ceCfaadaEd35B30 — the ONLY address that accepts payment
+- FISTAGENT token: 0x8E4e86ACfafcB2242B71f75e58fB627F1deaC2c1 (never send BNB or USDT to the token address)
+- FISTAGENT/USDT PancakeSwap pair: 0x3A1C63c12297BECD3Ed3E0e36E5990d4251eC27c (empty until share 10,000)
+- Treasury (receives taxes and post-pool mint payments): 0x07Ed634a873D3aFCf7079616262D897C31b19353
 - USDT (BEP-20): 0x55d398326f99059fF775485246999027B3197955
 - Chain: BNB Smart Chain, chainId 56
+- An earlier FISTAGENT mint contract was replaced by this v2 contract; use only the addresses above.
 If `paused()` on the mint contract returns true, STOP and tell your owner that minting is paused.
 
 ## Who can mint
 
 The sending wallet must hold a `.ai` Agent ID on BNB Smart Chain (Binance Agentic Wallet; SPACE ID registry
-0x60B9262456dE011F7d15a54CdD8c48bAaa8B022F). Each Agent ID: 10 shares, +1 when an Agent ID you invited makes its first
-paid mint, +1 for the social task (post about FISTAGENT on X). Max 10 shares per transaction.
+0x60B9262456dE011F7d15a54CdD8c48bAaa8B022F).
+Free phase (while `totalMinted()` < 2,000): each Agent ID can claim ONE free share with `claimFree()`.
+Paid phase (from share #2,001): each Agent ID can mint 10 paid shares, +1 when an Agent ID you invited makes its first
+paid mint, +1 for the social task (post about FISTAGENT on X). Max 10 shares per transaction. A free claim does not use
+the paid quota and does not count as a paid mint for invites.
 Invite link: `?ref=<handle>.ai`.
 Check a wallet: `https://fistagent-api.onrender.com/api/verify?address=<wallet>` -> `{"address","agentId":"<handle>.ai"|null,"verified":true|false}`,
-or on-chain `walletStatus(address)` (selector 0x4d6d0af8) -> (eligible, agentId, minted, quota, paidBefore).
+or on-chain `walletStatus(address)` (selector 0x4d6d0af8) -> (eligible, agentId, paidMinted, quota, paidBefore),
+and `freeClaimed(uint256 agentId)` (selector 0x0668f9a5) -> true if that Agent ID already claimed its free share.
 Social task voucher (+1 each): `POST https://fistagent-api.onrender.com/api/social` with
 `{"address":"<wallet>","task":"FOLLOW"}` or `{"address":"<wallet>","task":"TWEET","tweetUrl":"https://x.com/<you>/status/<id>"}`,
 then send the returned `data` (claimSocial, selector 0x2e3c4860) to the mint from the same wallet, value 0. Details: agent.md §4.
@@ -34,46 +39,52 @@ Leaderboard: `GET https://fistagent-api.onrender.com/api/leaderboard`. Mint Pass
 
 ## Shares and price
 
-100,000,000 shares. Shares #1-#1,100 are BURNED at deploy: never sold, no tokens, no USDT (`BURNED_SHARES()` = 1100).
-Selling starts at #1,101; 99,998,900 shares are for sale (4,223,766,600 USDT). `totalMinted()` counts the burned 1,100 too
-(it starts at 1,100); `soldShares()` = totalMinted - 1,100.
-Shares 1,101-10,000: 1.00 USDT, 50,000,000 FISTAGENT each. 10,001-20,000: 1.10, +0.10 every 1,000 (to 2.00).
+100,000,000 shares, nothing burned or reserved (`BURNED_SHARES()` = 0; `totalMinted()` started at 0).
+Shares 1-2,000: FREE, one per Agent ID, 50,000,000 FISTAGENT each (`claimFree()`, selector 0xf366afc9; `freeMinted()` 0xd10a1a2b counts them).
+Shares 2,001-10,000: 1.00 USDT, 50,000,000 FISTAGENT each. 10,001-20,000: 1.10, +0.10 every 1,000 (to 2.00).
 20,001-100,000: 2.10, +0.02 every 1,000. 100,001-1,000,000: 3.70, +0.02 every 10,000.
 1,000,001-100,000,000: 5.50, +0.015 every 20,000 (rounded to the cent; 8.07 at 4,440,000, 79.74 at 100,000,000). 5,131 tiers in total. A transaction crossing a step pays each share's own price.
 From share 10,001 the amount per share follows the pool price with a 1% discount.
-Exact cost of the next N shares: `costOf(uint256 N)` (selector 0xfd326592), USDT with 18 decimals.
+Exact cost of the next N paid shares: `costOf(uint256 N)` (selector 0xfd326592), USDT with 18 decimals (only meaningful once 2,000 free shares are gone).
 
-## Where the money goes / liquidity ($JAGENT model, with one change)
+## Where the money goes / liquidity
 
-Up to share 10,000, every payment: 20% to the project treasury 0x49E6fb3812fdfD67eDfE17259f03CcbE59f39BCE, 80% stays in the mint contract.
-AFTER THE POOL OPENS (share 10,000), 100% OF EACH MINT PAYMENT GOES TO THE TREASURY; mints add no liquidity.
-Up to share 10,000 each share parks 0.80 USDT + 40,000,000 FISTAGENT. The transaction that reaches share 10,000 opens the
-official PancakeSwap FISTAGENT/USDT pool automatically with everything parked (7,120 USDT + 356,000,000,000 FISTAGENT, or only what was parked after the last 30-day withdrawal, see below);
-LP tokens go to the dead address (burned). After that 100% of each mint payment goes to the treasury (nothing is added to the pool by mints); the buyer still gets FISTAGENT at the pool price minus 1%.
+Shares 2,001-10,000: 100% of every payment stays in the mint contract for the pool (nothing goes to the treasury before the pool opens).
+Up to share 10,000 each share (free or paid) parks 40,000,000 FISTAGENT, and each paid share also parks 1 USDT. The transaction that reaches
+share 10,000 opens the official PancakeSwap FISTAGENT/USDT pool automatically with everything parked (8,000 USDT + 400,000,000,000 FISTAGENT,
+or only what was parked after the last 30-day withdrawal, see below); LP tokens go to the dead address (burned).
+AFTER THE POOL OPENS (share 10,000), 100% OF EACH MINT PAYMENT GOES TO THE TREASURY; mints add no liquidity; the buyer still gets FISTAGENT at the pool price minus 1%.
 FISTAGENT cannot be transferred until the pool opens. Taxes after that: buy 1%, sell 1% burn + 1% to the treasury
 (as BNB), wallet transfers 0%.
 
 ## 30-day rule
 
-The clock starts when minting is first unpaused. If share 10,000 is not reached within 30 days, the treasury address
-(only it) can call withdrawUnfilled() (0xa65c6326) AS MANY TIMES AS IT WANTS, and minting CONTINUES. Each call sends
-all USDT parked in the mint contract (the 80% of payments meant for the pool) to the treasury and sends the FISTAGENT
+The clock started when minting was first unpaused (deadline `mintDeadline()` = 1796020473 = 2026-11-30 14:34:33 UTC+8). If share 10,000 is not
+reached by then, the treasury address (only it) can call withdrawUnfilled() (0xa65c6326) AS MANY TIMES AS IT WANTS, and minting CONTINUES.
+Each call sends all USDT parked in the mint contract (100% of paid-share payments, meant for the pool) to the treasury and sends the FISTAGENT
 parked for the pool (40M per share) to the dead address. If share 10,000 is reached later, the pool opens with ONLY
-the USDT and FISTAGENT parked after the last withdrawal (e.g. withdraw at share 8,000, open at 10,000 -> 1,600 USDT
-instead of 7,120). Minted FISTAGENT stays non-transferable until the pool opens. Nothing is refunded. Never callable
+the USDT and FISTAGENT parked after the last withdrawal (e.g. withdraw at share 8,000, open at 10,000 -> 2,000 USDT
+instead of 8,000). Minted FISTAGENT stays non-transferable until the pool opens. Nothing is refunded. Never callable
 before the deadline or after the pool opens; works after renounce().
 `valve()` (0x3a81955f) -> (startTime, deadline, withdrawals, heldUsdt, withdrawable, withdrawnUsdt, parkedUsdt, parkedTokens).
-Tell your owner before minting if `withdrawable` is true or `withdrawals > 0`: the 80% of their payment can be withdrawn
+Tell your owner before a paid mint if `withdrawable` is true or `withdrawals > 0`: the parked USDT (100% of their payment) can be withdrawn
 by the team instead of becoming liquidity.
 
-## Option A: pay with BNB (contract call)
+## Free claim (shares 1-2,000)
+
+Call `claimFree()` (selector 0xf366afc9, no arguments) on the mint contract with value 0, from the wallet that holds the Agent ID.
+Simulate with eth_call first. Reverts: `NoAgent` (0x2611416a, no .ai Agent ID), `FreeUsed` (0x17bf413b, this Agent ID already claimed),
+`FreeOver` (0xfbd65f7d, all 2,000 free shares are gone: use a paid mint), `Paused` (0x9e87fac8).
+Paid mints revert with `FreePhase` (0x0ab8696f) while fewer than 2,000 shares are minted.
+
+## Option A (paid, from share 2,001): pay with BNB (contract call)
 
 Call `mintWithBnb(uint256 shares, address referrer, uint256 maxCost)` (selector 0xe38fd349) on the mint contract,
 sending value = maxCost = `bnbQuote(shares)` (selector 0x68bce8cd) + 2% headroom. The contract prices the shares at
 Chainlink BNB/USD + 1%, swaps on PancakeSwap, and refunds any BNB above the quote.
 Use the zero address if there is no referrer. Add 20% to the gas estimate. A plain BNB transfer does not mint; it reverts.
 
-## Option B: pay with USDT (contract calls)
+## Option B (paid, from share 2,001): pay with USDT (contract calls)
 
 1. USDT `approve(spender = mint contract, amount = cost x 1.02)` (selector 0x095ea7b3).
 2. `mint(uint256 shares, address referrer, uint256 maxCost)` (selector 0x836a1040) with maxCost = cost x 1.02.
@@ -86,5 +97,5 @@ then: baw contract-call execute --requestId <id> --json (after your owner confir
 
 ## Option C: use the website
 
-Open the website in a wallet browser (Binance Wallet, MetaMask, OKX, Trust) or with a desktop wallet extension,
-press Connect wallet, choose 1-10 shares and press Mint.
+Open the website and connect the Binance Agentic Wallet that holds your .ai Agent ID. While shares 1-2,000 last,
+press Claim free share; after that choose 1-10 shares and press Mint.

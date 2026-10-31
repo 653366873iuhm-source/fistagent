@@ -1,4 +1,4 @@
-// FISTAGENT Agentic Wallet QR proxy (same approach as jager.live's /api/agent-wallet route).
+// FISTAGENT Agentic Wallet QR proxy (same approach as a standard /api/agent-wallet route).
 // Node >= 18, no dependencies. Run: node server/index.mjs   (PORT, ALLOW_ORIGINS, ALLOW_TO env vars)
 //
 // The browser cannot talk to Binance's Agentic Wallet API directly: the session is an `agentSessionId` cookie that a
@@ -10,7 +10,7 @@
 // (SOCIAL_SIGNER_KEY env var, never logged) that the user's wallet then passes to FistagentMint.claimSocial(). See signSocial().
 //
 // Actions: login, confirm, query, wallets, preview, execute, logout. `preview` only accepts `to` addresses in ALLOW_TO
-// (the FISTAGENT mint contract + USDT), so this endpoint cannot be used to request approvals for other contracts.
+// (the FISTAGENT mint contract + USDT; any calldata to the mint, incl. v2 claimFree() 0xf366afc9 with value 0), so this endpoint cannot be used to request approvals for other contracts.
 import http from "node:http";
 import crypto from "node:crypto";
 import { secp256k1, keccak_256 } from "./noble.mjs";
@@ -99,10 +99,10 @@ async function proxy(payload) {
 
 
 // ---------------------------------------------------------------- social tasks (+1 share each)
-// Click-based like jager.live: the site opens the X follow / post link first, then the user claims. No X API.
+// Click-based: the site opens the X follow / post link first, then the user claims. No X API.
 // account = keccak256(lowercased X handle without @); deadline = now + 30 min. The contract binds each X account to the first
 // Agent ID that uses it and allows each task once per Agent ID.
-const MINT = (process.env.MINT || "0xdDD8af1D1C9513D6eB5F4C017516360B26955c26").toLowerCase();
+const MINT = (process.env.MINT || "0x4738427479ff49D0f151e9069ceCfaadaEd35B30").toLowerCase(); // FISTAGENT v2 mint
 const CHAIN_ID = 56n;
 const RPCS = (process.env.RPC || "https://bsc-dataseed.bnbchain.org,https://bsc-rpc.publicnode.com,https://bsc-dataseed1.binance.org").split(",");
 const TASKS = { FOLLOW: "FOLLOW", TWEET: "TWEET", POST: "TWEET" }; // TELEGRAM exists on-chain but is not offered
@@ -159,7 +159,7 @@ async function signSocial(b, ip) {
   if (!isHex(user, 40)) return [400, { error: "user must be a 0x wallet address" }];
   const taskName = TASKS[String((b && b.task) || "").trim().toUpperCase()];
   if (!taskName) return [400, { error: "Unknown task." }];
-  // X account: from the pasted post link (as on jager.live), or an explicit xHandle (agents). FOLLOW needs neither: then the
+  // X account: from the pasted post link, or an explicit xHandle (agents). FOLLOW needs neither: then the
   // voucher is bound to the wallet itself.
   let handle = "";
   const tweetUrl = String((b && b.tweetUrl) || "").trim();
@@ -192,15 +192,15 @@ async function signSocial(b, ip) {
   return [200, { user, task: taskName, taskId: task, xHandle: handle || null, account, deadline: Number(deadline), signature, signer: SIGNER_ADDR, to: MINT, data, value: "0", chainId: 56 }];
 }
 
-// ---------------------------------------------------------------- leaderboard (same shape as jager.live /api/leaderboard)
+// ---------------------------------------------------------------- leaderboard 
 // Boards: invites (QuotaGranted with reason INVITE, by inviter), mints (Minted shares, by minter), holders (live FISTAGENT balance).
 // Day = current UTC day, week = UTC week from Monday. Scans mint + token logs from the deploy block in 5,000-block chunks on
 // public RPCs that allow eth_getLogs, keeps everything in memory (rebuilt after a restart; `syncing` is true while catching up).
-const TOKEN = (process.env.TOKEN || "0x7acDcE948Dc6F9185D96b8D1af80284C9a3c71c3").toLowerCase();
+const TOKEN = (process.env.TOKEN || "0x8E4e86ACfafcB2242B71f75e58fB627F1deaC2c1").toLowerCase();
 const REGISTRAR = "0x60b9262456de011f7d15a54cdd8c48baaa8b022f";
-const PAIR = (process.env.PAIR || "0xf375Def1f8f60Bf52A2a8D4309498B1FCE45C01B").toLowerCase();
-// FISTAGENT deploy block (tx 0x371fe25e…30f3, 2026-10-30).
-const DEPLOY_BLOCK = Number(process.env.DEPLOY_BLOCK || 130677714);
+const PAIR = (process.env.PAIR || "0x3A1C63c12297BECD3Ed3E0e36E5990d4251eC27c").toLowerCase();
+// FISTAGENT v2 deploy block (tx 0x3bea79c8…c89a, 2026-10-31).
+const DEPLOY_BLOCK = Number(process.env.DEPLOY_BLOCK || 130809409);
 const LOG_RPCS = (process.env.LOG_RPC || "https://rpc-bsc.48.club,https://bsc-mainnet.nodereal.io/v1/64a9df0874fb4a93b9d0a3849de012d3,https://bsc.rpc.blxrbdn.com").split(",").map((s) => s.trim());
 const T_MINTED = hex(kec("Minted(address,uint256,uint256,uint256,uint256)"));
 const T_QUOTA = hex(kec("QuotaGranted(address,uint256,uint256,bytes32)"));
@@ -310,12 +310,13 @@ async function leaderboard() {
 const scanLoop = async () => { try { await scanOnce(); } catch (e) { console.log("leaderboard scan:", e.message); } setTimeout(scanLoop, LB.syncing ? 2000 : 30000); };
 if (process.env.NO_LISTEN !== "1") setTimeout(scanLoop, 500);
 
-// ---------------------------------------------------------------- public read API (same shape as jager.live /api/stats and /api/verify)
+// ---------------------------------------------------------------- public read API 
 const USDT_ADDR = "0x55d398326f99059fF775485246999027B3197955";
-const MINT_CS = process.env.MINT_CHECKSUM || "0xdDD8af1D1C9513D6eB5F4C017516360B26955c26";
-const TOKEN_CS = process.env.TOKEN_CHECKSUM || "0x7acDcE948Dc6F9185D96b8D1af80284C9a3c71c3";
-const PAIR_CS = process.env.PAIR_CHECKSUM || "0xf375Def1f8f60Bf52A2a8D4309498B1FCE45C01B";
-const SEL2 = { overview: sel("overview()"), costOf: sel("costOf(uint256)"), bnbQuote: sel("bnbQuote(uint256)"), handleOf: sel("handleOf(address)"), ownerOfHandle: sel("ownerOfHandle(string)") };
+const MINT_CS = process.env.MINT_CHECKSUM || "0x4738427479ff49D0f151e9069ceCfaadaEd35B30";
+const TOKEN_CS = process.env.TOKEN_CHECKSUM || "0x8E4e86ACfafcB2242B71f75e58fB627F1deaC2c1";
+const PAIR_CS = process.env.PAIR_CHECKSUM || "0x3A1C63c12297BECD3Ed3E0e36E5990d4251eC27c";
+const FREE_SHARES = 2000; // v2: shares #1-#2,000 are free (claimFree(), one per Agent ID); paid minting starts at #2,001
+const SEL2 = { overview: sel("overview()"), costOf: sel("costOf(uint256)"), bnbQuote: sel("bnbQuote(uint256)"), freeMinted: sel("freeMinted()"), handleOf: sel("handleOf(address)"), ownerOfHandle: sel("ownerOfHandle(string)") };
 const words = (h) => (String(h || "").replace(/^0x/, "").match(/.{64}/g) || []).map((x) => BigInt("0x" + x));
 export function units(v, dec = 18) { // bigint -> decimal string without trailing zeros
   const neg = v < 0n; if (neg) v = -v;
@@ -329,9 +330,12 @@ async function stats() {
   STATS.busy = (async () => {
     const w = words(await ethCall(SEL2.overview));
     const minted = Number(w[0]), paused = w[2] === 1n, open = w[3] === 1n, nextCents = Number(w[4]), u = w[5], t = w[6], mintable = Number(w[10] ?? 1n);
-    const price = nextCents / 100;
+    const freePhase = minted < FREE_SHARES;
+    const price = freePhase ? 0 : nextCents / 100;
+    let freeMinted = null;
+    try { freeMinted = Number(words(await ethCall(SEL2.freeMinted))[0]); } catch (e) { freeMinted = null; }
     let tokensPerShare = 50000000;
-    if (open && u > 0n && t > 0n) tokensPerShare = Math.floor(price / (0.99 * (Number(u) / Number(t))));
+    if (open && u > 0n && t > 0n) tokensPerShare = Math.floor((nextCents / 100) / (0.99 * (Number(u) / Number(t))));
     const left = Math.max(0, 100000000 - minted), maxN = Math.min(10, left);
     const bnb = [];
     for (let n = 1; n <= maxN; n++) {
@@ -344,9 +348,13 @@ async function stats() {
       totalMinted: minted, priceUsdtPerShare: price, tokensPerShare,
       tokensPerShareNote: open
         ? "Estimate at the current pool price. After share 10,000 each share pays its USDT price at the pool price with a 1% discount, so the amount changes with the pool."
-        : "Fixed at 50,000,000 FISTAGENT per share up to share 10,000. After share 10,000 each share pays its USDT price at the pool price with a 1% discount, so the amount changes with the pool.",
+        : "Fixed at 50,000,000 FISTAGENT per share up to share 10,000 (shares 1-2,000 free via claimFree(), one per Agent ID; 2,001-10,000 at 1 USDT). After share 10,000 each share pays its USDT price at the pool price with a 1% discount, so the amount changes with the pool.",
       mintingOpen: !paused && minted < 100000000 && mintable !== 0, paused, poolOpensAt: 10000, maxPerTransaction: 10,
-      burnedAtDeploy: 1100, totalShares: 100000000, bnb,
+      burnedAtDeploy: 0, totalShares: 100000000,
+      freeShares: FREE_SHARES, freeMinted, freePhase, freeClaim: { function: "claimFree()", selector: sel("claimFree()"), value: "0", onePerAgentId: true },
+      paidMintStartsAt: FREE_SHARES + 1,
+      bnbNote: freePhase ? "Paid quotes apply once the 2,000 free shares are gone (paid mints revert with FreePhase before that)." : undefined,
+      bnb,
     };
     STATS.data = data; STATS.at = Date.now();
     return data;
