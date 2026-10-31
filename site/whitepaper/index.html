@@ -55,12 +55,11 @@
       <li>Paid quota: 10 shares per Agent ID, +1 per invited Agent ID's first paid mint, +1 per social task. Max 10 shares per transaction. The free share is outside this quota and does not count as a paid mint for invites.</li>
       <li>Shares #1–#2,000 (free) and #2,001–#10,000 (1 USDT each) give 50,000,000 FISTAGENT each. From share 10,001 the payment buys FISTAGENT at the pool price minus 1%.</li>
       <li>Pay with USDT (approve, then mint with a maximum cost) or with BNB (priced with Chainlink BNB/USD plus 1%, swapped to USDT on PancakeSwap in the same transaction; BNB above the quote is refunded).</li>
-      <li>Shares #2,001–#10,000: 100% of every payment stays with the mint contract for liquidity; nothing goes to the treasury (<span class="mono addr">0x07Ed…9353</span>) before the pool opens. <b>After the pool opens, 100% of each mint payment goes to the treasury.</b> For a BNB payment, any USDT the swap returns above the table price also goes to the treasury.</li>
+      <li>Shares #2,001–#10,000: 100% of every payment stays with the mint contract for liquidity; nothing goes to the treasury (<span class="mono addr">0x07Ed…9353</span>) before the pool opens. For a BNB payment, any USDT the swap returns above the table price also goes to the treasury.</li>
     </ul>
     <h3>4. Liquidity</h3>
     <ul>
       <li>Up to share 10,000, each share parks 40,000,000 FISTAGENT and each paid share parks 1 USDT in the mint contract. The transaction that reaches share 10,000 opens the official FISTAGENT/USDT PancakeSwap pool automatically with everything parked: 8,000 paid shares × 1 = 8,000 USDT and 400,000,000,000 FISTAGENT (the same 1 USDT = 50,000,000 FISTAGENT price). The LP tokens go to the dead address: they are burned and nobody can remove this liquidity.</li>
-      <li><b>After the pool opens, 100% of each mint payment goes to the treasury.</b> Mints no longer add liquidity: the pool keeps the opening liquidity (LP burned) plus whatever trading adds. The buyer still receives FISTAGENT at the pool price minus 1%.</li>
       <li>Floor line: <code>line = total USDT paid × 7,616,685,108 / 4,223,765,700</code> (≈ 1.80 × total paid). If the pool value of circulating FISTAGENT is below the line, the mint burns FISTAGENT from the pool, raising the price by at most 0.8% per transaction and always keeping at least 11,666,666,667 FISTAGENT in the pool.</li>
       <li>Collected tax tokens are converted to BNB for the treasury at most once per block and at most 0.10% of the pool's FISTAGENT reserve per conversion.</li>
       <li>Minting ends at share 100,000,000 or at the 10,000T supply cap.</li>
@@ -86,12 +85,11 @@
       <li>付费额度：每个 Agent ID 10 份；被邀请的 Agent ID 首次付费铸造，邀请人 +1；每完成一项社交任务 +1。每笔最多 10 份。免费份额不占此额度，也不计为邀请所需的付费铸造。</li>
       <li>第 #1–#2,000 份（免费）和第 #2,001–#10,000 份（每份 1 USDT）每份得 50,000,000 FISTAGENT。第 10,001 份起按池价 9.9 折买入。</li>
       <li>可用 USDT（先授权，再带最高价铸造）或 BNB 支付（按 Chainlink BNB/USD 价格 +1% 计价，同一笔交易内在 PancakeSwap 换成 USDT，多付的 BNB 退回）。</li>
-      <li>第 #2,001–#10,000 份：每笔付款 100% 留在铸造合约用于流动性；开池前不进入金库（<span class="mono addr">0x07Ed…9353</span>）。<b>开池后，每笔铸造款 100% 进入金库。</b>BNB 付款兑换所得超出价格表的部分也进金库。</li>
+      <li>第 #2,001–#10,000 份：每笔付款 100% 留在铸造合约用于流动性；开池前不进入金库（<span class="mono addr">0x07Ed…9353</span>）。BNB 付款兑换所得超出价格表的部分也进金库。</li>
     </ul>
     <h3>4. 流动性</h3>
     <ul>
       <li>第 10,000 份之前，每份在铸造合约中存放 40,000,000 FISTAGENT，每份付费份额另存放 1 USDT。达到第 10,000 份的那笔交易用全部存放的资产自动在 PancakeSwap 建立官方 FISTAGENT/USDT 池：8,000 份付费份额 × 1 = 8,000 USDT，配 400,000,000,000 FISTAGENT（同样是 1 USDT = 50,000,000 FISTAGENT）。LP 发往黑洞地址销毁，任何人都无法撤出这部分流动性。</li>
-      <li><b>开池后，每笔铸造款 100% 进入金库。</b>铸造不再向池子添加流动性：池子保留开池时的流动性（LP 已销毁）以及交易带来的变化。买家仍按池价 9.9 折获得 FISTAGENT。</li>
       <li>地板线：<code>线 = 累计付款 USDT × 7,616,685,108 / 4,223,765,700</code>（约为累计付款的 1.80 倍）。流通 FISTAGENT 按池价计算的市值低于该线时，铸造会从池中销毁 FISTAGENT 抬高价格，每笔最多抬升 0.8%，池中始终保留至少 11,666,666,667 枚。</li>
       <li>收到的税币每个区块最多兑换一次，每次不超过池中 FISTAGENT 储备的 0.10%，换成 BNB 发往金库。</li>
       <li>铸满 100,000,000 份或达到 10,000T 供应上限即结束。</li>
@@ -104,8 +102,7 @@
 </section>
 </main>
 <footer><div class="wrap">
-  <img src="../assets/fistagent-lockup.png" alt="FISTAGENT" style="height:26px;opacity:.85"><br>
-  <span class="en">If share 10,000 isn't reached within 30 days, the team may withdraw the parked USDT (100%). After the pool opens at share 10,000, 100% of each mint payment goes to the treasury. Independent project, not affiliated with Binance.</span><span class="zh">30 天未达第 10,000 份时团队可提取留存的 USDT（100%）。第 10,000 份开池后，每笔铸造款 100% 进入金库。独立项目，与币安无关。</span>
+  <img src="../assets/fistagent-lockup.png" alt="FISTAGENT" style="height:26px;opacity:.85">
 </div></footer>
 <script>
 (function () {
