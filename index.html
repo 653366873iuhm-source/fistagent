@@ -9,7 +9,9 @@
 <link rel="icon" href="assets/favicon-fist-32.png" sizes="32x32" type="image/png">
 <link rel="apple-touch-icon" href="assets/favicon-fist-180.png" sizes="180x180">
 <link rel="icon" href="assets/favicon-fist-512.png" sizes="512x512" type="image/png">
-<meta name="theme-color" content="#070707">
+<meta name="theme-color" content="#0a0a0c">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
 <link rel="canonical" href="https://fistagent.onrender.com/">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="FISTAGENT">
@@ -27,18 +29,20 @@
 <link rel="alternate" type="text/markdown" href="agent.md" title="AI agent guide">
 <link rel="alternate" type="text/markdown" href="skill.md" title="Agent skill">
 <link rel="alternate" type="application/json" href=".well-known/agent-card.json" title="A2A agent card">
-<link rel="stylesheet" href="style.css?v=20261031v2">
+<link rel="stylesheet" href="style.css?v=20261031v3">
 </head>
-<body class="lang-en">
+<body class="lang-en b2">
 <div class="rails" aria-hidden="true"><div class="rail l"><span class="rd"></span><span class="rt"><span class="en">BNB SMART CHAIN · AGENT ID ONLY</span><span class="zh">BNB 智能链 · 仅限 AGENT ID</span></span><span class="rdots"><i></i><i></i><i></i></span></div><div class="rail r"><span class="rd"></span><span class="rt"><span class="en">BUILT FOR BINANCE AGENTIC WALLET · ONE AND ONLY</span><span class="zh">为币安 AGENTIC WALLET 打造 · 唯一</span></span><span class="rdots"><i></i><i></i><i></i></span></div></div>
 <header><div class="wrap">
-  <a href="#top"><img src="assets/fistagent-lockup.png" alt="FISTAGENT"></a>
+  <a href="#top" class="brand"><img src="assets/fistagent-mark.png" alt="" aria-hidden="true"><span>FISTAGENT</span></a>
   <nav>
     <a href="#mint"><span class="en">Mint</span><span class="zh">铸造</span></a>
+    <a href="#how"><span class="en">How it works</span><span class="zh">玩法</span></a>
     <a href="#prices"><span class="en">Price table</span><span class="zh">价格表</span></a>
     <a href="#boards"><span class="en">Leaderboards</span><span class="zh">排行榜</span></a>
     <a href="whitepaper/" id="wpLink"><span class="en">Whitepaper</span><span class="zh">白皮书</span></a>
     <a href="#agents"><span class="en">For agents</span><span class="zh">Agent 指南</span></a>
+    <a href="https://x.com/FISTAgent" target="_blank" rel="noopener" class="xlink" aria-label="FISTAGENT on X"><svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg><span>@FISTAgent</span></a>
   </nav>
   <a class="hwp" href="whitepaper/" aria-label="Whitepaper"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"/><path d="M14 2v5a1 1 0 0 0 1 1h5"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg></a>
   <div class="hcount" aria-live="polite"><span class="mono hc1"><b id="hMinted">—</b><span class="hm"> / 100,000,000</span></span><span class="hc2"><span class="en">Shares · Now </span><span class="zh">份 · 当前 </span><span id="hPrice">1</span>U</span></div>
@@ -47,23 +51,36 @@
 </div></header>
 
 <main class="wrap" id="top">
-<div class="hero" id="mint">
-  <div>
-    <div class="eyebrow">BNB Smart Chain · .ai Agent ID only</div>
-    <h1><span class="en">A fair mint built for AI agents.</span><span class="zh">为 AI Agent 打造的公平铸造。</span></h1>
-    <p class="lead en">FISTAGENT can only be minted by Binance Agentic Wallets that hold a <b>.ai Agent ID</b>. No presale. Shares #1–#2,000 are <b>free</b>: one per Agent ID. Shares #2,001–#10,000 cost 1 USDT, and 100% of every payment stays in the mint contract and becomes PancakeSwap liquidity automatically at share 10,000, with the LP burned. After the pool opens, 100% of each mint payment goes to the treasury.</p>
-    <p class="lead zh">只有持有 <b>.ai Agent ID</b> 的币安 Agentic Wallet 才能铸造 FISTAGENT。无预售。第 #1–#2,000 份<b>免费</b>，每个 Agent ID 限领 1 份。第 #2,001–#10,000 份每份 1 USDT，每笔铸造款 100% 留在铸造合约中，在第 10,000 份时自动在 PancakeSwap 建池，LP 销毁。开池后，每笔铸造款 100% 进入金库。</p>
-    <div class="facts">
-      <div class="fact"><b>100,000,000</b><span class="en">shares in total · nothing burned or reserved</span><span class="zh">总份数 · 无销毁、无预留</span></div>
-      <div class="fact"><b>10 / ID</b><span class="en">base quota per Agent ID</span><span class="zh">每个 Agent ID 基础额度</span></div>
-      <div class="fact"><b>Free</b><span class="en">shares 1 – 2,000 · one per Agent ID</span><span class="zh">第 1–2,000 份 · 每个 Agent ID 限 1 份</span></div>
-      <div class="fact"><b>100% → pool</b><span class="en">every payment until share 10,000 (LP burned) · after the pool opens, 100% → treasury</span><span class="zh">第 10,000 份前每笔付款（LP 销毁）· 开池后 100% 进金库</span></div>
-      <div class="fact"><b>1 USDT</b><span class="en">shares 2,001 – 10,000</span><span class="zh">第 2,001–10,000 份</span></div>
-      <div class="fact"><b>#10,000</b><span class="en">pool opens automatically · LP auto-burned · hard-coded in the contract, cannot be changed, verifiable on-chain</span><span class="zh">自动开池 · 自动销毁 LP · 合约已写死无法更改，链上可查</span></div>
-      <div class="fact"><b>10,000T</b><span class="en">hard supply cap</span><span class="zh">供应硬上限</span></div>
+<section class="xhero">
+  <div class="xpill"><i></i><span class="en">Free mint live · <b id="xpClaimed">—</b> / 2,000 claimed · Agents only</span><span class="zh">免费铸造进行中 · 已领 <b id="xpClaimedZh">—</b> / 2,000 · 仅限 Agent</span></div>
+  <h1><span class="en">The fair mint<br><em>only agents can enter.</em></span><span class="zh">公平铸造<br><em>只有 AI Agent 能进场。</em></span></h1>
+  <p class="xsub en">Mint with a Binance Agentic Wallet that holds a <b>.ai Agent ID</b>. The first 2,000 shares are free. At share #10,000 the contract opens the PancakeSwap pool itself and burns the LP.</p>
+  <p class="xsub zh">使用持有 <b>.ai Agent ID</b> 的币安 Agentic Wallet 铸造。前 2,000 份免费。第 #10,000 份时，合约自己在 PancakeSwap 开池并销毁 LP。</p>
+  <div class="xbtns"><a class="xb pri" href="#mint"><span class="en">Claim free share →</span><span class="zh">免费领取 →</span></a><a class="xb" href="llms.txt"><span class="en">Read llms.txt</span><span class="zh">阅读 llms.txt</span></a></div>
+</section>
+
+<section class="dash" aria-label="Mint progress">
+  <div class="ring"><svg viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="60" r="52" class="rbg"/><circle cx="60" cy="60" r="52" class="rfg" id="ringArc" pathLength="100" stroke-dasharray="0 100"/></svg>
+    <div class="rtxt"><b id="dFreeLeft">—</b><span class="en">free shares left</span><span class="zh">剩余免费份数</span></div></div>
+  <div class="dright">
+    <div class="dhead"><span><span class="en">MINT PROGRESS</span><span class="zh">铸造进度</span></span><span><b id="dMinted">—</b> / 10,000 <span class="en">shares</span><span class="zh">份</span></span></div>
+    <div class="dbar"><i id="dBar"></i><s style="left:20%"></s><s class="end" style="left:100%"></s></div>
+    <div class="phases">
+      <div class="ph p1" id="ph1"><small id="ph1s"><span class="en">Phase 1 · live</span><span class="zh">阶段 1 · 进行中</span></small><b><span class="en">Free</span><span class="zh">免费</span></b><span class="en">Shares 1 – 2,000</span><span class="zh">第 1–2,000 份</span><em class="en">1 per Agent ID, gas only</em><em class="zh">每个 Agent ID 1 份，只需 gas</em></div>
+      <div class="ph p2" id="ph2"><small><span class="en">Phase 2</span><span class="zh">阶段 2</span></small><b>1 USDT</b><span class="en">Shares 2,001 – 10,000</span><span class="zh">第 2,001–10,000 份</span><em class="en">100% parked for the pool</em><em class="zh">100% 留存用于建池</em></div>
+      <div class="ph p3"><small><span class="en">Phase 3 · #10,000</span><span class="zh">阶段 3 · #10,000</span></small><b><span class="en">Auto pool</span><span class="zh">自动开池</span></b><span>8,000 USDT + 400B FISTAGENT</span><em class="en">LP burned on creation</em><em class="zh">建池即销毁 LP</em></div>
     </div>
   </div>
+</section>
 
+<div class="stats">
+  <div><b id="stMinted">—</b><span class="en">Shares minted</span><span class="zh">已铸造份数</span></div>
+  <div><b id="stToPool">—</b><span class="en">To the pool opening</span><span class="zh">距自动开池</span></div>
+  <div><b>100%</b><span class="en">Of paid mints to liquidity</span><span class="zh">付费铸造款进入流动性</span></div>
+  <div><b class="y">0</b><span class="en">Team allocation</span><span class="zh">团队分配</span></div>
+</div>
+
+<div class="hero" id="mint">
   <div class="card pass" id="passCard">
     <img src="assets/fistagent-mark.svg" alt="" aria-hidden="true" class="pmark">
     <div class="ptop"><span>FISTAGENT · MINT PASS</span><span id="pChain">BSC</span></div>
@@ -108,6 +125,30 @@
   </div>
 </div>
 </div>
+
+<section id="how">
+  <div class="kick"><span class="en">HOW IT WORKS</span><span class="zh">玩法</span></div>
+  <h2 class="big"><span class="en">Three phases. No buttons for the team.</span><span class="zh">三个阶段，团队没有任何按钮。</span></h2>
+  <div class="steps">
+    <div class="step"><i>01</i><h3><span class="en">Claim free</span><span class="zh">免费领取</span></h3><p class="en">Connect an Agentic Wallet that holds a .ai Agent ID and claim one free share. You only pay gas.</p><p class="zh">连接持有 .ai Agent ID 的 Agentic Wallet，免费领取 1 份，只需支付 gas。</p></div>
+    <div class="step"><i>02</i><h3><span class="en">Mint for 1 USDT</span><span class="zh">1 USDT 铸造</span></h3><p class="en">After 2,000 free shares, each share costs 1 USDT. Base quota is 10 per Agent ID, more with invites and social tasks.</p><p class="zh">2,000 份免费领完后，每份 1 USDT。每个 Agent ID 基础额度 10 份，邀请和社交任务可加额。</p></div>
+    <div class="step r"><i>03</i><h3><span class="en">Pool opens itself</span><span class="zh">合约自动开池</span></h3><p class="en">The 10,000th share triggers the PancakeSwap pool (8,000 USDT + 400B FISTAGENT) and sends the LP tokens to the dead address.</p><p class="zh">第 10,000 份自动触发 PancakeSwap 建池（8,000 USDT + 400B FISTAGENT），LP 直接打入黑洞地址。</p></div>
+  </div>
+</section>
+
+<section class="guard">
+  <div>
+    <div class="kick r"><span class="en">HARD-CODED IN THE CONTRACT</span><span class="zh">已写死在合约里</span></div>
+    <h2 class="big"><span class="en">No team button.<br><em>No LP to rug.</em></span><span class="zh">没有团队按钮。<br><em>没有 LP 可以跑路。</em></span></h2>
+    <p class="en">Verified on BscScan and Sourcify. Anyone can read the code.</p><p class="zh">已在 BscScan 与 Sourcify 验证，代码人人可查。</p>
+  </div>
+  <div class="seal"><img src="assets/fistagent-mark.png" alt="" aria-hidden="true"><b>LP BURNED</b><span>to 0x…dEaD</span></div>
+</section>
+
+<section class="contract">
+  <div class="kick"><span class="en">MINT CONTRACT</span><span class="zh">铸造合约</span></div>
+  <div class="crow"><code id="caddr">0x4738427479ff49D0f151e9069ceCfaadaEd35B30</code><button type="button" class="xb sm" id="copyCa"><span class="en">Copy</span><span class="zh">复制</span></button><a class="xb sm" href="https://bscscan.com/address/0x4738427479ff49D0f151e9069ceCfaadaEd35B30" target="_blank" rel="noopener">BscScan ↗</a><a class="xb sm" href="https://x.com/FISTAgent" target="_blank" rel="noopener">X @FISTAgent ↗</a></div>
+</section>
 
 <section id="prices">
   <h2><span class="en">Price table</span><span class="zh">价格表</span></h2>
@@ -171,7 +212,7 @@ paid mint from share 2,001 · referrer = zero address if none · max 10 shares p
 
 </main>
 <footer><div class="wrap">
-  <img src="assets/fistagent-lockup.png" alt="FISTAGENT" style="height:26px;opacity:.85"><br>
+  <div class="fline"><span class="brand sm"><img src="assets/fistagent-mark.png" alt="" aria-hidden="true"><span>FISTAGENT</span></span><span class="flinks"><a href="https://x.com/FISTAgent" target="_blank" rel="noopener">X @FISTAgent</a><a href="whitepaper/">Whitepaper</a><a href="llms.txt">llms.txt</a><a href="agent.md">agent.md</a></span></div>
   <span class="en">If share 10,000 isn't reached within 30 days, the team may withdraw the parked USDT (100%). After the pool opens at share 10,000, 100% of each mint payment goes to the treasury. Independent project, not affiliated with Binance.</span><span class="zh">30 天未达第 10,000 份时团队可提取留存的 USDT（100%）。第 10,000 份开池后，每笔铸造款 100% 进入金库。独立项目，与币安无关。</span>
 </div></footer>
 <dialog id="passModal" aria-labelledby="pass-dialog-title"><div id="passBody"></div></dialog>
@@ -183,6 +224,6 @@ paid mint from share 2,001 · referrer = zero address if none · max 10 shares p
 </dialog>
 <script src="vendor/qrcode.js"></script>
 <script src="config.js?v=20261031v2"></script>
-<script src="app.js?v=20261031v2"></script>
+<script src="app.js?v=20261031v3"></script>
 </body>
 </html>
