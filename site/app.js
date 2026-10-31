@@ -165,9 +165,10 @@
       setT("xpClaimed", fc.toLocaleString()); setT("xpClaimedZh", fc.toLocaleString());
       setT("dFreeLeft", m.toLocaleString()); setT("xsLeft", m.toLocaleString()); setT("xsLeftZh", m.toLocaleString());
       setT("dMinted", m.toLocaleString()); setT("stMinted", m.toLocaleString());
-      setT("stToPool", Math.max(0, 10000 - m).toLocaleString());
-      const ra = $("ringArc"); if (ra) { const p = Math.min(100, (m / 10000) * 100); ra.setAttribute("stroke-dasharray", p.toFixed(2) + " " + (100 - p).toFixed(2)); }
-      const db = $("dBar"); if (db) db.style.width = Math.min(100, (m / 10000) * 100).toFixed(3) + "%";
+      const MS = [10000, 20000, 100000, 1000000, 100000000]; let mi = MS.findIndex((e) => m < e); if (mi < 0) mi = MS.length - 1; const ms = MS[mi], prev = mi ? MS[mi - 1] : 0;
+      setT("stToPool", Math.max(0, ms - m).toLocaleString()); setT("dGoal", ms.toLocaleString()); setT("dGoalZh", ms.toLocaleString()); setT("stGoal", ms.toLocaleString()); setT("stGoalZh", ms.toLocaleString());
+      const ra = $("ringArc"); if (ra) { const p = Math.min(100, (m / ms) * 100); ra.setAttribute("stroke-dasharray", p.toFixed(2) + " " + (100 - p).toFixed(2)); }
+      const db = $("dBar"); if (db) db.style.width = Math.min(100, (m / ms) * 100).toFixed(3) + "%";
       const p1 = $("ph1"), p2 = $("ph2");
       if (p1 && p2 && m >= FREE) { p1.classList.add("done"); p2.classList.remove("live");p2.classList.add("done"); $("ph1s").innerHTML = '<span class="en">Phase 1 · filled</span><span class="zh">阶段 1 · 已打满</span>'; }
       $("hMinted").textContent = m.toLocaleString();
