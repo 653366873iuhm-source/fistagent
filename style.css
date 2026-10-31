@@ -63,12 +63,12 @@ pre.cmd{font-size:11px;white-space:pre-wrap;word-break:break-all;margin:8px 0}
 .sbig b{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:26px;color:var(--text);font-weight:700}.sbig small{color:var(--muted);font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px}
 .supply .bar{margin:10px 0 8px}.slegend{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:12px}
 .slegend .sw{width:10px;height:10px;border-radius:2px;background:linear-gradient(90deg,var(--gold3),var(--gold))}
-tr.burned td{color:var(--gold3);font-style:italic}
+tr.burned td,tr.free td:nth-child(3){color:var(--gold3);font-style:italic}
 .wbtn.bnqr{border-color:var(--gold3);background:linear-gradient(180deg,#1a1508,#0e0c07)}
 #qrBox{margin-top:10px}#qrBox .btn{display:block;text-align:center;text-decoration:none;margin-bottom:10px}
 .qrwrap{background:#fff;border-radius:12px;padding:10px;width:236px;margin:6px auto 4px;box-shadow:0 0 0 1px var(--gold3)}.qrwrap.sm{width:170px}.qrwrap svg{display:block;width:100%;height:auto}
 header img{height:36px}
-/* Invite & tasks · +1 mint (header button + dialog), shares radios and leaderboard: same structure as jager.live */
+/* Invite & tasks · +1 mint (header button + dialog), shares radios and leaderboard */
 .hbtn{display:flex;align-items:center;gap:7px;border:1px solid #d4af3780;background:transparent;color:var(--gold);border-radius:8px;padding:7px 12px;font-size:14px;font-weight:600;cursor:pointer;white-space:nowrap}
 .hbtn:hover{background:#d4af371a}.hbtn .hsm{display:none}
 @media (max-width:640px){.hbtn .hlg{display:none}.hbtn .hsm{display:inline}}
@@ -121,7 +121,7 @@ dialog#inviteModal::backdrop{background:#070707cc;backdrop-filter:blur(4px)}
 .tasks input{width:100%;box-sizing:border-box;border:1px solid var(--line);border-radius:6px;background:var(--panel2);color:var(--text);padding:6px 10px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12px;outline:none}.tasks input:focus{border-color:var(--gold)}
 .terr{font-size:12px;color:var(--bad)}
 .iv section{padding:0;border:0}
-/* ---- jager.live parity: side rails, header share counter, Mint Pass card, tier list, safety notes, Mint Pass dialog, Bind X, Border season */
+/* ---- side rails, header share counter, Mint Pass card, tier list, safety notes, Mint Pass dialog, Bind X, Border season */
 .rails{display:none}
 @media (min-width:1280px){.rails{display:block;position:fixed;inset:0;pointer-events:none;z-index:0}
 .rail{position:absolute;top:0;bottom:0;width:calc((100vw - 1120px)/2);display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:96px 0}

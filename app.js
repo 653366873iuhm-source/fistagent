@@ -38,7 +38,7 @@
 
   // ---------------------------------------------------------------- price table (mirrors priceCents in the contract)
   const priceCents = (n) => (n <= 10000 ? 100 : n <= 20000 ? 110 + 10 * Math.floor((n - 10001) / 1000) : n <= 100000 ? 210 + 2 * Math.floor((n - 20001) / 1000) : n <= 1000000 ? 370 + 2 * Math.floor((n - 100001) / 10000) : Math.floor((5500 + 15 * Math.floor((n - 1000001) / 20000) + 5) / 10));
-  // tiers like jager.live's "Tiered pricing", continued to 100,000,000 shares (5,131 tiers, 1U -> 79.74U; 8.07U at 4,440,000): tier 1 = shares 1-10,000 (1,101-10,000 sold), then
+  // tiered pricing to 100,000,000 shares (5,131 tiers, 1U -> 79.74U; 8.07U at 4,440,000): tier 1 = shares 1-10,000 (v2: 1-2,000 free via claimFree, 2,001-10,000 = 1U), then
   // 10 x 1,000 (+0.10U), 80 x 1,000 (+0.02U), 90 x 10,000 (+0.02U), 4,950 x 20,000 (+0.015U, rounded to the cent)
   const TIERS = (() => {
     const t = [[1, 10000]];
@@ -84,13 +84,17 @@
   const fmt = (wei, dp = 2) => (Number(wei) / 1e18).toLocaleString(undefined, { maximumFractionDigits: dp });
   const short = (a) => a.slice(0, 6) + "…" + a.slice(-4);
 
-  // selectors (FistagentMint keeps the Jager/$JAGENT ABI)
+  // selectors (FistagentMint v2; claimFree/freeClaimed/freeMinted added in v2)
   const SEL = {
     overview: "0x3a2056f1", valve: "0x3a81955f", walletStatus: "0x4d6d0af8", costOf: "0xfd326592", bnbQuote: "0x68bce8cd",
     mint: "0x836a1040", mintWithBnb: "0xe38fd349", allowance: "0xdd62ed3e", approve: "0x095ea7b3",
     balanceOf: "0x70a08231", handleOf: "0xc50a1514", ownerOfHandle: "0x1da94fb4",
     socialDone: "0x6edd0f2e", claimSocial: "0x2e3c4860",
+    claimFree: "0xf366afc9", freeClaimed: "0x0668f9a5", freeMinted: "0xd10a1a2b",
   };
+  // v2: shares #1-#2,000 are free (claimFree, one per Agent ID); paid minting starts at #2,001
+  const FREE = 2000;
+  const freePhase = () => !!state && state.minted < FREE;
   const ERRORS = {
     "0x9e87fac8": ["Minting is paused.", "铸造已暂停。"],
     "0x7eb01706": ["Choose 1 to 10 shares.", "请选择 1–10 份。"],
@@ -108,6 +112,9 @@
     "0x5cd5d233": ["The task voucher expired. Claim again.", "任务凭证已过期，请重新领取。"],
     "0x87b38f77": ["This task, or this X account, has already been used.", "该任务或该 X 账号已被使用。"],
     "0x6921e3b4": ["Unknown task.", "未知任务。"],
+    "0x0ab8696f": ["Paid minting starts at share #2,001. The first 2,000 shares are free: claim yours with Claim free share.", "付费铸造从第 #2,001 份开始。前 2,000 份免费，请点击「免费领取」。"],
+    "0xfbd65f7d": ["All 2,000 free shares have been claimed. Paid minting is open.", "2,000 份免费额度已领完，付费铸造已开放。"],
+    "0x17bf413b": ["This Agent ID has already claimed its free share.", "该 Agent ID 已领取过免费份额。"],
   };
   function errText(e) {
     const datas = [e && e.data, e && e.data && e.data.data, e && e.error && e.error.data, e && e.info && e.info.error && e.info.error.data];
@@ -133,14 +140,14 @@
     if (W.account) refreshWallet();
   }
 
-  const tierName = (n) => T(`Tier ${tierOf(n)} · ${uFmt(priceCents(n))}U`, `第 ${tierOf(n)} 档 · ${uFmt(priceCents(n))}U`);
-  // shares radio 1..10 like jager.live: max = min(10, remaining quota); defaults to the max available
+  const tierName = (n) => (n <= FREE ? T(`Tier 1 · Free`, `第 1 档 · 免费`) : T(`Tier ${tierOf(n)} · ${uFmt(priceCents(n))}U`, `第 ${tierOf(n)} 档 · ${uFmt(priceCents(n))}U`));
+  // shares radio 1..10: max = min(10, remaining quota); defaults to the max available
   let selQty = null;
   const avail = () => (W.status ? Math.min(Math.max(W.status.quota - W.status.minted, 0), 10) : 0);
   const qty = () => { const q = avail(); return Math.min(Math.max(selQty ?? q, 1), Math.max(q, 1)); };
   function renderQty() {
     const box = $("mintCtrl"); if (!box) return;
-    box.style.display = W.account && W.handle ? "" : "none";
+    box.style.display = W.account && W.handle && !freePhase() ? "" : "none";
     const q = avail(), r = qty();
     $("qtyGroup").innerHTML = Array.from({ length: 10 }, (_, i) => i + 1).map((n) => `<button type="button" role="radio" aria-checked="${n === r}" class="${n === r ? "on" : ""}" data-q="${n}"${n > q ? " disabled" : ""}>${n}</button>`).join("");
     $("qtyGroup").querySelectorAll("button").forEach((b) => (b.onclick = () => { selQty = +b.dataset.q; renderQty(); updateCost(); }));
@@ -148,7 +155,7 @@
 
   function render() {
     const s = state;
-    const BURNED = 1100, TOTAL = 100000000;
+    const TOTAL = 100000000;
     const progress = (m) => {
       $("sMinted").textContent = m.toLocaleString();
       $("hMinted").textContent = m.toLocaleString();
@@ -159,8 +166,8 @@
       let si = STAGES.findIndex((e) => m < e); if (si < 0) si = STAGES.length - 1;
       const goal = STAGES[si];
       $("sGoal").textContent = " / " + goal.toLocaleString();
-      $("sBar").style.width = Math.min(100, (m / goal) * 100).toFixed(3) + "%"; // burned + minted, one gold bar
-      $("sLegend").textContent = `Burned + Minted ${m.toLocaleString()} / ${goal.toLocaleString()}`;
+      $("sBar").style.width = Math.min(100, (m / goal) * 100).toFixed(3) + "%"; // minted, one gold bar
+      $("sLegend").textContent = `Minted ${m.toLocaleString()} / ${goal.toLocaleString()}`;
       $("sStage").innerHTML = `<span class="en">Stage ${si + 1} / ${STAGES.length}</span><span class="zh">第 ${si + 1} 阶段 / 共 ${STAGES.length} 阶段</span>`;
     };
     const dl = (d) => new Date(d * 1000).toLocaleString(undefined, { year: "numeric", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
@@ -169,7 +176,7 @@
       progress(s.minted);
       $("sTier").textContent = s.minted >= TOTAL ? T("Sold out", "已售罄") : tierName(next);
       $("sNext").textContent = s.minted >= TOTAL ? "–" : "#" + next.toLocaleString();
-      $("hPrice").textContent = uFmt(s.nextCents || priceCents(next));
+      $("hPrice").textContent = next <= FREE ? "0" : uFmt(s.nextCents || priceCents(next));
       renderReceive();
       const nt = tierEnd(next) < TOTAL ? priceCents(tierEnd(next) + 1) : 0;
       $("sTotal").innerHTML = `<span class="en">Total shares <span class="tv">${s.minted.toLocaleString()}</span> / 100,000,000${nt ? ` · Rises to ${uFmt(nt)}U at ${tierEnd(next).toLocaleString()}` : ""}</span><span class="zh">总份数 <span class="tv">${s.minted.toLocaleString()}</span> / 100,000,000${nt ? ` · 第 ${tierEnd(next).toLocaleString()} 份后涨至 ${uFmt(nt)}U` : ""}</span>`;
@@ -178,7 +185,7 @@
       markTier(next);
     } else {
       // no live read yet: keep the honest static placeholders (— for supply), never claim a state we have not read
-      $("sTier").textContent = tierName(1101);
+      $("sTier").textContent = tierName(1);
       $("sPool").textContent = T("Opens automatically at share 10,000", "第 10,000 份时自动开池");
     }
     updateCost();
@@ -191,9 +198,9 @@
   }
   function buildTiers() {
     const body = $("tierBody"); if (!body || body.dataset.built) return;
-    const rows = ['<tr data-from="1" data-to="1100" class="burned"><td>—</td><td>1 - 1,100</td><td><span class="en">Burned at deploy (never sold)</span><span class="zh">部署时销毁（不出售）</span></td></tr>'];
+    const rows = ['<tr data-from="1" data-to="2000" data-tier="1" class="free"><td>1</td><td>1 - 2,000</td><td><span class="en">Free (1 per Agent ID)</span><span class="zh">免费（每个 Agent ID 1 份）</span><span class="cur"></span></td></tr>'];
     TIERS.forEach(([a, b], i) => {
-      const from = i === 0 ? 1101 : a;
+      const from = i === 0 ? FREE + 1 : a;
       rows.push(`<tr data-from="${from}" data-to="${b}" data-tier="${i + 1}"><td>${i + 1}</td><td>${from.toLocaleString("en-US")} - ${b.toLocaleString("en-US")}</td><td>= ${uFmt(priceCents(a))}U<span class="cur"></span></td></tr>`);
     });
     body.innerHTML = rows.join("");
@@ -208,10 +215,10 @@
       if (on && !markTier.done) { markTier.done = 1; const w = tr.closest(".tierwrap"); if (w) w.scrollTop = Math.max(0, tr.offsetTop - 80); }
     });
   }
-  // "You receive (est.)" like jager.live: shares × 50,000,000 before the pool, else cost / (pool price × 0.99)
+  // "You receive (est.)": free share = 50,000,000; paid: shares × 50,000,000 before the pool, else cost / (pool price × 0.99)
   function renderReceive() {
     const s = state; if (!s) return;
-    const n = W.handle ? qty() : 1;
+    const n = W.handle && !freePhase() ? qty() : 1;
     let v = null;
     if (s.minted + n <= 10000) v = 50000000 * n;
     else if (s.u > 0n) { let cents = 0; for (let i = 1; i <= n; i++) cents += priceCents(s.minted + i); v = (cents / 100) / (0.99 * (Number(s.u) / Number(s.t))); }
@@ -220,10 +227,10 @@
 
   async function updateCost() {
     const q = qty();
-    let cents = 0; const start = state ? state.minted : 1100;
-    for (let i = 1; i <= q; i++) cents += priceCents(start + i);
+    let cents = 0; const start = state ? state.minted : 0;
+    if (!freePhase()) for (let i = 1; i <= q; i++) cents += priceCents(Math.max(start, FREE) + i);
     let txt = (cents / 100).toFixed(2) + " USDT";
-    if (pay === "bnb" && deployed) {
+    if (pay === "bnb" && deployed && !freePhase()) {
       try { const w = words(await call(C.mint, SEL.bnbQuote + encU(q))); txt = fmt(w[0], 6) + " BNB"; } catch (e) { txt += " (BNB)"; }
     }
     $("costOut").textContent = "≈ " + txt;
@@ -380,7 +387,9 @@
         const s = words(await call(C.mint, SEL.walletStatus + encA(a))); W.agentOk = s[0] === 1n;
         const social = {};
         if (W.agentOk) for (const t of TASKS) { try { social[t.id] = words(await call(C.mint, SEL.socialDone + encU(s[1]) + pad(t.hash)))[0] === 1n; } catch (e) { social[t.id] = false; } }
-        W.status = { id: s[1], minted: Number(s[2]), quota: Number(s[3]), social };
+        let freeUsed = null;
+        if (W.agentOk) { try { freeUsed = words(await call(C.mint, SEL.freeClaimed + encU(s[1])))[0] === 1n; } catch (e) { freeUsed = null; } }
+        W.status = { id: s[1], minted: Number(s[2]), quota: Number(s[3]), social, freeUsed };
       } catch (e) { W.status = null; }
     } else W.agentOk = !!W.handle;
     if (a !== W.account) return;
@@ -403,7 +412,8 @@
     const onBsc = W.chainId === BSC;
     const chainTxt = onBsc ? `<span class="okc">BNB Smart Chain (56) ✓</span>` : `<span class="badc">${T("Wrong network", "网络错误")} (chainId ${W.chainId ? parseInt(W.chainId, 16) : "?"})</span> <button class="mini" id="switchBtn">${T("Switch to BSC", "切换到 BSC")}</button>`;
     const agent = W.handle === null ? "…" : W.handle ? `<span class="okc">${esc(W.handle)}.ai ✓</span>` : `<span class="badc">${T("no .ai Agent ID", "无 .ai Agent ID")}</span>`;
-    const contract = !deployed ? `<span class="warnc">${T("Contracts not deployed yet", "合约未部署")}</span>` : W.status ? T(`minted ${W.status.minted} / quota ${W.status.quota}`, `已铸 ${W.status.minted} / 额度 ${W.status.quota}`) : "–";
+    const freeTxt = W.status && W.agentOk && W.status.freeUsed != null ? (W.status.freeUsed ? T(" · free share claimed", " · 已领免费份额") : T(" · free share available", " · 可领免费份额")) : "";
+    const contract = !deployed ? `<span class="warnc">${T("Contracts not deployed yet", "合约未部署")}</span>` : W.status ? T(`paid ${W.status.minted} / quota ${W.status.quota}`, `付费已铸 ${W.status.minted} / 额度 ${W.status.quota}`) + freeTxt : "–";
     const icon = W.icon && /^data:image\//.test(W.icon) ? `<img class="wicon" src="${esc(W.icon)}" alt="">` : "";
     box.innerHTML =
       `<div class="row"><span>${T("Wallet", "钱包")}</span><span>${icon}${esc(W.name)} · <span class="mono" title="${esc(W.account)}">${short(W.account)}</span> <button class="mini" id="copyAddr">${T("Copy", "复制")}</button></span></div>` +
@@ -427,11 +437,18 @@
     else if (s.paused) label = T("Minting is paused (not open yet)", "铸造暂停中（尚未开放）");
     else if (s.minted >= 100000000) label = T("Sold out", "已售罄");
     else if (s.mintable === 0) label = T("Minting ended", "铸造已结束");
+    else if (freePhase()) {
+      const left = FREE - s.minted;
+      if (W.status && !W.agentOk) label = T("This wallet has no .ai Agent ID", "该钱包没有 .ai Agent ID");
+      else if (W.status && W.status.freeUsed) label = T(`Free share already claimed · paid mint opens at #2,001 (${left.toLocaleString()} free left)`, `已领取免费份额 · 第 #2,001 份起开放付费铸造（剩 ${left.toLocaleString()} 份免费）`);
+      else if (!W.status) label = T("Loading…", "加载中…");
+      else { label = T(`Claim free share · ${left.toLocaleString()} of 2,000 left`, `免费领取 1 份 · 2,000 份剩 ${left.toLocaleString()} 份`); ok = true; }
+    }
     else if (W.status && W.status.quota - W.status.minted <= 0) label = T("Quota used · Invite or do tasks to earn more", "额度已用完 · 邀请或做任务获得更多");
     else { const u = $("costOut").dataset.u || "—", bnb = pay === "bnb"; label = T(`Mint ${qty()} share${qty() > 1 ? "s" : ""} · ${u}U${bnb ? " in BNB" : ""}`, `铸造 ${qty()} 份 · ${u}U${bnb ? "（BNB 支付）" : ""}`); ok = true; }
     b.textContent = label;
     b.disabled = !ok;
-    b.style.display = W.account ? "" : "none"; // like jager.live: only the connect button until a wallet is connected
+    b.style.display = W.account ? "" : "none"; // only the connect button until a wallet is connected
   }
 
   // ---------------------------------------------------------------- wallet chooser modal
@@ -448,13 +465,13 @@
   function agentPrompt() {
     const base = dappUrl().replace(/[?].*$/, "").replace(/index\.html$/, "");
     return T(
-      `Read ${base}llms.txt and follow it to mint FISTAGENT on BNB Smart Chain (chainId 56) with my Binance Agentic Wallet. Mint <N> shares, paying with <BNB or USDT>, referrer <handle.ai or none>. Use only the mint contract address published in that file; if it says the contracts are not deployed, stop and tell me. Show me the preview before you execute.`,
-      `请阅读 ${base}llms.txt 并按其中步骤，用我的币安 Agentic Wallet 在 BNB Smart Chain（chainId 56）上铸造 FISTAGENT：铸造 <N> 份，用 <BNB 或 USDT> 支付，邀请人 <handle.ai 或无>。只使用该文件公布的铸造合约地址；如果文件写着合约未部署，就停止并告诉我。执行前先给我看预览（preview）。`
+      `Read ${base}llms.txt and follow it to mint FISTAGENT on BNB Smart Chain (chainId 56) with my Binance Agentic Wallet. While fewer than 2,000 shares are minted, claim my one free share with claimFree(); after that, mint <N> shares, paying with <BNB or USDT>, referrer <handle.ai or none>. Use only the mint contract address published in that file; if it says the contracts are not deployed, stop and tell me. Show me the preview before you execute.`,
+      `请阅读 ${base}llms.txt 并按其中步骤，用我的币安 Agentic Wallet 在 BNB Smart Chain（chainId 56）上铸造 FISTAGENT：已铸不足 2,000 份时，用 claimFree() 领取我的 1 份免费份额；之后铸造 <N> 份，用 <BNB 或 USDT> 支付，邀请人 <handle.ai 或无>。只使用该文件公布的铸造合约地址；如果文件写着合约未部署，就停止并告诉我。执行前先给我看预览（preview）。`
     );
   }
 
   // ---------------------------------------------------------------- Binance Agentic Wallet (.ai Agent ID) QR connect
-  // Same flow as jager.live: our proxy (server/index.mjs, C.agentApi) forwards to Binance's Agentic Wallet API.
+  // Our proxy (server/index.mjs, C.agentApi) forwards to Binance's Agentic Wallet API.
   // login -> QR (desktop) / app link (mobile) -> confirm until CONNECTED -> query until wallet CREATED -> wallets (chain 56).
   // Transactions: preview {binanceChainId 56, from, to, value, inputData, gasLimit} -> requestId -> poll execute until txHash;
   // the user approves each one in the Binance App. Exposed as an EIP-1193-style provider so the mint flow is unchanged.
@@ -595,7 +612,10 @@
     try {
       const h = await lookupAgent(a);
       let t = h ? T(`${h}.ai ✓ — eligible to mint`, `${h}.ai ✓ — 可以铸造`) : T("No .ai Agent ID — cannot mint", "无 .ai Agent ID — 不能铸造");
-      if (deployed && h) { const s = words(await call(C.mint, SEL.walletStatus + encA(a))); t += T(` · minted ${s[2]} / quota ${s[3]}`, ` · 已铸 ${s[2]} / 额度 ${s[3]}`); }
+      if (deployed && h) {
+        const s = words(await call(C.mint, SEL.walletStatus + encA(a))); t += T(` · paid ${s[2]} / quota ${s[3]}`, ` · 付费已铸 ${s[2]} / 额度 ${s[3]}`);
+        if (s[0] === 1n) { try { const f = words(await call(C.mint, SEL.freeClaimed + encU(s[1])))[0] === 1n; t += f ? T(" · free share claimed", " · 已领免费份额") : T(" · free share not claimed", " · 未领免费份额"); } catch (e) { /* ignore */ } }
+      }
       else if (!deployed) t += T(" · contracts not deployed yet", " · 合约未部署");
       $("watchOut").textContent = t;
     } catch (e) { $("watchOut").textContent = T("Lookup failed, try again.", "查询失败，请重试。"); }
@@ -612,7 +632,7 @@
   $("walletModal").addEventListener("click", (e) => { if (e.target === $("walletModal")) closeModal(); });
   $("connectBtn").onclick = () => {
     const list = walletList();
-    // Inside a wallet's in-app browser there is exactly one provider: connect directly, like Jager does with the Binance provider.
+    // Inside a wallet's in-app browser there is exactly one provider: connect directly.
     if (list.length === 1 && isMobile()) return connectWith(list[0]);
     openModal();
   };
@@ -642,7 +662,7 @@
     try { const g = BigInt(await rpc("eth_estimateGas", [tx])); tx.gas = "0x" + ((g * 12n) / 10n).toString(16); } catch (e) { /* let the wallet estimate */ }
     return W.provider.request({ method: "eth_sendTransaction", params: [tx] });
   }
-  // after a mint, like jager.live: "Minted N shares from #X · BscScan · Share Mint Pass" + the Mint successful dialog
+  // after a mint: "Minted N shares from #X · BscScan · Share Mint Pass" + the Mint successful dialog
   function minted(hash, n) {
     const first = state ? state.minted + 1 : null;
     $("status").innerHTML = `${T(`Minted ${n} share${n > 1 ? "s" : ""}`, `已铸造 ${n} 份`)}${first ? T(` from #${first.toLocaleString()}`, `（自 #${first.toLocaleString()}）`) : ""} · <a href="${C.explorer}/tx/${esc(hash)}" target="_blank" rel="noreferrer">BscScan</a> · <button type="button" class="linkbtn" id="shareAfter">${T("Share Mint Pass", "分享 Mint Pass")}</button>`;
@@ -657,7 +677,15 @@
     const ref = referrer && referrer.toLowerCase() !== W.account.toLowerCase() ? referrer : ZERO;
     $("mintBtn").disabled = true;
     try {
-      if (pay === "usdt") {
+      if (freePhase()) {
+        // v2 free phase: claimFree(), no payment, one per Agent ID (simulated first in send())
+        status(T("Confirm the free claim in your wallet…", "请在钱包中确认免费领取…"));
+        const h = await send({ from: W.account, to: C.mint, value: "0x0", data: SEL.claimFree });
+        status(T("Waiting for confirmation…", "等待确认…"));
+        const ok = await waitTx(h);
+        status(ok ? T("Free share claimed!", "免费领取成功！") : T("Transaction reverted on-chain.", "交易在链上失败。"), ok ? "ok" : "bad");
+        if (ok) minted(h, 1);
+      } else if (pay === "usdt") {
         const cost = words(await call(C.mint, SEL.costOf + encU(q)))[0];
         const max = (cost * 102n) / 100n;
         const allow = words(await call(C.usdt, SEL.allowance + encA(W.account) + encA(C.mint)))[0];
@@ -687,7 +715,7 @@
     finally { renderMintButton(); }
   };
 
-  // ---------------------------------------------------------------- Invite & tasks · +1 mint (same dialog as jager.live)
+  // ---------------------------------------------------------------- Invite & tasks · +1 mint
   const API = C.api || "https://fistagent-api.onrender.com";
   const XH = (C.social && C.social.x) || ""; // empty = no project X account: FOLLOW task hidden, no handle shown
   const SITE_HOST = "fistagent.onrender.com";
@@ -728,7 +756,7 @@
       return `<li data-task="${t.id}"><div class="trow"><span class="tt${done ? " done" : ""}">${t.title()}</span>${act}</div>${extra}${IV.err[t.id] ? `<span class="terr">${esc(IV.err[t.id])}</span>` : ""}</li>`;
     }).join("");
     $("inviteBody").innerHTML = `<div class="iv">
-      <div class="ivtop"><div><h2 id="invite-title">${T("Earn extra mints", "赚取额外铸造额度")}</h2><p>${T("Every Agent ID starts with 10 shares. Each invitee's first mint adds +1, and each social task adds +1. Extra shares are still paid at the current price.", "每个 Agent ID 初始 10 份额度。每位被邀请人首次铸造 +1，每完成一项社交任务 +1。额外份额仍按当前价格付费。")}</p></div><button type="button" class="ivx" id="ivClose" aria-label="Close">✕</button></div>
+      <div class="ivtop"><div><h2 id="invite-title">${T("Earn extra mints", "赚取额外铸造额度")}</h2><p>${T("Every Agent ID starts with 10 paid shares (plus 1 free share while shares 1–2,000 last). Each invitee's first paid mint adds +1, and each social task adds +1. Extra shares are still paid at the current price.", "每个 Agent ID 初始 10 份付费额度（前 2,000 份内另可免费领 1 份）。每位被邀请人首次付费铸造 +1，每完成一项社交任务 +1。额外份额仍按当前价格付费。")}</p></div><button type="button" class="ivx" id="ivClose" aria-label="Close">✕</button></div>
       ${top}
       <section class="ivsec" aria-labelledby="invite-heading"><div class="ivh"><h3 id="invite-heading">${ICON_USERS}${T("Invite friends · +1 each", "邀请好友 · 每人 +1")}</h3>${counted}</div>
         <p class="ivp">${T("You get +1 share of quota when a new .ai opens your link and completes their first paid mint. Inviting yourself does not count.", "新的 .ai 通过你的链接完成首次付费铸造后，你获得 +1 份额度。邀请自己无效。")}</p>${inv}</section>
@@ -778,7 +806,7 @@
   $("inviteBtn").onclick = openInvite;
   $("inviteModal").addEventListener("click", (e) => { if (e.target === $("inviteModal")) closeInvite(); });
 
-  // ---------------------------------------------------------------- Leaderboard (same as jager.live: Invites / Mints / Holders, Day / Week, Top 100)
+  // ---------------------------------------------------------------- Leaderboard (Invites / Mints / Holders, Day / Week, Top 100)
   const LBS = [{ key: "invites", title: () => T("Invites", "邀请"), unit: () => T("Invites", "邀请") }, { key: "mints", title: () => T("Mints", "铸造"), unit: () => T("Shares", "份数") }, { key: "holders", title: () => T("Holders", "持有"), unit: () => "FISTAGENT" }];
   const LBV = { board: "invites", period: "day", data: null, err: false, timer: null };
   const big = (v) => { const r = Number(BigInt(v) / 10n ** 18n); return r >= 1e12 ? (r / 1e12).toFixed(2) + "T" : r >= 1e9 ? (r / 1e9).toFixed(2) + "B" : r >= 1e6 ? (r / 1e6).toFixed(2) + "M" : r.toLocaleString(); };
@@ -808,7 +836,7 @@
     clearTimeout(LBV.timer); LBV.timer = setTimeout(loadLb, LBV.data && !LBV.data.syncing ? 300000 : 60000);
   }
 
-  // ---------------------------------------------------------------- Mint Pass (jager.live): Agent ID status, border badge, preview / share dialog
+  // ---------------------------------------------------------------- Mint Pass: Agent ID status, border badge, preview / share dialog
   const BORDERS = [
     { name: "Bronze", cn: "青铜", min: 0, color: "#b87333", metal: "linear-gradient(135deg,#5a2e12,#e3a272 22%,#ffd3ad 32%,#a8592a 50%,#f0b48a 66%,#6e3a17 84%,#d08a5c)" },
     { name: "Silver", cn: "白银", min: 7, color: "#c9d1d9", metal: "linear-gradient(135deg,#4b5563,#e5e7eb 20%,#ffffff 30%,#9ca3af 48%,#f3f4f6 64%,#6b7280 82%,#e5e7eb)" },
@@ -938,7 +966,7 @@
   $("passModal").addEventListener("click", (e) => { if (e.target === $("passModal")) closePass(); });
   $("passModal").addEventListener("close", () => cancelAnimationFrame(SPIN.raf));
 
-  // ---------------------------------------------------------------- Bind X + Border season (sections of the Invite & tasks dialog, as on jager.live)
+  // ---------------------------------------------------------------- Bind X + Border season (sections of the Invite & tasks dialog)
   // Wallet proof: Agentic Wallet (QR) sessions send {kind:"agent", clientId, sessionId}; browser wallets personal_sign the message below.
   async function proveWallet(action, handle) {
     if (W.rdns === AGENTIC && awStore.sid()) return { kind: "agent", clientId: awStore.cid(), sessionId: awStore.sid() };
