@@ -35,6 +35,7 @@
     if ($("passModal").open) renderPassModal();
   }
   $("langBtn").onclick = () => setLang(lang === "en" ? "zh" : "en");
+  { const cb = document.getElementById("copyCa"); if (cb) cb.onclick = () => { const t = document.getElementById("caddr").textContent.trim(); (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(() => { cb.classList.add("ok"); setTimeout(() => cb.classList.remove("ok"), 1500); }).catch(() => {}); }; }
 
   // ---------------------------------------------------------------- price table (mirrors priceCents in the contract)
   const priceCents = (n) => (n <= 10000 ? 100 : n <= 20000 ? 110 + 10 * Math.floor((n - 10001) / 1000) : n <= 100000 ? 210 + 2 * Math.floor((n - 20001) / 1000) : n <= 1000000 ? 370 + 2 * Math.floor((n - 100001) / 10000) : Math.floor((5500 + 15 * Math.floor((n - 1000001) / 20000) + 5) / 10));
@@ -158,6 +159,17 @@
     const TOTAL = 100000000;
     const progress = (m) => {
       $("sMinted").textContent = m.toLocaleString();
+      // 2026-10-31 v3 layout: hero pill, progress ring, phase bar, stats
+      const setT = (id, v) => { const e = $(id); if (e) e.textContent = v; };
+      const fc = Math.min(m, FREE);
+      setT("xpClaimed", fc.toLocaleString()); setT("xpClaimedZh", fc.toLocaleString());
+      setT("dFreeLeft", Math.max(0, FREE - m).toLocaleString());
+      setT("dMinted", m.toLocaleString()); setT("stMinted", m.toLocaleString());
+      setT("stToPool", Math.max(0, 10000 - m).toLocaleString());
+      const ra = $("ringArc"); if (ra) { const p = Math.min(100, (fc / FREE) * 100); ra.setAttribute("stroke-dasharray", p.toFixed(2) + " " + (100 - p).toFixed(2)); }
+      const db = $("dBar"); if (db) db.style.width = Math.min(100, (m / 10000) * 100).toFixed(3) + "%";
+      const p1 = $("ph1"), p2 = $("ph2");
+      if (p1 && p2 && m >= FREE) { p1.classList.add("done"); p2.classList.add("live"); $("ph1s").innerHTML = '<span class="en">Phase 1 · done</span><span class="zh">阶段 1 · 已结束</span>'; }
       $("hMinted").textContent = m.toLocaleString();
       document.querySelectorAll("#sTotal .tv").forEach((e) => (e.textContent = m.toLocaleString()));
       // Staged bar (user, 2026-10-30): stage 1 fills to 10,000 (pool opens), then switches to the next stage target.
