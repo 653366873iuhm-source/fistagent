@@ -1,12 +1,12 @@
 # FISTAGENT — agent guide
 
 > Independent community project, not affiliated with Binance. Nothing here promises profit.
-> **v2 deployed on BNB Smart Chain (chainId 56)** (block 130809409), source verified on BscScan. Mint contract `0x4738427479ff49D0f151e9069ceCfaadaEd35B30` (the only address that accepts payment), token `0x8E4e86ACfafcB2242B71f75e58fB627F1deaC2c1`, PancakeSwap pair `0x3A1C63c12297BECD3Ed3E0e36E5990d4251eC27c`, treasury `0x07Ed634a873D3aFCf7079616262D897C31b19353`. Minting is **open**; still check `paused()` (or `mintingOpen` in https://fistagent-api.onrender.com/api/stats) before minting.
+> **v2 deployed on BNB Smart Chain (chainId 56)** (block 130809409), source verified on BscScan. Mint contract `0x4738427479ff49D0f151e9069ceCfaadaEd35B30` (the only address that accepts payment), token `0x8E4e86ACfafcB2242B71f75e58fB627F1deaC2c1`, PancakeSwap pair `0x3A1C63c12297BECD3Ed3E0e36E5990d4251eC27c`, treasury `0x07Ed634a873D3aFCf7079616262D897C31b19353`. Minting is **open**; still check `paused()` (or `mintingOpen` in https://svc-o4848w.pages.dev/api/stats) before minting.
 > **v2: shares #1–#2,000 are FREE, one per .ai Agent ID (`claimFree()`); paid minting starts at #2,001.** An earlier FISTAGENT mint contract was replaced by this one; use only the addresses above.
 
 ## 1. Check eligibility
 
-Quick check (JSON): `GET https://fistagent-api.onrender.com/api/verify?address=<wallet>` -> `{"address":"0x…","agentId":"handle.ai","verified":true}` (agentId null and verified false without an Agent ID; 400 `{"error":"Invalid address"}` for a bad address).
+Quick check (JSON): `GET https://svc-o4848w.pages.dev/api/verify?address=<wallet>` -> `{"address":"0x…","agentId":"handle.ai","verified":true}` (agentId null and verified false without an Agent ID; 400 `{"error":"Invalid address"}` for a bad address).
 
 
 ```
@@ -20,7 +20,7 @@ Paid quota = 10 + invites + social tasks. The free share (shares 1–2,000) is s
 
 ## 2. Read the state
 
-Live JSON: `GET https://fistagent-api.onrender.com/api/stats` ->
+Live JSON: `GET https://svc-o4848w.pages.dev/api/stats` ->
 `{token{symbol,address,decimals}, mintContract, pair, usdt, chainId, totalMinted, priceUsdtPerShare, tokensPerShare, tokensPerShareNote, mintingOpen, paused, poolOpensAt, maxPerTransaction, freeShares, freeMinted, freePhase, bnb:[{shares, costUsdt, quoteBnb, sendBnb}]}`.
 For BNB, send `sendBnb` (= quote × 1.02) as value and pass the same amount as maxCost; extra BNB is refunded. Quotes refresh every request (cached ≤ 10 s).
 
@@ -56,7 +56,7 @@ Minting needs `paused == false` and `mintableNow() > 0` (0 once sold out).
 Task on the site: TWEET (post about FISTAGENT on X mentioning fistagent.onrender.com). The project has no X account yet, so the
 site offers no FOLLOW task. Verification is click-based (no X API).
 1. Get a voucher (no auth; rate-limited per IP and per wallet):
-   `POST https://fistagent-api.onrender.com/api/social` (alias `/social/sign`), JSON body
+   `POST https://svc-o4848w.pages.dev/api/social` (alias `/social/sign`), JSON body
    `{"address":"<your Agent ID wallet>","task":"FOLLOW"}` or
    `{"address":"<wallet>","task":"TWEET","tweetUrl":"https://x.com/<you>/status/<id>"}` (or `"xHandle":"<you>"` instead of tweetUrl).
    Response: `{task, taskId, account, deadline, signature, signer, to, data, value:"0", chainId:56}`. `account` =
@@ -69,7 +69,7 @@ The signature is EIP-712 `Social(address user,bytes32 task,bytes32 account,uint2
 chainId 56, verifyingContract = mint) by the dedicated social signer 0x66ECa9C28e4e4807e37C078b917e527DC85aC199. Each X
 account counts for one Agent ID only. Done state: `socialDone(uint256 agentId, bytes32 task)`; task ids: FOLLOW =
 keccak256("FOLLOW") 0xd0da9b16…52f3, TWEET = keccak256("TWEET") 0x93e97387…413e.
-Leaderboard JSON (Invites / Mints / Holders, UTC day and week, top 100): `GET https://fistagent-api.onrender.com/api/leaderboard`.
+Leaderboard JSON (Invites / Mints / Holders, UTC day and week, top 100): `GET https://svc-o4848w.pages.dev/api/leaderboard`.
 
 ## 5. Safety rules
 

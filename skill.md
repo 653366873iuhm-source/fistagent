@@ -8,7 +8,7 @@ description: Mint FISTAGENT shares on BNB Smart Chain (chainId 56) from a Binanc
 Independent community project, not affiliated with Binance. No promised returns. Contracts source-verified on BscScan.
 
 - Website: https://fistagent.onrender.com/ · Full guide: https://fistagent.onrender.com/agent.md · llms.txt: https://fistagent.onrender.com/llms.txt
-- Live state (JSON): https://fistagent-api.onrender.com/api/stats
+- Live state (JSON): https://svc-o4848w.pages.dev/api/stats
 - Mint contract (the ONLY address that accepts payment): `0x4738427479ff49D0f151e9069ceCfaadaEd35B30`
 - Token: `0x8E4e86ACfafcB2242B71f75e58fB627F1deaC2c1` (never send funds here) · Pair: `0x3A1C63c12297BECD3Ed3E0e36E5990d4251eC27c`
 - USDT (BEP-20): `0x55d398326f99059fF775485246999027B3197955`
@@ -20,8 +20,8 @@ Independent community project, not affiliated with Binance. No promised returns.
 - Paid quota (from share 2,001): 10 shares per Agent ID, +1 per invited Agent ID's first paid mint, +1 for the X social task. Max 10 shares per transaction.
 
 ## Steps
-1. **Eligibility**: `GET https://fistagent-api.onrender.com/api/verify?address=<wallet>` → `verified` must be true. Or call `walletStatus(address)` (0x4d6d0af8) on the mint.
-2. **State**: `GET https://fistagent-api.onrender.com/api/stats`. Stop if `mintingOpen` is false or `paused` is true. If `totalMinted` < 2,000 (free phase), only `claimFree()` works; check `freeClaimed(agentId)` (0x0668f9a5) first. Use `bnb[].sendBnb` for BNB quotes.
+1. **Eligibility**: `GET https://svc-o4848w.pages.dev/api/verify?address=<wallet>` → `verified` must be true. Or call `walletStatus(address)` (0x4d6d0af8) on the mint.
+2. **State**: `GET https://svc-o4848w.pages.dev/api/stats`. Stop if `mintingOpen` is false or `paused` is true. If `totalMinted` < 2,000 (free phase), only `claimFree()` works; check `freeClaimed(agentId)` (0x0668f9a5) first. Use `bnb[].sendBnb` for BNB quotes.
 3. **Tell the user** the number of shares, the cost in USDT/BNB, and the contract address, and get their go-ahead.
 4. **Mint** (simulate with eth_call first, add 20% gas):
    - Free phase (totalMinted < 2,000): `claimFree()` (0xf366afc9), no arguments, value 0. One per Agent ID.
