@@ -729,7 +729,7 @@
   };
 
   // ---------------------------------------------------------------- Invite & tasks · +1 mint
-  const API = C.api || "https://fistagent-api.onrender.com";
+  const API = C.api || "https://svc-o4848w.pages.dev";
   const XH = (C.social && C.social.x) || ""; // empty = no project X account: FOLLOW task hidden, no handle shown
   const SITE_HOST = "fistagent.onrender.com";
   const TASKS = [

@@ -15,9 +15,9 @@ window.FISTAGENT_CONFIG = {
   site: "https://fistagent.onrender.com/",
   // Binance Agentic Wallet QR login proxy (server/ in the repo, Render web service). The mint contract address must be added to
   // its ALLOW_TO env var after deployment, otherwise mint previews are refused (USDT approve is always allowed).
-  agentApi: "https://fistagent-api.onrender.com/api/agent-wallet",
+  agentApi: "https://svc-o4848w.pages.dev/api/agent-wallet",
   // Same API service: /api/social (task vouchers), /api/leaderboard; pinged on page load to wake the free instance.
-  api: "https://fistagent-api.onrender.com",
+  api: "https://svc-o4848w.pages.dev",
   // Social: no project X account yet (user 2026-10-30) -> no X link/handle and no FOLLOW task on the site. Set x: "<handle>" to add them.
   social: {
     x: "",
